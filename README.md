@@ -1,4 +1,4 @@
-# Reference C and optimized C and ASM implementations of Ascon
+# Reference and optimized C and ASM implementations of Ascon
 
 Ascon is a family of lightweight authenticated encryption schemes with associated data (AEAD), including a hash and extendible output function (XOF).
 
