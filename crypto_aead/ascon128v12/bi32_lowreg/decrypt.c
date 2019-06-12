@@ -101,15 +101,12 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   x4.e ^= K1.e;
   x4.o ^= K1.o;
 
-  // verify tag
-  {
-    u64 tmp1;
-    from_bit_interleaving(tmp0, x3);
-    from_bit_interleaving(tmp1, x4);
-    if (*(u64*)c != U64BIG(tmp0) || *(u64*)(c + 8) != U64BIG(tmp1)) {
-      *mlen = 0;
-      return -1;
-    }
+  // verify tag (should be constant time, check compiler output)
+  to_bit_interleaving(x0, U64BIG(*(u64*)c));
+  to_bit_interleaving(x1, U64BIG(*(u64*)(c + 8)));
+  if (((x3.e ^ x0.e) | (x3.o ^ x0.o) | (x4.e ^ x1.e) | (x4.o ^ x1.o)) != 0) {
+    *mlen = 0;
+    return -1;
   }
 
   return 0;

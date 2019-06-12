@@ -86,8 +86,8 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   s.x4 ^= K2;
   printstate("finalization:", s);
 
-  // verify tag
-  if (BYTES_TO_U64(c, 8) != s.x3 || BYTES_TO_U64(c + 8, 8) != s.x4) {
+  // verify tag (should be constant time, check compiler output)
+  if (((s.x3 ^ BYTES_TO_U64(c, 8)) | (s.x4 ^ BYTES_TO_U64(c + 8, 8))) != 0) {
     *mlen = 0;
     return -1;
   }

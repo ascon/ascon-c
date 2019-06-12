@@ -22,7 +22,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   u32_2 K0, K1, N0, N1;
   u32_2 x0, x1, x2, x3, x4;
   u32_2 t0, t1, t2, t3, t4;
-  u64 tmp0, tmp1;
+  u64 tmp0;
   u32 i;
   (void)nsec;
 
@@ -101,10 +101,10 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   x4.e ^= K1.e;
   x4.o ^= K1.o;
 
-  // verify tag
-  from_bit_interleaving(tmp0, x3);
-  from_bit_interleaving(tmp1, x4);
-  if (*(u64*)c != U64BIG(tmp0) || *(u64*)(c + 8) != U64BIG(tmp1)) {
+  // verify tag (should be constant time, check compiler output)
+  to_bit_interleaving(t0, U64BIG(*(u64*)c));
+  to_bit_interleaving(t1, U64BIG(*(u64*)(c + 8)));
+  if (((x3.e ^ t0.e) | (x3.o ^ t0.o) | (x4.e ^ t1.e) | (x4.o ^ t1.o)) != 0) {
     *mlen = 0;
     return -1;
   }

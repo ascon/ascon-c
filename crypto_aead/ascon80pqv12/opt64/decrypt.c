@@ -81,8 +81,8 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   s.x3 ^= K1;
   s.x4 ^= K2;
 
-  // verify tag
-  if (*(u64*)c != U64BIG(s.x3) || *(u64*)(c + 8) != U64BIG(s.x4)) {
+  // verify tag (should be constant time, check compiler output)
+  if (((s.x3 ^ U64BIG(*(u64*)c)) | (s.x4 ^ U64BIG(*(u64*)(c + 8)))) != 0) {
     *mlen = 0;
     return -1;
   }
