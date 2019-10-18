@@ -38,10 +38,10 @@ elseif(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES ARM OR ${CMAKE_HOST_SYSTEM_PROCESS
   set(DEFAULT_IMPLS ${DEFAULT_IMPLS} bi32_arm neon)
 endif()
 
-set(VERSION_LIST ${DEFAULT_VERSIONS} CACHE STRINGS "Choose the ascon versions to include.")
-set(ALG_LIST ${DEFAULT_ALGS} CACHE STRINGS "Choose the list of algorithms to include.")
-set(IMPL_LIST ${DEFAULT_IMPLS} CACHE STRINGS "Choose the list of implementations to include.")
-set(TEST_LIST ${DEFAULT_TESTS} CACHE STRINGS "Choose the list of tests to include.")
+set(VERSION_LIST ${DEFAULT_VERSIONS} CACHE STRING "Choose the ascon versions to include.")
+set(ALG_LIST ${DEFAULT_ALGS} CACHE STRING "Choose the list of algorithms to include.")
+set(IMPL_LIST ${DEFAULT_IMPLS} CACHE STRING "Choose the list of implementations to include.")
+set(TEST_LIST ${DEFAULT_TESTS} CACHE STRING "Choose the list of tests to include.")
 
 foreach(CRYPTO aead hash)
   foreach(VER ${VERSION_LIST})
