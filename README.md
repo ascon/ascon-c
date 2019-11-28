@@ -157,21 +157,22 @@ Get CPU cycles:
   ```
 
 
-## Hints to activate performance counters (PMU) on ARM CPUs:
+## Hints to activate the performance monitor unit (PMU) on ARM CPUs:
 
 * First try to install `linux-tools` and see if it works.
 
 * On many ARM platforms, the PMU has to be enabled using a kernel module:
-  - Sample code for Armv6 (32-bit):
+  - Source code for Armv6 (32-bit):
     <http://sandsoftwaresound.net/raspberry-pi/raspberry-pi-gen-1/performance-counter-kernel-module/>
-  - Sample code for Armv7 (32-bit):
+  - Source code for Armv7 (32-bit):
     <https://github.com/thoughtpolice/enable_arm_pmu>
-  - Sample code for Armv8/Aarch64 (64-bit):
+  - Source code for Armv8/Aarch64 (64-bit):
     <https://github.com/rdolbeau/enable_arm_pmu>
 
 * Steps to compile the kernel module on the raspberry pi:
   - Find out the kernel version using `uname -a`
   - Download the kernel header files, e.g. `raspberrypi-kernel-header`
+  - Download the source code for the Armv6 kernel module
   - Build, install and load the kernel module
 
 
