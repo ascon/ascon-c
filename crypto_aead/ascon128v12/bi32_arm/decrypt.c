@@ -21,7 +21,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
 
   u32_2 K0, K1, N0, N1;
   u32_2 x0, x1, x2, x3, x4;
-  u32_2 t0;
+  u32_2 t0, t1;
   u64 tmp0;
   u32 i;
   (void)nsec;
