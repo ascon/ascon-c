@@ -15,11 +15,13 @@ This repository contains the following 5 Ascon algorithms:
 and the following implementations:
 
 - `ref`: reference implementation
-- `opt64`: 64-bit optimized C implementation
-- `neon`: NEON optimized ARM inline assembly implementation
-- `bi32`: 32-bit optimized bit-interleaved C implementation
-- `bi32_lowreg`: 32-bit optimized bit-interleaved C implementation (low register usage)
-- `bi32_arm`: 32-bit optimized bit-interleaved ARM inline assembly implementation
+- `opt64`: 64-bit speed-optimized C implementation
+- `opt64_lowsize`: 64-bit size-optimized C implementation
+- `neon`: NEON speed-optimized ARM inline assembly implementation
+- `bi32`: 32-bit speed-optimized bit-interleaved C implementation
+- `bi32_lowsize`: 32-bit size-optimized bit-interleaved C implementation
+- `bi32_lowreg`: 32-bit speed-optimized bit-interleaved C implementation (low register usage)
+- `bi32_arm`: 32-bit speed-optimized bit-interleaved ARM inline assembly implementation
 - `bi16`: 16-bit optimized bit-interleaved C implementation
 - `bi8`: 8-bit optimized bit-interleaved C implementation
 

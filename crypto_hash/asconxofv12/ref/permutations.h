@@ -129,4 +129,3 @@ static inline void P6(state* s) {
 }
 
 #endif  // PERMUTATIONS_H_
-

@@ -96,4 +96,3 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
 
   return 0;
 }
-

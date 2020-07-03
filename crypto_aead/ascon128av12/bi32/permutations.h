@@ -51,6 +51,7 @@ typedef struct {
     out = (u64)hi << 32 | lo;                                 \
   } while (0)
 
+/* clang-format off */
 #define ROUND(C_e, C_o) \
   do { \
     /* round constant */ \
@@ -85,6 +86,7 @@ typedef struct {
     x4.e ^= ROTR32(t4.o, 3);          x4.o ^= ROTR32(t4.e, 4); \
     x2.e = ~x2.e;                     x2.o = ~x2.o; \
   } while(0)
+/* clang-format on */
 
 #define P12()        \
   do {               \
@@ -125,4 +127,3 @@ typedef struct {
   } while (0)
 
 #endif  // PERMUTATIONS_H_
-

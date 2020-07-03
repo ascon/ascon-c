@@ -50,70 +50,74 @@ typedef struct {
     out = (u64)hi << 32 | lo;                                 \
   } while (0)
 
-#define ROUND(C_e, C_o) \
-  do { \
-    u32 reg0, reg1, reg2, reg3; \
-    __asm__ __volatile__ ( \
-      "eor %[x2_e], %[x2_e], #" #C_e "\n\t" \
-      "eor %[x2_o], %[x2_o], #" #C_o "\n\t" \
-      "eor %[x0_e], %[x0_e], %[x4_e]\n\t" \
-      "eor %[x0_o], %[x0_o], %[x4_o]\n\t" \
-      "eor %[x4_e], %[x4_e], %[x3_e]\n\t" \
-      "eor %[x4_o], %[x4_o], %[x3_o]\n\t" \
-      "eor %[x2_e], %[x2_e], %[x1_e]\n\t" \
-      "eor %[x2_o], %[x2_o], %[x1_o]\n\t" \
-      "bic %[reg0], %[x0_e], %[x4_e]\n\t" \
-      "bic %[reg1], %[x4_e], %[x3_e]\n\t" \
-      "bic %[reg2], %[x2_e], %[x1_e]\n\t" \
-      "bic %[reg3], %[x1_e], %[x0_e]\n\t" \
-      "eor %[x2_e], %[x2_e], %[reg1]\n\t" \
-      "eor %[x0_e], %[x0_e], %[reg2]\n\t" \
-      "eor %[x4_e], %[x4_e], %[reg3]\n\t" \
-      "bic %[reg3], %[x3_e], %[x2_e]\n\t" \
-      "eor %[x3_e], %[x3_e], %[reg0]\n\t" \
-      "bic %[reg2], %[x0_o], %[x4_o]\n\t" \
-      "bic %[reg0], %[x2_o], %[x1_o]\n\t" \
-      "bic %[reg1], %[x4_o], %[x3_o]\n\t" \
-      "eor %[x1_e], %[x1_e], %[reg3]\n\t" \
-      "eor %[x0_o], %[x0_o], %[reg0]\n\t" \
-      "eor %[x2_o], %[x2_o], %[reg1]\n\t" \
-      "bic %[reg3], %[x1_o], %[x0_o]\n\t" \
-      "bic %[reg0], %[x3_o], %[x2_o]\n\t" \
-      "eor %[x3_o], %[x3_o], %[reg2]\n\t" \
-      "eor %[x3_o], %[x3_o], %[x2_o]\n\t" \
-      "eor %[x4_o], %[x4_o], %[reg3]\n\t" \
-      "eor %[x1_o], %[x1_o], %[reg0]\n\t" \
-      "eor %[x3_e], %[x3_e], %[x2_e]\n\t" \
-      "eor %[x1_e], %[x1_e], %[x0_e]\n\t" \
-      "eor %[x1_o], %[x1_o], %[x0_o]\n\t" \
-      "eor %[x0_e], %[x0_e], %[x4_e]\n\t" \
-      "eor %[x0_o], %[x0_o], %[x4_o]\n\t" \
-      "mvn %[x2_e], %[x2_e]\n\t" \
-      "mvn %[x2_o], %[x2_o]\n\t" \
-      "eor %[reg0], %[x0_e], %[x0_o], ror #4\n\t" \
-      "eor %[reg1], %[x0_o], %[x0_e], ror #5\n\t" \
-      "eor %[reg2], %[x1_e], %[x1_e], ror #11\n\t" \
-      "eor %[reg3], %[x1_o], %[x1_o], ror #11\n\t" \
-      "eor %[x0_e], %[x0_e], %[reg1], ror #9\n\t" \
-      "eor %[x0_o], %[x0_o], %[reg0], ror #10\n\t" \
-      "eor %[x1_e], %[x1_e], %[reg3], ror #19\n\t" \
-      "eor %[x1_o], %[x1_o], %[reg2], ror #20\n\t" \
-      "eor %[reg0], %[x2_e], %[x2_o], ror #2\n\t" \
-      "eor %[reg1], %[x2_o], %[x2_e], ror #3\n\t" \
-      "eor %[reg2], %[x3_e], %[x3_o], ror #3\n\t" \
-      "eor %[reg3], %[x3_o], %[x3_e], ror #4\n\t" \
-      "eor %[x2_e], %[x2_e], %[reg1]\n\t" \
-      "eor %[x2_o], %[x2_o], %[reg0], ror #1\n\t" \
-      "eor %[x3_e], %[x3_e], %[reg2], ror #5\n\t" \
-      "eor %[x3_o], %[x3_o], %[reg3], ror #5\n\t" \
-      "eor %[reg0], %[x4_e], %[x4_e], ror #17\n\t" \
-      "eor %[reg1], %[x4_o], %[x4_o], ror #17\n\t" \
-      "eor %[x4_e], %[x4_e], %[reg1], ror #3\n\t" \
-      "eor %[x4_o], %[x4_o], %[reg0], ror #4\n\t" \
-      : [x0_e] "+r" (x0.e), [x1_e] "+r" (x1.e), [x2_e] "+r" (x2.e), [x3_e] "+r" (x3.e), [x4_e] "+r" (x4.e), \
-        [x0_o] "+r" (x0.o), [x1_o] "+r" (x1.o), [x2_o] "+r" (x2.o), [x3_o] "+r" (x3.o), [x4_o] "+r" (x4.o), \
-        [reg0] "=r" (reg0), [reg1] "=r" (reg1), [reg2] "=r" (reg2), [reg3] "=r" (reg3)::); \
+/* clang-format off */
+#define ROUND(C_e, C_o)                                                  \
+  do {                                                                   \
+    u32 reg0, reg1, reg2, reg3;                                          \
+    __asm__ __volatile__(                                                \
+        "eor %[x2_e], %[x2_e], #" #C_e "\n\t"                            \
+        "eor %[x2_o], %[x2_o], #" #C_o "\n\t"                            \
+        "eor %[x0_e], %[x0_e], %[x4_e]\n\t"                              \
+        "eor %[x0_o], %[x0_o], %[x4_o]\n\t"                              \
+        "eor %[x4_e], %[x4_e], %[x3_e]\n\t"                              \
+        "eor %[x4_o], %[x4_o], %[x3_o]\n\t"                              \
+        "eor %[x2_e], %[x2_e], %[x1_e]\n\t"                              \
+        "eor %[x2_o], %[x2_o], %[x1_o]\n\t"                              \
+        "bic %[reg0], %[x0_e], %[x4_e]\n\t"                              \
+        "bic %[reg1], %[x4_e], %[x3_e]\n\t"                              \
+        "bic %[reg2], %[x2_e], %[x1_e]\n\t"                              \
+        "bic %[reg3], %[x1_e], %[x0_e]\n\t"                              \
+        "eor %[x2_e], %[x2_e], %[reg1]\n\t"                              \
+        "eor %[x0_e], %[x0_e], %[reg2]\n\t"                              \
+        "eor %[x4_e], %[x4_e], %[reg3]\n\t"                              \
+        "bic %[reg3], %[x3_e], %[x2_e]\n\t"                              \
+        "eor %[x3_e], %[x3_e], %[reg0]\n\t"                              \
+        "bic %[reg2], %[x0_o], %[x4_o]\n\t"                              \
+        "bic %[reg0], %[x2_o], %[x1_o]\n\t"                              \
+        "bic %[reg1], %[x4_o], %[x3_o]\n\t"                              \
+        "eor %[x1_e], %[x1_e], %[reg3]\n\t"                              \
+        "eor %[x0_o], %[x0_o], %[reg0]\n\t"                              \
+        "eor %[x2_o], %[x2_o], %[reg1]\n\t"                              \
+        "bic %[reg3], %[x1_o], %[x0_o]\n\t"                              \
+        "bic %[reg0], %[x3_o], %[x2_o]\n\t"                              \
+        "eor %[x3_o], %[x3_o], %[reg2]\n\t"                              \
+        "eor %[x3_o], %[x3_o], %[x2_o]\n\t"                              \
+        "eor %[x4_o], %[x4_o], %[reg3]\n\t"                              \
+        "eor %[x1_o], %[x1_o], %[reg0]\n\t"                              \
+        "eor %[x3_e], %[x3_e], %[x2_e]\n\t"                              \
+        "eor %[x1_e], %[x1_e], %[x0_e]\n\t"                              \
+        "eor %[x1_o], %[x1_o], %[x0_o]\n\t"                              \
+        "eor %[x0_e], %[x0_e], %[x4_e]\n\t"                              \
+        "eor %[x0_o], %[x0_o], %[x4_o]\n\t"                              \
+        "mvn %[x2_e], %[x2_e]\n\t"                                       \
+        "mvn %[x2_o], %[x2_o]\n\t"                                       \
+        "eor %[reg0], %[x0_e], %[x0_o], ror #4\n\t"                      \
+        "eor %[reg1], %[x0_o], %[x0_e], ror #5\n\t"                      \
+        "eor %[reg2], %[x1_e], %[x1_e], ror #11\n\t"                     \
+        "eor %[reg3], %[x1_o], %[x1_o], ror #11\n\t"                     \
+        "eor %[x0_e], %[x0_e], %[reg1], ror #9\n\t"                      \
+        "eor %[x0_o], %[x0_o], %[reg0], ror #10\n\t"                     \
+        "eor %[x1_e], %[x1_e], %[reg3], ror #19\n\t"                     \
+        "eor %[x1_o], %[x1_o], %[reg2], ror #20\n\t"                     \
+        "eor %[reg0], %[x2_e], %[x2_o], ror #2\n\t"                      \
+        "eor %[reg1], %[x2_o], %[x2_e], ror #3\n\t"                      \
+        "eor %[reg2], %[x3_e], %[x3_o], ror #3\n\t"                      \
+        "eor %[reg3], %[x3_o], %[x3_e], ror #4\n\t"                      \
+        "eor %[x2_e], %[x2_e], %[reg1]\n\t"                              \
+        "eor %[x2_o], %[x2_o], %[reg0], ror #1\n\t"                      \
+        "eor %[x3_e], %[x3_e], %[reg2], ror #5\n\t"                      \
+        "eor %[x3_o], %[x3_o], %[reg3], ror #5\n\t"                      \
+        "eor %[reg0], %[x4_e], %[x4_e], ror #17\n\t"                     \
+        "eor %[reg1], %[x4_o], %[x4_o], ror #17\n\t"                     \
+        "eor %[x4_e], %[x4_e], %[reg1], ror #3\n\t"                      \
+        "eor %[x4_o], %[x4_o], %[reg0], ror #4\n\t"                      \
+        : [ x0_e ] "+r"(x0.e), [ x1_e ] "+r"(x1.e), [ x2_e ] "+r"(x2.e), \
+          [ x3_e ] "+r"(x3.e), [ x4_e ] "+r"(x4.e), [ x0_o ] "+r"(x0.o), \
+          [ x1_o ] "+r"(x1.o), [ x2_o ] "+r"(x2.o), [ x3_o ] "+r"(x3.o), \
+          [ x4_o ] "+r"(x4.o), [ reg0 ] "=r"(reg0), [ reg1 ] "=r"(reg1), \
+          [ reg2 ] "=r"(reg2), [ reg3 ] "=r"(reg3)::);                   \
   } while (0)
+/* clang-format on */
 
 #define P12()        \
   do {               \
@@ -154,4 +158,3 @@ typedef struct {
   } while (0)
 
 #endif  // PERMUTATIONS_H_
-

@@ -99,4 +99,3 @@ typedef struct {
   } while (0)
 
 #endif  // PERMUTATIONS_H_
-

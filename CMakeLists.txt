@@ -26,7 +26,7 @@ endif()
 # set the default version, algorithms, implementations and tests to build
 set(DEFAULT_VERSIONS v12)
 set(DEFAULT_ALGS ascon128 ascon128a ascon80pq asconhash asconxof)
-set(DEFAULT_IMPLS ref opt64 bi32 bi32_lowreg bi16 bi8)
+set(DEFAULT_IMPLS ref opt64 opt64_lowsize bi32 bi32_lowsize bi32_lowreg bi16 bi8)
 set(DEFAULT_TESTS genkat getcycles)
 
 # add platform specific implementations
@@ -69,8 +69,7 @@ foreach(CRYPTO aead hash)
           add_executable(${EXE_NAME} ${TEST_FILES})
           target_compile_definitions(${EXE_NAME} PRIVATE ${CRYPTO_DEFINE})
           target_include_directories(${EXE_NAME} PRIVATE ${IMPL_PATH} ${TEST_PATH})
-          target_compile_options(${EXE_NAME} PRIVATE
-            $<$<CONFIG:RELEASE>:${PERF_FLAGS}> -fno-diagnostics-show-caret)
+          target_compile_options(${EXE_NAME} PRIVATE $<$<CONFIG:RELEASE>:${PERF_FLAGS}>)
           target_compile_options(${EXE_NAME} PRIVATE $<$<CONFIG:DEBUG>:${NIST_FLAGS}>)
           target_link_libraries(${EXE_NAME} PRIVATE "$<$<CONFIG:DEBUG>:${NIST_FLAGS}>" ${IMPL_NAME})
           if(${TEST_NAME} STREQUAL genkat)

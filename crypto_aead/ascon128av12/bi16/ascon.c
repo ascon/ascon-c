@@ -682,4 +682,3 @@ int crypto_aead_decrypt(unsigned char *m, unsigned long long *mlen,
   *mlen = clen - CRYPTO_ABYTES;
   return 0;
 }
-

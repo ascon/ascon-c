@@ -9,7 +9,9 @@
 #endif
 
 #if !defined(__arm__) && !defined(_M_ARM)
+#ifndef NDEBUG
 #pragma message("Using RDTSC to count cycles")
+#endif
 #ifdef _MSC_VER
 #include <intrin.h>
 #define ALIGN(x)
@@ -24,14 +26,18 @@
 
 #if defined(__ARM_ARCH_6__) || __ARM_ARCH == 6 || _M_ARM == 6
 #define ALIGN(x) __attribute__((aligned(x)))
+#ifndef NDEBUG
 #pragma message("Using ARMv6 PMU to count cycles")
+#endif
 #define init_cpucycles() \
   __asm__ __volatile__("mcr p15, 0, %0, c15, c12, 0" ::"r"(1))
 #define cpucycles(cycles) \
   __asm__ __volatile__("mrc p15, 0, %0, c15, c12, 1" : "=r"(cycles))
 #elif defined(__arm__) || defined(_M_ARM)
 #define ALIGN(x) __attribute__((aligned(x)))
+#ifndef NDEBUG
 #pragma message("Using ARMv7 PMU to count cycles")
+#endif
 #define init_cpucycles()                                                \
   __asm__ __volatile__("mcr p15, 0, %0, c9, c12, 0" ::"r"(17));         \
   __asm__ __volatile__("mcr p15, 0, %0, c9, c12, 1" ::"r"(0x8000000f)); \
