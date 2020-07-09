@@ -24,4 +24,4 @@ void ascon_core(state* s, unsigned char* out, const unsigned char* in,
                 unsigned long long adlen, const unsigned char* npub,
                 const unsigned char* k, u8 mode);
 
-#endif  // CORE_H_
+#endif /* CORE_H_ */

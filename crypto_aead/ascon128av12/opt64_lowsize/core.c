@@ -6,15 +6,15 @@ void process_data(state* s, unsigned char* out, const unsigned char* in,
   u64 i;
 
   while (len >= RATE) {
-    s->x0 ^= U64BIG(*(u64*)in);
-    s->x1 ^= U64BIG(*(u64*)(in + 8));
+    s->x0 ^= LOAD64(in);
+    s->x1 ^= LOAD64(in + 8);
     if (mode != ASCON_AD) {
-      *(u64*)out = U64BIG(s->x0);
-      *(u64*)(out + 8) = U64BIG(s->x1);
+      STORE64(out, s->x0);
+      STORE64((out + 8), s->x1);
     }
     if (mode == ASCON_DEC) {
-      s->x0 = U64BIG(*((u64*)in));
-      s->x1 = U64BIG(*((u64*)(in + 8)));
+      s->x0 = LOAD64(in);
+      s->x1 = LOAD64(in + 8);
     }
     P(s, PB_ROUNDS);
     in += RATE;
@@ -44,12 +44,12 @@ void ascon_core(state* s, unsigned char* out, const unsigned char* in,
                 unsigned long long tlen, const unsigned char* ad,
                 unsigned long long adlen, const unsigned char* npub,
                 const unsigned char* k, u8 mode) {
-  const u64 K0 = U64BIG(*(u64*)k);
-  const u64 K1 = U64BIG(*(u64*)(k + 8));
-  const u64 N0 = U64BIG(*(u64*)npub);
-  const u64 N1 = U64BIG(*(u64*)(npub + 8));
+  const u64 K0 = LOAD64(k);
+  const u64 K1 = LOAD64(k + 8);
+  const u64 N0 = LOAD64(npub);
+  const u64 N1 = LOAD64(npub + 8);
 
-  // initialization
+  /* initialization */
   s->x0 = IV;
   s->x1 = K0;
   s->x2 = K1;
@@ -59,17 +59,17 @@ void ascon_core(state* s, unsigned char* out, const unsigned char* in,
   s->x3 ^= K0;
   s->x4 ^= K1;
 
-  // process associated data
+  /* process associated data */
   if (adlen) {
     process_data(s, (void*)0, ad, adlen, ASCON_AD);
     P(s, PB_ROUNDS);
   }
   s->x4 ^= 1;
 
-  // process plaintext/ciphertext
+  /* process plaintext/ciphertext */
   process_data(s, out, in, tlen, mode);
 
-  // finalization
+  /* finalization */
   s->x2 ^= K0;
   s->x3 ^= K1;
   P(s, PA_ROUNDS);

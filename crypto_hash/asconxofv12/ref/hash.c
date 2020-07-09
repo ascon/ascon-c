@@ -10,7 +10,7 @@ int crypto_hash(unsigned char *out, const unsigned char *in,
   state s;
   u64 outlen;
 
-  // initialization
+  /* initialization */
   s.x0 = IV;
   s.x1 = 0;
   s.x2 = 0;
@@ -20,7 +20,7 @@ int crypto_hash(unsigned char *out, const unsigned char *in,
   P12(&s);
   printstate("initialization:", s);
 
-  // absorb plaintext
+  /* absorb plaintext */
   inlen = inlen;
   while (inlen >= RATE) {
     s.x0 ^= BYTES_TO_U64(in, 8);
@@ -35,7 +35,7 @@ int crypto_hash(unsigned char *out, const unsigned char *in,
   P12(&s);
   printstate("finalization:", s);
 
-  // set hash output
+  /* set hash output */
   outlen = CRYPTO_BYTES;
   while (outlen > RATE) {
     U64_TO_BYTES(out, s.x0, 8);

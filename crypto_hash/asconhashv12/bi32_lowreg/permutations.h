@@ -1,8 +1,6 @@
 #ifndef PERMUTATIONS_H_
 #define PERMUTATIONS_H_
 
-#include "endian.h"
-
 typedef unsigned char u8;
 typedef unsigned int u32;
 typedef unsigned long long u64;
@@ -12,11 +10,9 @@ typedef struct {
   u32 o;
 } u32_2;
 
-#define EXT_BYTE64(x, n) ((u8)((u64)(x) >> (8 * (7 - (n)))))
-#define INS_BYTE64(x, n) ((u64)(x) << (8 * (7 - (n))))
 #define ROTR32(x, n) (((x) >> (n)) | ((x) << (32 - (n))))
 
-// Credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002
+/* Credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002 */
 #define to_bit_interleaving(out, in)                          \
   do {                                                        \
     u32 hi = (in) >> 32;                                      \
@@ -34,7 +30,7 @@ typedef struct {
     (out).o = (lo >> 16) | (hi & 0xFFFF0000);                 \
   } while (0)
 
-// Credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002
+/* Credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002 */
 #define from_bit_interleaving(out, in)                        \
   do {                                                        \
     u32 lo = ((in).e & 0x0000FFFF) | ((in).o << 16);          \
@@ -132,4 +128,4 @@ typedef struct {
     ROUND(0x9, 0x3); \
   } while (0)
 
-#endif  // PERMUTATIONS_H_
+#endif /* PERMUTATIONS_H_ */

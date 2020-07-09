@@ -14,18 +14,18 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
                         const unsigned char* ad, unsigned long long adlen,
                         const unsigned char* nsec, const unsigned char* npub,
                         const unsigned char* k) {
-  const u64 K0 = U64BIG(*(u64*)k);
-  const u64 K1 = U64BIG(*(u64*)(k + 8));
-  const u64 N0 = U64BIG(*(u64*)npub);
-  const u64 N1 = U64BIG(*(u64*)(npub + 8));
+  const u64 K0 = LOAD64(k);
+  const u64 K1 = LOAD64(k + 8);
+  const u64 N0 = LOAD64(npub);
+  const u64 N1 = LOAD64(npub + 8);
   state s;
   u64 i;
   (void)nsec;
 
-  // set ciphertext size
+  /* set ciphertext size */
   *clen = mlen + CRYPTO_ABYTES;
 
-  // initialization
+  /* initialization */
   s.x0 = IV;
   s.x1 = K0;
   s.x2 = K1;
@@ -35,10 +35,10 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   s.x3 ^= K0;
   s.x4 ^= K1;
 
-  // process associated data
+  /* process associated data */
   if (adlen) {
     while (adlen >= RATE) {
-      s.x0 ^= U64BIG(*(u64*)ad);
+      s.x0 ^= LOAD64(ad);
       P6();
       adlen -= RATE;
       ad += RATE;
@@ -49,10 +49,10 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   }
   s.x4 ^= 1;
 
-  // process plaintext
+  /* process plaintext */
   while (mlen >= RATE) {
-    s.x0 ^= U64BIG(*(u64*)m);
-    *(u64*)c = U64BIG(s.x0);
+    s.x0 ^= LOAD64(m);
+    STORE64(c, s.x0);
     P6();
     mlen -= RATE;
     m += RATE;
@@ -64,16 +64,16 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   }
   s.x0 ^= INS_BYTE64(0x80, mlen);
 
-  // finalization
+  /* finalization */
   s.x1 ^= K0;
   s.x2 ^= K1;
   P12();
   s.x3 ^= K0;
   s.x4 ^= K1;
 
-  // set tag
-  *(u64*)c = U64BIG(s.x3);
-  *(u64*)(c + 8) = U64BIG(s.x4);
+  /* set tag */
+  STORE64(c, s.x3);
+  STORE64((c + 8), s.x4);
 
   return 0;
 }

@@ -8,8 +8,6 @@ typedef struct {
   u64 x0, x1, x2, x3, x4;
 } state;
 
-#define EXT_BYTE64(x, n) ((u8)((u64)(x) >> (8 * (7 - (n)))))
-#define INS_BYTE64(x, n) ((u64)(x) << (8 * (7 - (n))))
 #define ROTR64(x, n) (((x) >> (n)) | ((x) << (64 - (n))))
 #define START_CONSTANT(x) (((0xf - (12 - (x))) << 4) | (12 - (x)))
 
@@ -63,4 +61,4 @@ typedef struct {
 
 void P(state *p, u8 rounds);
 
-#endif  // PERMUTATIONS_H_
+#endif /* PERMUTATIONS_H_ */

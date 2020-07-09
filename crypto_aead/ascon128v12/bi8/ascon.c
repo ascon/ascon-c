@@ -269,8 +269,8 @@ typedef unsigned long long u64;
     a[7] |= t1_7 & 128;                                                  \
   } while (0)
 
-// This way of implementing Ascon's S-box was inpired by personal communication
-// with Joan Daemen about implementing the 3-bit chi layer.
+/* This way of implementing Ascon's S-box was inpired by personal communication
+   with Joan Daemen about implementing the 3-bit chi layer. */
 #define ROUND_16(C_7, C_6, C_5, C_4, C_3, C_2, C_1, C_0) \
   do {                                                   \
     /* round constant */                                 \
@@ -645,7 +645,7 @@ int crypto_aead_encrypt(unsigned char *c, unsigned long long *clen,
   COMPRESS_BYTE_ARRAY_8((npub + 8), N1_7, N1_6, N1_5, N1_4, N1_3, N1_2, N1_1,
                         N1_0);
 
-  // initialization
+  /* initialization */
   buffer[0] = (u8)(CRYPTO_KEYBYTES * 8);
   buffer[1] = (u8)(RATE * 8);
   buffer[2] = (u8)PA_ROUNDS;
@@ -705,7 +705,7 @@ int crypto_aead_encrypt(unsigned char *c, unsigned long long *clen,
   x4_6 ^= K1_6;
   x4_7 ^= K1_7;
 
-  // process associated data
+  /* process associated data */
   if (adlen) {
     rlen = adlen;
     while (rlen >= RATE) {
@@ -739,7 +739,7 @@ int crypto_aead_encrypt(unsigned char *c, unsigned long long *clen,
   }
   x4_0 ^= 1;
 
-  // process plaintext
+  /* process plaintext */
   rlen = mlen;
   while (rlen >= RATE) {
     COMPRESS_BYTE_ARRAY_8(m, in_7, in_6, in_5, in_4, in_3, in_2, in_1, in_0);
@@ -772,7 +772,7 @@ int crypto_aead_encrypt(unsigned char *c, unsigned long long *clen,
   EXPAND_BYTE_ARRAY_8(buffer, x0_7, x0_6, x0_5, x0_4, x0_3, x0_2, x0_1, x0_0);
   for (i = 0; i < rlen; ++i, ++c) *c = buffer[i];
 
-  // finalization
+  /* finalization */
   x1_0 ^= K0_0;
   x1_1 ^= K0_1;
   x1_2 ^= K0_2;
@@ -807,7 +807,7 @@ int crypto_aead_encrypt(unsigned char *c, unsigned long long *clen,
   x4_6 ^= K1_6;
   x4_7 ^= K1_7;
 
-  // return tag
+  /* return tag */
   EXPAND_BYTE_ARRAY_8(c, x3_7, x3_6, x3_5, x3_4, x3_3, x3_2, x3_1, x3_0);
   c += 8;
   EXPAND_BYTE_ARRAY_8(c, x4_7, x4_6, x4_5, x4_4, x4_3, x4_2, x4_1, x4_0);
@@ -897,7 +897,7 @@ int crypto_aead_decrypt(unsigned char *m, unsigned long long *mlen,
   COMPRESS_BYTE_ARRAY_8((npub + 8), N1_7, N1_6, N1_5, N1_4, N1_3, N1_2, N1_1,
                         N1_0);
 
-  // initialization
+  /* initialization */
   buffer[0] = (u8)(CRYPTO_KEYBYTES * 8);
   buffer[1] = (u8)(RATE * 8);
   buffer[2] = (u8)PA_ROUNDS;
@@ -957,7 +957,7 @@ int crypto_aead_decrypt(unsigned char *m, unsigned long long *mlen,
   x4_6 ^= K1_6;
   x4_7 ^= K1_7;
 
-  // process associated data
+  /* process associated data */
   if (adlen) {
     rlen = adlen;
     while (rlen >= RATE) {
@@ -991,7 +991,7 @@ int crypto_aead_decrypt(unsigned char *m, unsigned long long *mlen,
   }
   x4_0 ^= 1;
 
-  // process ciphertext
+  /* process ciphertext */
   rlen = clen - CRYPTO_KEYBYTES;
   while (rlen >= RATE) {
     EXPAND_BYTE_ARRAY_8(m, x0_7, x0_6, x0_5, x0_4, x0_3, x0_2, x0_1, x0_0);
@@ -1011,7 +1011,7 @@ int crypto_aead_decrypt(unsigned char *m, unsigned long long *mlen,
 
   COMPRESS_BYTE_ARRAY_8(buffer, x0_7, x0_6, x0_5, x0_4, x0_3, x0_2, x0_1, x0_0);
 
-  // finalization
+  /* finalization */
   x1_0 ^= K0_0;
   x1_1 ^= K0_1;
   x1_2 ^= K0_2;
@@ -1046,7 +1046,7 @@ int crypto_aead_decrypt(unsigned char *m, unsigned long long *mlen,
   x4_6 ^= K1_6;
   x4_7 ^= K1_7;
 
-  // return -1 if verification fails
+  /* return -1 if verification fails */
   ret_val = 0;
   EXPAND_BYTE_ARRAY_8(buffer, x3_7, x3_6, x3_5, x3_4, x3_3, x3_2, x3_1, x3_0);
 
@@ -1058,7 +1058,7 @@ int crypto_aead_decrypt(unsigned char *m, unsigned long long *mlen,
 
   if (ret_val != 0) return -1;
 
-  // return plaintext
+  /* return plaintext */
   *mlen = clen - CRYPTO_ABYTES;
   return 0;
 }

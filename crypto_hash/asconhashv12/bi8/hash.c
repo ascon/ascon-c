@@ -268,8 +268,9 @@ typedef unsigned long long u64;
     a[7] |= t1_7 & 128;                                                  \
   } while (0)
 
-// This way of implementing Ascon's S-box was inpired by personal communication
-// with Joan Daemen about implementing the 3-bit chi layer.
+/* This way of implementing Ascon's S-box was inpired by personal communication
+ */
+/* with Joan Daemen about implementing the 3-bit chi layer. */
 #define ROUND_16(C_7, C_6, C_5, C_4, C_3, C_2, C_1, C_0) \
   do {                                                   \
     /* round constant */                                 \
@@ -590,7 +591,7 @@ int crypto_hash(unsigned char *out, const unsigned char *in,
 
   u8 in_0, in_1, in_2, in_3, in_4, in_5, in_6, in_7;
 
-  // initialization
+  /* initialization */
   x0_0 = 0x4d;
   x0_1 = 0xdc;
   x0_2 = 0x85;
@@ -632,7 +633,7 @@ int crypto_hash(unsigned char *out, const unsigned char *in,
   x4_6 = 0x1b;
   x4_7 = 0x7a;
 
-  // absorb
+  /* absorb */
   rlen = inlen;
   while (rlen >= RATE) {
     COMPRESS_BYTE_ARRAY_8(in, in_7, in_6, in_5, in_4, in_3, in_2, in_1, in_0);
@@ -662,7 +663,7 @@ int crypto_hash(unsigned char *out, const unsigned char *in,
   x0_7 ^= in_7;
   P12_8;
 
-  // squeeze (full blocks)
+  /* squeeze (full blocks) */
   rlen = CRYPTO_BYTES;
   while (rlen > RATE) {
     EXPAND_BYTE_ARRAY_8(out, x0_7, x0_6, x0_5, x0_4, x0_3, x0_2, x0_1, x0_0);

@@ -18,15 +18,13 @@ typedef struct {
   u32_2 x4;
 } state;
 
-#define EXT_BYTE64(x, n) ((u8)((u64)(x) >> (8 * (7 - (n)))))
-#define INS_BYTE64(x, n) ((u64)(x) << (8 * (7 - (n))))
 #define ROTR32(x, n) (((x) >> (n)) | ((x) << (32 - (n))))
 #define START_ROUND(x) (12 - (x))
 
-// Credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002
+/* Credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002 */
 u32_2 to_bit_interleaving(u64 in);
 
-// Credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002
+/* Credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002 */
 u64 from_bit_interleaving(u32_2 in);
 
 /* clang-format off */
@@ -68,4 +66,4 @@ u64 from_bit_interleaving(u32_2 in);
 
 void P(state *p, u8 rounds);
 
-#endif  // PERMUTATIONS_H_
+#endif /* PERMUTATIONS_H_ */

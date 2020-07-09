@@ -27,10 +27,10 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   u32 i;
   (void)nsec;
 
-  // set plaintext size
+  /* set plaintext size */
   *mlen = clen - CRYPTO_ABYTES;
 
-  // initialization
+  /* initialization */
   s.x0 = IV;
   s.x1 = K0;
   s.x2 = K1;
@@ -40,7 +40,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   s.x3 ^= K0;
   s.x4 ^= K1;
 
-  // process associated data
+  /* process associated data */
   if (adlen) {
     AD();
     for (i = 0; i < adlen; ++i, ++ad)
@@ -56,7 +56,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   }
   s.x4 ^= 1;
 
-  // process plaintext
+  /* process plaintext */
   clen -= CRYPTO_ABYTES;
   CT();
   for (i = 0; i < clen; ++i, ++m, ++c) {
@@ -75,14 +75,14 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   else
     s.x1 ^= INS_BYTE64(0x80, clen % 8);
 
-  // finalization
+  /* finalization */
   s.x2 ^= K0;
   s.x3 ^= K1;
   P12();
   s.x3 ^= K0;
   s.x4 ^= K1;
 
-  // verify tag (should be constant time, check compiler output)
+  /* verify tag (should be constant time, check compiler output) */
   if (((s.x3 ^ U64BIG(*(u64*)c)) | (s.x4 ^ U64BIG(*(u64*)(c + 8)))) != 0) {
     *mlen = 0;
     return -1;

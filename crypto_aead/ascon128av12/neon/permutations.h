@@ -16,9 +16,6 @@ static const u64 C[12] = {
     0xffffffffffffff96ull, 0xffffffffffffffa5ull, 0xffffffffffffffb4ull,
 };
 
-#define EXT_BYTE64(x, n) ((u8)((u64)(x) >> (8 * (7 - (n)))))
-#define INS_BYTE64(x, n) ((u64)(x) << (8 * (7 - (n))))
-
 /* clang-format off */
 #define ROUND(OFFSET)                   \
   "vldr d31, [%[C], #" #OFFSET "] \n\t" \
@@ -243,4 +240,4 @@ static const u64 C[12] = {
     clen = (u64)clen_hi << 32 | clen_lo; \
   } while (0)
 
-#endif  // PERMUTATIONS_H_
+#endif /* PERMUTATIONS_H_ */

@@ -20,10 +20,10 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   state s;
   (void)nsec;
 
-  // set ciphertext size
+  /* set ciphertext size */
   *clen = mlen + CRYPTO_ABYTES;
 
-  // initialization
+  /* initialization */
   s.x0 = IV;
   s.x1 = K0;
   s.x2 = K1;
@@ -35,7 +35,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   s.x4 ^= K1;
   printstate("initialization:", s);
 
-  // process associated data
+  /* process associated data */
   if (adlen) {
     while (adlen >= RATE) {
       s.x0 ^= BYTES_TO_U64(ad, 8);
@@ -50,7 +50,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   s.x4 ^= 1;
   printstate("process associated data:", s);
 
-  // process plaintext
+  /* process plaintext */
   while (mlen >= RATE) {
     s.x0 ^= BYTES_TO_U64(m, 8);
     U64_TO_BYTES(c, s.x0, 8);
@@ -65,7 +65,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   c += mlen;
   printstate("process plaintext:", s);
 
-  // finalization
+  /* finalization */
   s.x1 ^= K0;
   s.x2 ^= K1;
   P12(&s);
@@ -73,7 +73,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   s.x4 ^= K1;
   printstate("finalization:", s);
 
-  // set tag
+  /* set tag */
   U64_TO_BYTES(c, s.x3, 8);
   U64_TO_BYTES(c + 8, s.x4, 8);
 

@@ -12,7 +12,7 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
   u64 outlen, tmp0;
   u64 i;
 
-  // initialization
+  /* initialization */
   s.x0.e = 0xa540dbc7;
   s.x0.o = 0xf9afb5c6;
   s.x1.e = 0x1445a340;
@@ -24,9 +24,9 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
   s.x4.e = 0x6339f398;
   s.x4.o = 0x4bca84c0;
 
-  // absorb plaintext
+  /* absorb plaintext */
   while (inlen >= RATE) {
-    tmp0 = U64BIG(*(u64*)in);
+    tmp0 = LOAD64(in);
     t0 = to_bit_interleaving(tmp0);
     s.x0.e ^= t0.e;
     s.x0.o ^= t0.o;
@@ -43,17 +43,17 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
 
   P(&s, PA_ROUNDS);
 
-  // squeeze output
+  /* squeeze output */
   outlen = CRYPTO_BYTES;
   while (outlen > RATE) {
     tmp0 = from_bit_interleaving(s.x0);
-    *(u64*)out = U64BIG(tmp0);
+    STORE64(out, tmp0);
     P(&s, PA_ROUNDS);
     outlen -= RATE;
     out += RATE;
   }
   tmp0 = from_bit_interleaving(s.x0);
-  *(u64*)out = U64BIG(tmp0);
+  STORE64(out, tmp0);
 
   return 0;
 }

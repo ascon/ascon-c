@@ -27,10 +27,10 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   u64 c0;
   (void)nsec;
 
-  // set plaintext size
+  /* set plaintext size */
   *mlen = clen - CRYPTO_ABYTES;
 
-  // initialization
+  /* initialization */
   s.x0 = IV | K0;
   s.x1 = K1;
   s.x2 = K2;
@@ -43,7 +43,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   s.x4 ^= K2;
   printstate("initialization:", s);
 
-  // process associated data
+  /* process associated data */
   if (adlen) {
     while (adlen >= RATE) {
       s.x0 ^= BYTES_TO_U64(ad, 8);
@@ -58,7 +58,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   s.x4 ^= 1;
   printstate("process associated data:", s);
 
-  // process plaintext
+  /* process plaintext */
   clen -= CRYPTO_ABYTES;
   while (clen >= RATE) {
     c0 = BYTES_TO_U64(c, 8);
@@ -77,7 +77,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   c += clen;
   printstate("process plaintext:", s);
 
-  // finalization
+  /* finalization */
   s.x1 ^= K0 << 32 | K1 >> 32;
   s.x2 ^= K1 << 32 | K2 >> 32;
   s.x3 ^= K2 << 32;
@@ -86,7 +86,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   s.x4 ^= K2;
   printstate("finalization:", s);
 
-  // verify tag (should be constant time, check compiler output)
+  /* verify tag (should be constant time, check compiler output) */
   if (((s.x3 ^ BYTES_TO_U64(c, 8)) | (s.x4 ^ BYTES_TO_U64(c + 8, 8))) != 0) {
     *mlen = 0;
     return -1;

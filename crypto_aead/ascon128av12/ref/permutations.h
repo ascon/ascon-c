@@ -21,7 +21,7 @@ static inline void printstate(const char* text, const state s) {
   printf("  x3=%016llx\n", s.x3);
   printf("  x4=%016llx\n", s.x4);
 #else
-  // disable warning about unused parameters
+  /* disable warning about unused parameters */
   (void)text;
   (void)s;
 #endif
@@ -51,14 +51,14 @@ static inline u64 ROTR64(u64 x, int n) { return (x << (64 - n)) | (x >> n); }
 static inline void ROUND(u8 C, state* p) {
   state s = *p;
   state t;
-  // addition of round constant
+  /* addition of round constant */
   s.x2 ^= C;
   printstate(" addition of round constant:", s);
-  // substitution layer
+  /* substitution layer */
   s.x0 ^= s.x4;
   s.x4 ^= s.x3;
   s.x2 ^= s.x1;
-  // start of keccak s-box
+  /* start of keccak s-box */
   t.x0 = ~s.x0;
   t.x1 = ~s.x1;
   t.x2 = ~s.x2;
@@ -74,13 +74,13 @@ static inline void ROUND(u8 C, state* p) {
   s.x2 ^= t.x3;
   s.x3 ^= t.x4;
   s.x4 ^= t.x0;
-  // end of keccak s-box
+  /* end of keccak s-box */
   s.x1 ^= s.x0;
   s.x0 ^= s.x4;
   s.x3 ^= s.x2;
   s.x2 = ~s.x2;
   printstate(" substitution layer:", s);
-  // linear diffusion layer
+  /* linear diffusion layer */
   s.x0 ^= ROTR64(s.x0, 19) ^ ROTR64(s.x0, 28);
   s.x1 ^= ROTR64(s.x1, 61) ^ ROTR64(s.x1, 39);
   s.x2 ^= ROTR64(s.x2, 1) ^ ROTR64(s.x2, 6);
@@ -128,4 +128,4 @@ static inline void P6(state* s) {
   ROUND(0x4b, s);
 }
 
-#endif  // PERMUTATIONS_H_
+#endif /* PERMUTATIONS_H_ */

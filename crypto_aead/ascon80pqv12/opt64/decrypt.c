@@ -19,19 +19,19 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
     return -1;
   }
 
-  const u64 K0 = U64BIG(*(u64*)(k + 0)) >> 32;
-  const u64 K1 = U64BIG(*(u64*)(k + 4));
-  const u64 K2 = U64BIG(*(u64*)(k + 12));
-  const u64 N0 = U64BIG(*(u64*)npub);
-  const u64 N1 = U64BIG(*(u64*)(npub + 8));
+  const u64 K0 = LOAD64(k + 0) >> 32;
+  const u64 K1 = LOAD64(k + 4);
+  const u64 K2 = LOAD64(k + 12);
+  const u64 N0 = LOAD64(npub);
+  const u64 N1 = LOAD64(npub + 8);
   state s;
   u64 i;
   (void)nsec;
 
-  // set plaintext size
+  /* set plaintext size */
   *mlen = clen - CRYPTO_ABYTES;
 
-  // initialization
+  /* initialization */
   s.x0 = IV | K0;
   s.x1 = K1;
   s.x2 = K2;
@@ -42,10 +42,10 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   s.x3 ^= K1;
   s.x4 ^= K2;
 
-  // process associated data
+  /* process associated data */
   if (adlen) {
     while (adlen >= RATE) {
-      s.x0 ^= U64BIG(*(u64*)ad);
+      s.x0 ^= LOAD64(ad);
       P6();
       adlen -= RATE;
       ad += RATE;
@@ -56,11 +56,11 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   }
   s.x4 ^= 1;
 
-  // process plaintext
+  /* process plaintext */
   clen -= CRYPTO_ABYTES;
   while (clen >= RATE) {
-    *(u64*)m = U64BIG(s.x0) ^ *(u64*)c;
-    s.x0 = U64BIG(*((u64*)c));
+    STORE64(m, s.x0 ^ LOAD64(c));
+    s.x0 = LOAD64(c);
     P6();
     clen -= RATE;
     m += RATE;
@@ -73,7 +73,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   }
   s.x0 ^= INS_BYTE64(0x80, clen);
 
-  // finalization
+  /* finalization */
   s.x1 ^= K0 << 32 | K1 >> 32;
   s.x2 ^= K1 << 32 | K2 >> 32;
   s.x3 ^= K2 << 32;
@@ -81,8 +81,8 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   s.x3 ^= K1;
   s.x4 ^= K2;
 
-  // verify tag (should be constant time, check compiler output)
-  if (((s.x3 ^ U64BIG(*(u64*)c)) | (s.x4 ^ U64BIG(*(u64*)(c + 8)))) != 0) {
+  /* verify tag (should be constant time, check compiler output) */
+  if (((s.x3 ^ LOAD64(c)) | (s.x4 ^ LOAD64(c + 8))) != 0) {
     *mlen = 0;
     return -1;
   }

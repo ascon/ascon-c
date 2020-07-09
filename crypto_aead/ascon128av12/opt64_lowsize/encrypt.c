@@ -8,14 +8,14 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   state s;
   (void)nsec;
 
-  // set ciphertext size
+  /* set ciphertext size */
   *clen = mlen + CRYPTO_ABYTES;
 
   ascon_core(&s, c, m, mlen, ad, adlen, npub, k, ASCON_ENC);
 
-  // set tag
-  *(u64*)(c + mlen) = U64BIG(s.x3);
-  *(u64*)(c + mlen + 8) = U64BIG(s.x4);
+  /* set tag */
+  STORE64((c + mlen), s.x3);
+  STORE64((c + mlen + 8), s.x4);
 
   return 0;
 }

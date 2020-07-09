@@ -21,20 +21,20 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
 
   u32_2 K0, K1, N0, N1;
   u32_2 x0, x1, x2, x3, x4;
-  u32_2 t0;
+  u32_2 t0, t1;
   u64 tmp0;
   u32 i;
   (void)nsec;
 
-  // set plaintext size
+  /* set plaintext size */
   *mlen = clen - CRYPTO_ABYTES;
 
-  to_bit_interleaving(K0, U64BIG(*(u64*)k));
-  to_bit_interleaving(K1, U64BIG(*(u64*)(k + 8)));
-  to_bit_interleaving(N0, U64BIG(*(u64*)npub));
-  to_bit_interleaving(N1, U64BIG(*(u64*)(npub + 8)));
+  to_bit_interleaving(K0, LOAD64(k));
+  to_bit_interleaving(K1, LOAD64((k + 8)));
+  to_bit_interleaving(N0, LOAD64(npub));
+  to_bit_interleaving(N1, LOAD64((npub + 8)));
 
-  // initialization
+  /* initialization */
   to_bit_interleaving(x0, IV);
   x1.o = K0.o;
   x1.e = K0.e;
@@ -50,10 +50,10 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   x4.e ^= K1.e;
   x4.o ^= K1.o;
 
-  // process associated data
+  /* process associated data */
   if (adlen) {
     while (adlen >= RATE) {
-      to_bit_interleaving(t0, U64BIG(*(u64*)ad));
+      to_bit_interleaving(t0, LOAD64(ad));
       x0.e ^= t0.e;
       x0.o ^= t0.o;
       P6();
@@ -70,12 +70,12 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   }
   x4.e ^= 1;
 
-  // process plaintext
+  /* process plaintext */
   clen -= CRYPTO_ABYTES;
   while (clen >= RATE) {
     from_bit_interleaving(tmp0, x0);
-    *(u64*)m = U64BIG(tmp0) ^ *(u64*)c;
-    to_bit_interleaving(x0, U64BIG(*(u64*)c));
+    STORE64(m, tmp0 ^ LOAD64(c));
+    to_bit_interleaving(x0, LOAD64(c));
     P6();
     clen -= RATE;
     m += RATE;
@@ -90,7 +90,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   tmp0 ^= INS_BYTE64(0x80, clen);
   to_bit_interleaving(x0, tmp0);
 
-  // finalization
+  /* finalization */
   x1.e ^= K0.e;
   x1.o ^= K0.o;
   x2.e ^= K1.e;
@@ -101,10 +101,10 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   x4.e ^= K1.e;
   x4.o ^= K1.o;
 
-  // verify tag (should be constant time, check compiler output)
-  to_bit_interleaving(x0, U64BIG(*(u64*)c));
-  to_bit_interleaving(x1, U64BIG(*(u64*)(c + 8)));
-  if (((x3.e ^ x0.e) | (x3.o ^ x0.o) | (x4.e ^ x1.e) | (x4.o ^ x1.o)) != 0) {
+  /* verify tag (should be constant time, check compiler output) */
+  to_bit_interleaving(t0, LOAD64(c));
+  to_bit_interleaving(t1, LOAD64((c + 8)));
+  if (((x3.e ^ t0.e) | (x3.o ^ t0.o) | (x4.e ^ t1.e) | (x4.o ^ t1.o)) != 0) {
     *mlen = 0;
     return -1;
   }

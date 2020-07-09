@@ -13,14 +13,13 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   state s;
   (void)nsec;
 
-  // set plaintext size
+  /* set plaintext size */
   *mlen = clen - CRYPTO_ABYTES;
 
   ascon_core(&s, m, c, *mlen, ad, adlen, npub, k, ASCON_DEC);
 
-  // verify tag (should be constant time, check compiler output)
-  if (((s.x3 ^ U64BIG(*(u64*)(c + *mlen))) |
-       (s.x4 ^ U64BIG(*(u64*)(c + *mlen + 8)))) != 0) {
+  /* verify tag (should be constant time, check compiler output) */
+  if (((s.x3 ^ LOAD64((c + *mlen))) | (s.x4 ^ LOAD64((c + *mlen + 8)))) != 0) {
     *mlen = 0;
     return -1;
   }

@@ -7,19 +7,19 @@ void process_data(state* s, unsigned char* out, const unsigned char* in,
   u64 i;
 
   while (len >= RATE) {
-    tmp0 = U64BIG(*(u64*)in);
+    tmp0 = LOAD64(in);
     t0 = to_bit_interleaving(tmp0);
     s->x0.e ^= t0.e;
     s->x0.o ^= t0.o;
-    tmp1 = U64BIG(*(u64*)(in + 8));
+    tmp1 = LOAD64((in + 8));
     t1 = to_bit_interleaving(tmp1);
     s->x1.e ^= t1.e;
     s->x1.o ^= t1.o;
     if (mode != ASCON_AD) {
       tmp0 = from_bit_interleaving(s->x0);
-      *(u64*)out = U64BIG(tmp0);
+      STORE64(out, tmp0);
       tmp1 = from_bit_interleaving(s->x1);
-      *(u64*)(out + 8) = U64BIG(tmp1);
+      STORE64((out + 8), tmp1);
     }
     if (mode == ASCON_DEC) {
       s->x0 = t0;
@@ -78,13 +78,13 @@ void ascon_core(state* s, unsigned char* out, const unsigned char* in,
                 const unsigned char* k, u8 mode) {
   u32_2 K0, K1, N0, N1;
 
-  // load key and nonce
-  K0 = to_bit_interleaving(U64BIG(*(u64*)k));
-  K1 = to_bit_interleaving(U64BIG(*(u64*)(k + 8)));
-  N0 = to_bit_interleaving(U64BIG(*(u64*)npub));
-  N1 = to_bit_interleaving(U64BIG(*(u64*)(npub + 8)));
+  /* load key and nonce */
+  K0 = to_bit_interleaving(LOAD64(k));
+  K1 = to_bit_interleaving(LOAD64((k + 8)));
+  N0 = to_bit_interleaving(LOAD64(npub));
+  N1 = to_bit_interleaving(LOAD64((npub + 8)));
 
-  // initialization
+  /* initialization */
   s->x0 = to_bit_interleaving(IV);
   s->x1.o = K0.o;
   s->x1.e = K0.e;
@@ -100,17 +100,17 @@ void ascon_core(state* s, unsigned char* out, const unsigned char* in,
   s->x4.e ^= K1.e;
   s->x4.o ^= K1.o;
 
-  // process associated data
+  /* process associated data */
   if (adlen) {
     process_data(s, (void*)0, ad, adlen, ASCON_AD);
     P(s, PB_ROUNDS);
   }
   s->x4.e ^= 1;
 
-  // process plaintext/ciphertext
+  /* process plaintext/ciphertext */
   process_data(s, out, in, tlen, mode);
 
-  // finalization
+  /* finalization */
   s->x2.e ^= K0.e;
   s->x2.o ^= K0.o;
   s->x3.e ^= K1.e;

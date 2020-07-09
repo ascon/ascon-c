@@ -4,7 +4,7 @@ static const u8 constants[][2] = {
     {0xc, 0xc}, {0x9, 0xc}, {0xc, 0x9}, {0x9, 0x9}, {0x6, 0xc}, {0x3, 0xc},
     {0x6, 0x9}, {0x3, 0x9}, {0xc, 0x6}, {0x9, 0x6}, {0xc, 0x3}, {0x9, 0x3}};
 
-// Credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002
+/* Credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002 */
 u32_2 to_bit_interleaving(u64 in) {
   u32 hi = (in) >> 32;
   u32 lo = (u32)(in);
@@ -23,7 +23,7 @@ u32_2 to_bit_interleaving(u64 in) {
   return out;
 }
 
-// Credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002
+/* Credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002 */
 u64 from_bit_interleaving(u32_2 in) {
   u32 lo = (in.e & 0x0000FFFF) | (in.o << 16);
   u32 hi = (in.e >> 16) | (in.o & 0xFFFF0000);

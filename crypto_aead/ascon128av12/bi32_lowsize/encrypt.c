@@ -9,16 +9,16 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   u64 tmp0, tmp1;
   (void)nsec;
 
-  // set ciphertext size
+  /* set ciphertext size */
   *clen = mlen + CRYPTO_ABYTES;
 
   ascon_core(&s, c, m, mlen, ad, adlen, npub, k, ASCON_ENC);
 
-  // set tag
+  /* set tag */
   tmp0 = from_bit_interleaving(s.x3);
-  *(u64*)(c + mlen) = U64BIG(tmp0);
+  STORE64((c + mlen), tmp0);
   tmp1 = from_bit_interleaving(s.x4);
-  *(u64*)(c + mlen + 8) = U64BIG(tmp1);
+  STORE64((c + mlen + 8), tmp1);
 
   return 0;
 }
