@@ -4,9 +4,21 @@
 typedef unsigned char u8;
 typedef unsigned long long u64;
 
+/* define default Ascon data access */
+#if !defined(ASCON_UNALIGNED) && !defined(ASCON_MEMCPY) && \
+    !defined(ASCON_BYTEWISE)
+#define ASCON_MEMCPY
+#endif
+
+#define EXT_BYTE64(x, n) ((u8)((u64)(x) >> (8 * (7 - (n)))))
+#define INS_BYTE64(x, n) ((u64)(x) << (8 * (7 - (n))))
+
 #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 
 /* macros for big endian machines */
+#ifndef NDEBUG
+#pragma message("Using macros for big endian machines")
+#endif
 #define U64BIG(x) (x)
 #define U32BIG(x) (x)
 #define U16BIG(x) (x)
@@ -15,6 +27,9 @@ typedef unsigned long long u64;
     (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
 
 /* macros for little endian machines */
+#ifndef NDEBUG
+#pragma message("Using macros for little endian machines")
+#endif
 #define U64BIG(x)                                                              \
   ((((x)&0x00000000000000FFULL) << 56) | (((x)&0x000000000000FF00ULL) << 40) | \
    (((x)&0x0000000000FF0000ULL) << 24) | (((x)&0x00000000FF000000ULL) << 8) |  \
@@ -28,9 +43,6 @@ typedef unsigned long long u64;
 #else
 #error "Ascon byte order macros not defined in endian.h"
 #endif
-
-#define EXT_BYTE64(x, n) ((u8)((u64)(x) >> (8 * (7 - (n)))))
-#define INS_BYTE64(x, n) ((u64)(x) << (8 * (7 - (n))))
 
 #if defined(ASCON_UNALIGNED)
 
@@ -60,7 +72,7 @@ static inline void STORE64(u8* bytes, u64 y) {
   memcpy(bytes, (u8*)&y, 8);
 }
 
-#else
+#elif defined(ASCON_BYTEWISE)
 
 #ifndef NDEBUG
 #pragma message("Using bytewise data access")
@@ -84,6 +96,8 @@ static inline void STORE64(u8* bytes, u64 y) {
   }
 }
 
+#else
+#error "Ascon data access macros not defined in endian.h"
 #endif
 
 #endif /* ENDIAN_H_ */
