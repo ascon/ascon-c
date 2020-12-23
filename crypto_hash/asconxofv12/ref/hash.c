@@ -1,49 +1,46 @@
 #include "api.h"
+#include "ascon.h"
+#include "crypto_hash.h"
 #include "permutations.h"
+#include "printstate.h"
+#include "word.h"
 
-#define RATE (64 / 8)
-#define PA_ROUNDS 12
-#define IV ((u64)(8 * (RATE)) << 48 | (u64)(PA_ROUNDS) << 40)
-
-int crypto_hash(unsigned char *out, const unsigned char *in,
-                unsigned long long inlen) {
-  state s;
-  u64 outlen;
-
-  /* initialization */
-  s.x0 = IV;
+int crypto_hash(unsigned char* out, const unsigned char* in,
+                unsigned long long len) {
+  /* initialize */
+  state_t s;
+  s.x0 = ASCON_XOF_IV;
   s.x1 = 0;
   s.x2 = 0;
   s.x3 = 0;
   s.x4 = 0;
-  printstate("initial value:", s);
   P12(&s);
-  printstate("initialization:", s);
+  printstate("initialization", &s);
 
-  /* absorb plaintext */
-  inlen = inlen;
-  while (inlen >= RATE) {
-    s.x0 ^= BYTES_TO_U64(in, 8);
+  /* absorb full plaintext blocks */
+  while (len >= ASCON_128_RATE) {
+    s.x0 ^= LOADBYTES(in, 8);
     P12(&s);
-    inlen -= RATE;
-    in += RATE;
+    in += ASCON_128_RATE;
+    len -= ASCON_128_RATE;
   }
-  s.x0 ^= BYTES_TO_U64(in, inlen);
-  s.x0 ^= 0x80ull << (56 - 8 * inlen);
-  printstate("absorb plaintext:", s);
-
+  /* absorb final plaintext block */
+  s.x0 ^= LOADBYTES(in, len);
+  s.x0 ^= PAD(len);
   P12(&s);
-  printstate("finalization:", s);
+  printstate("absorb plaintext", &s);
 
-  /* set hash output */
-  outlen = CRYPTO_BYTES;
-  while (outlen > RATE) {
-    U64_TO_BYTES(out, s.x0, 8);
+  /* squeeze full output blocks */
+  len = CRYPTO_BYTES;
+  while (len > ASCON_128_RATE) {
+    STOREBYTES(out, s.x0, 8);
     P12(&s);
-    outlen -= RATE;
-    out += RATE;
+    out += ASCON_128_RATE;
+    len -= ASCON_128_RATE;
   }
-  U64_TO_BYTES(out, s.x0, 8);
+  /* squeeze final output block */
+  STOREBYTES(out, s.x0, len);
+  printstate("squeeze output", &s);
 
   return 0;
 }

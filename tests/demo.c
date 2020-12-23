@@ -60,4 +60,3 @@ int main() {
 #endif
   return result;
 }
-

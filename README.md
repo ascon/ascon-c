@@ -17,12 +17,13 @@ and the following implementations:
 - `ref`: reference implementation
 - `opt64`: 64-bit speed-optimized C implementation
 - `opt64_lowsize`: 64-bit size-optimized C implementation
+- `avx512`: AVX512 speed-optimized inline assembly implementation
 - `neon`: NEON speed-optimized ARM inline assembly implementation
 - `bi32`: 32-bit speed-optimized bit-interleaved C implementation
-- `bi32_lowsize`: 32-bit size-optimized bit-interleaved C implementation
-- `bi32_lowreg`: 32-bit speed-optimized bit-interleaved C implementation (low register usage)
 - `bi32_arm`: 32-bit speed-optimized bit-interleaved ARM inline assembly implementation
-- `bi16`: 16-bit optimized bit-interleaved C implementation
+- `bi32_lowreg`: 32-bit speed-optimized bit-interleaved C implementation (low register usage)
+- `bi32_lowsize`: 32-bit size-optimized bit-interleaved C implementation
+- `opt8`: 8-bit optimized C implementation
 - `bi8`: 8-bit optimized bit-interleaved C implementation
 
 
@@ -38,7 +39,7 @@ and the following implementations:
 | Cortex-A15 (ARMv7)\*     |      |      |      |      | 69.8 | 36.2 | 34.6 |
 | Cortex-A7 (NEON)         | 2182 |  249 |  148 |   97 | 71.7 | 47.5 | 46.5 |
 | Cortex-A7 (ARMv7)        | 1871 |  292 |  175 |  115 | 86.6 | 58.3 | 57.2 |
-| ARM1176JZF-S (ARMv6)     | 2189 |  340 |  202 |  133 | 97.9 | 64.4 | 65.3 |
+| ARM1176JZF-S (ARMv6)     | 2136 |  312 |  186 |  123 | 91.6 | 61.8 | 62.2 |
 
 \* Results taken from eBACS: http://bench.cr.yp.to/
 
@@ -55,7 +56,7 @@ and the following implementations:
 | Cortex-A15 (ARMv7)\*     |      |      |      |      | 60.3 | 25.3 | 23.8 |
 | Cortex-A7 (NEON)         | 2204 |  226 |  132 |   82 | 55.9 | 31.7 | 30.7 |
 | Cortex-A7 (ARMv7)        | 1911 |  255 |  161 |  102 | 71.3 | 42.3 | 41.2 |
-| ARM1176JZF-S (ARMv6)     | 2267 |  303 |  191 |  120 | 84.4 | 50.0 | 50.2 |
+| ARM1176JZF-S (ARMv6)     | 2118 |  261 |  170 |  107 | 75.6 | 46.0 | 46.6 |
 
 \* Results taken from eBACS: http://bench.cr.yp.to/
 
@@ -153,9 +154,15 @@ Get CPU cycles:
 * Determine the scaling factor between the actual and base frequency:
   - factor = actual frequency / base frequency
 
-* Run the getcycles program using the frequency factor and watch the results:
+* Run a getcycles program using the frequency factor and watch the results:
   ```
   while true; do ./getcycles_crypto_aead_ascon128v12_opt64 $factor; done
+  ```
+
+* Run the `benchmark-getcycles.sh` script with the frequency factor and a
+  specific algorithm to benchmark all correspondng getcycles implementations:
+  ```
+  ./benchmark-getcycles.sh $factor ascon128
   ```
 
 
@@ -192,3 +199,21 @@ To test only Ascon, just run the following commands:
 ./do-part crypto_hash asconhashv12
 ./do-part crypto_hash asconxofv12
 ```
+
+
+## Evaluate and optimize Ascon on constraint devices:
+
+* The ascon-c code allows to set compile-time parameters `ASCON_INLINE_MODE`
+  (IM), `ASCON_INLINE_PERM` (IP), `ASCON_UNROLL_LOOPS` (UL), via command line or
+  in the `crypto_*/ascon*/*/config.h` files.
+* Use the `benchmark-config.sh` script to evaluate all combinations of these
+  parameters for a given list of ascon implementations. The script is called
+  with an output file, frequency factor, the algorithm, and the list of
+  implementations to test:
+  ```
+  ./benchmark-config.sh results.md $factor ascon128 ref opt64 opt64_lowsize
+  ```
+* The `results.md` file then contains a markup table with size and cycles for
+  each implementation and parameter set to evaluate several time-area
+  trade-offs.
+

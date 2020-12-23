@@ -1,8 +1,15 @@
 #include "permutations.h"
 
-void P(state *p, u8 rounds) {
-  state s = *p;
-  u8 i, start = START_CONSTANT(rounds);
-  for (i = start; i > 0x4a; i -= 0x0f) ROUND(i);
-  *p = s;
-}
+#if !ASCON_INLINE_PERM && ASCON_UNROLL_LOOPS
+
+void P12(state_t* s) { P12ROUNDS(s); }
+void P8(state_t* s) { P8ROUNDS(s); }
+void P6(state_t* s) { P6ROUNDS(s); }
+
+#endif
+
+#if !ASCON_INLINE_PERM && !ASCON_UNROLL_LOOPS
+
+void P(state_t* s, int nr) { PROUNDS(s, nr); }
+
+#endif

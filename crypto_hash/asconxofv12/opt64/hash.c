@@ -1,44 +1,66 @@
 #include "api.h"
-#include "endian.h"
+#include "ascon.h"
+#include "crypto_hash.h"
 #include "permutations.h"
+#include "printstate.h"
 
-#define RATE (64 / 8)
-#define PA_ROUNDS 12
+#if !ASCON_INLINE_MODE
+#undef forceinline
+#define forceinline
+#endif
+
+forceinline void ascon_init(state_t* s) {
+  /* initialize */
+#ifdef ASCON_HASH
+  s->x0 = ASCON_HASH_IV0;
+  s->x1 = ASCON_HASH_IV1;
+  s->x2 = ASCON_HASH_IV2;
+  s->x3 = ASCON_HASH_IV3;
+  s->x4 = ASCON_HASH_IV4;
+#endif
+#ifdef ASCON_XOF
+  s->x0 = ASCON_XOF_IV0;
+  s->x1 = ASCON_XOF_IV1;
+  s->x2 = ASCON_XOF_IV2;
+  s->x3 = ASCON_XOF_IV3;
+  s->x4 = ASCON_XOF_IV4;
+#endif
+  printstate("initialization", s);
+}
+
+forceinline void ascon_absorb(state_t* s, const uint8_t* in, uint64_t inlen) {
+  /* absorb full plaintext blocks */
+  while (inlen >= ASCON_RATE) {
+    s->x0 = XOR(s->x0, LOAD(in, 8));
+    P(s, 12);
+    in += ASCON_RATE;
+    inlen -= ASCON_RATE;
+  }
+  /* absorb final plaintext block */
+  if (inlen) s->x0 = XOR(s->x0, LOAD(in, inlen));
+  s->x0 = XOR(s->x0, PAD(inlen));
+  P(s, 12);
+  printstate("absorb plaintext", s);
+}
+
+forceinline void ascon_squeeze(state_t* s, uint8_t* out, uint64_t outlen) {
+  /* squeeze full output blocks */
+  while (outlen > ASCON_RATE) {
+    STORE(out, s->x0, 8);
+    P(s, 12);
+    out += ASCON_RATE;
+    outlen -= ASCON_RATE;
+  }
+  /* squeeze final output block */
+  STORE(out, s->x0, outlen);
+  printstate("squeeze output", s);
+}
 
 int crypto_hash(unsigned char* out, const unsigned char* in,
                 unsigned long long inlen) {
-  state s;
-  u64 outlen;
-  u64 i;
-
-  /* initialization */
-  s.x0 = 0xb57e273b814cd416ull;
-  s.x1 = 0x2b51042562ae2420ull;
-  s.x2 = 0x66a3a7768ddf2218ull;
-  s.x3 = 0x5aad0a7a8153650cull;
-  s.x4 = 0x4f3e0e32539493b6ull;
-
-  /* absorb plaintext */
-  while (inlen >= RATE) {
-    s.x0 ^= LOAD64(in);
-    P12();
-    inlen -= RATE;
-    in += RATE;
-  }
-  for (i = 0; i < inlen; ++i, ++in) s.x0 ^= INS_BYTE64(*in, i);
-  s.x0 ^= INS_BYTE64(0x80, inlen);
-
-  P12();
-
-  /* squeeze */
-  outlen = CRYPTO_BYTES;
-  while (outlen > RATE) {
-    STORE64(out, s.x0);
-    P12();
-    outlen -= RATE;
-    out += RATE;
-  }
-  STORE64(out, s.x0);
-
+  state_t s;
+  ascon_init(&s);
+  ascon_absorb(&s, in, inlen);
+  ascon_squeeze(&s, out, CRYPTO_BYTES);
   return 0;
 }

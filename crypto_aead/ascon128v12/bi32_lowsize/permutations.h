@@ -1,69 +1,118 @@
 #ifndef PERMUTATIONS_H_
 #define PERMUTATIONS_H_
 
-typedef unsigned char u8;
-typedef unsigned int u32;
-typedef unsigned long long u64;
+#include <stdint.h>
 
-typedef struct {
-  u32 e;
-  u32 o;
-} u32_2;
+#include "api.h"
+#include "ascon.h"
+#include "config.h"
+#include "printstate.h"
+#include "round.h"
 
-typedef struct {
-  u32_2 x0;
-  u32_2 x1;
-  u32_2 x2;
-  u32_2 x3;
-  u32_2 x4;
-} state;
+#define ASCON_128_KEYBYTES 16
+#define ASCON_128A_KEYBYTES 16
+#define ASCON_80PQ_KEYBYTES 20
 
-#define ROTR32(x, n) (((x) >> (n)) | ((x) << (32 - (n))))
-#define START_ROUND(x) (12 - (x))
+#define ASCON_128_RATE 8
+#define ASCON_128A_RATE 16
 
-/* Credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002 */
-u32_2 to_bit_interleaving(u64 in);
+#define ASCON_128_PA_ROUNDS 12
+#define ASCON_128_PB_ROUNDS 6
+#define ASCON_128A_PB_ROUNDS 8
 
-/* Credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002 */
-u64 from_bit_interleaving(u32_2 in);
+#define ASCON_HASH_BYTES 32
 
-/* clang-format off */
-#define ROUND(C_e, C_o) \
-  do { \
-    /* round constant */ \
-    s.x2.e ^= C_e;                        s.x2.o ^= C_o; \
-    /* s-box layer */ \
-    s.x0.e ^= s.x4.e;                     s.x0.o ^= s.x4.o; \
-    s.x4.e ^= s.x3.e;                     s.x4.o ^= s.x3.o; \
-    s.x2.e ^= s.x1.e;                     s.x2.o ^= s.x1.o; \
-    t0.e = s.x0.e;                        t0.o = s.x0.o; \
-    t4.e = s.x4.e;                        t4.o = s.x4.o; \
-    t3.e = s.x3.e;                        t3.o = s.x3.o; \
-    t1.e = s.x1.e;                        t1.o = s.x1.o; \
-    t2.e = s.x2.e;                        t2.o = s.x2.o; \
-    s.x0.e = t0.e ^ (~t1.e & t2.e);       s.x0.o = t0.o ^ (~t1.o & t2.o); \
-    s.x2.e = t2.e ^ (~t3.e & t4.e);       s.x2.o = t2.o ^ (~t3.o & t4.o); \
-    s.x4.e = t4.e ^ (~t0.e & t1.e);       s.x4.o = t4.o ^ (~t0.o & t1.o); \
-    s.x1.e = t1.e ^ (~t2.e & t3.e);       s.x1.o = t1.o ^ (~t2.o & t3.o); \
-    s.x3.e = t3.e ^ (~t4.e & t0.e);       s.x3.o = t3.o ^ (~t4.o & t0.o); \
-    s.x1.e ^= s.x0.e;                     s.x1.o ^= s.x0.o; \
-    s.x3.e ^= s.x2.e;                     s.x3.o ^= s.x2.o; \
-    s.x0.e ^= s.x4.e;                     s.x0.o ^= s.x4.o; \
-    /* linear layer */ \
-    t0.e  = s.x0.e ^ ROTR32(s.x0.o, 4);   t0.o  = s.x0.o ^ ROTR32(s.x0.e, 5); \
-    t1.e  = s.x1.e ^ ROTR32(s.x1.e, 11);  t1.o  = s.x1.o ^ ROTR32(s.x1.o, 11); \
-    t2.e  = s.x2.e ^ ROTR32(s.x2.o, 2);   t2.o  = s.x2.o ^ ROTR32(s.x2.e, 3); \
-    t3.e  = s.x3.e ^ ROTR32(s.x3.o, 3);   t3.o  = s.x3.o ^ ROTR32(s.x3.e, 4); \
-    t4.e  = s.x4.e ^ ROTR32(s.x4.e, 17);  t4.o  = s.x4.o ^ ROTR32(s.x4.o, 17); \
-    s.x0.e ^= ROTR32(t0.o, 9);            s.x0.o ^= ROTR32(t0.e, 10); \
-    s.x1.e ^= ROTR32(t1.o, 19);           s.x1.o ^= ROTR32(t1.e, 20); \
-    s.x2.e ^= t2.o;                       s.x2.o ^= ROTR32(t2.e, 1); \
-    s.x3.e ^= ROTR32(t3.e, 5);            s.x3.o ^= ROTR32(t3.o, 5); \
-    s.x4.e ^= ROTR32(t4.o, 3);            s.x4.o ^= ROTR32(t4.e, 4); \
-    s.x2.e = ~s.x2.e;                     s.x2.o = ~s.x2.o; \
-  } while(0)
-/* clang-format on */
+#define ASCON_128_IV WORD_T(0x8021000008220000)
+#define ASCON_128A_IV WORD_T(0x8822000000200000)
+#define ASCON_80PQ_IV WORD_T(0xc021000008220000)
+#define ASCON_HASH_IV WORD_T(0x0020000008020010)
+#define ASCON_XOF_IV WORD_T(0x0020000008020000)
 
-void P(state *p, u8 rounds);
+#define ASCON_HASH_IV0 WORD_T(0xf9afb5c6a540dbc7)
+#define ASCON_HASH_IV1 WORD_T(0xbd2493011445a340)
+#define ASCON_HASH_IV2 WORD_T(0xcb9ba8b5604d4fc8)
+#define ASCON_HASH_IV3 WORD_T(0x12a4eede94514c98)
+#define ASCON_HASH_IV4 WORD_T(0x4bca84c06339f398)
+
+#define ASCON_XOF_IV0 WORD_T(0xc75782817e351ae6)
+#define ASCON_XOF_IV1 WORD_T(0x70045f441d238220)
+#define ASCON_XOF_IV2 WORD_T(0x5dd5ab52a13e3f04)
+#define ASCON_XOF_IV3 WORD_T(0x3e378142c30c1db2)
+#define ASCON_XOF_IV4 WORD_T(0x3735189db624d656)
+
+#define START(n) (12 - n)
+#define RC(e, o) WORD_T((uint64_t)o << 32 | e)
+
+forceinline void P12ROUNDS(state_t* s) {
+  ROUND(s, RC(0xc, 0xc));
+  ROUND(s, RC(0x9, 0xc));
+  ROUND(s, RC(0xc, 0x9));
+  ROUND(s, RC(0x9, 0x9));
+  ROUND(s, RC(0x6, 0xc));
+  ROUND(s, RC(0x3, 0xc));
+  ROUND(s, RC(0x6, 0x9));
+  ROUND(s, RC(0x3, 0x9));
+  ROUND(s, RC(0xc, 0x6));
+  ROUND(s, RC(0x9, 0x6));
+  ROUND(s, RC(0xc, 0x3));
+  ROUND(s, RC(0x9, 0x3));
+}
+
+forceinline void P8ROUNDS(state_t* s) {
+  ROUND(s, RC(0x6, 0xc));
+  ROUND(s, RC(0x3, 0xc));
+  ROUND(s, RC(0x6, 0x9));
+  ROUND(s, RC(0x3, 0x9));
+  ROUND(s, RC(0xc, 0x6));
+  ROUND(s, RC(0x9, 0x6));
+  ROUND(s, RC(0xc, 0x3));
+  ROUND(s, RC(0x9, 0x3));
+}
+
+forceinline void P6ROUNDS(state_t* s) {
+  ROUND(s, RC(0x6, 0x9));
+  ROUND(s, RC(0x3, 0x9));
+  ROUND(s, RC(0xc, 0x6));
+  ROUND(s, RC(0x9, 0x6));
+  ROUND(s, RC(0xc, 0x3));
+  ROUND(s, RC(0x9, 0x3));
+}
+
+extern const uint8_t constants[][2];
+
+forceinline void PROUNDS(state_t* s, int nr) {
+  for (int i = START(nr); i < 12; i++)
+    ROUND(s, RC(constants[i][0], constants[i][1]));
+}
+
+#if ASCON_INLINE_PERM && ASCON_UNROLL_LOOPS
+
+forceinline void P(state_t* s, int nr) {
+  if (nr == 12) P12ROUNDS(s);
+  if (nr == 8) P8ROUNDS(s);
+  if (nr == 6) P6ROUNDS(s);
+}
+
+#elif !ASCON_INLINE_PERM && ASCON_UNROLL_LOOPS
+
+void P12(state_t* s);
+void P8(state_t* s);
+void P6(state_t* s);
+
+forceinline void P(state_t* s, int nr) {
+  if (nr == 12) P12(s);
+  if (nr == 8) P8(s);
+  if (nr == 6) P6(s);
+}
+
+#elif ASCON_INLINE_PERM && !ASCON_UNROLL_LOOPS
+
+forceinline void P(state_t* s, int nr) { PROUNDS(s, nr); }
+
+#else /* !ASCON_INLINE_PERM && !ASCON_UNROLL_LOOPS */
+
+void P(state_t* s, int nr);
+
+#endif
 
 #endif /* PERMUTATIONS_H_ */

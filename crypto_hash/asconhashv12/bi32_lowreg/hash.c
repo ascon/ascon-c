@@ -1,58 +1,66 @@
 #include "api.h"
-#include "endian.h"
+#include "ascon.h"
+#include "crypto_hash.h"
 #include "permutations.h"
+#include "printstate.h"
 
-#define RATE (64 / 8)
-#define PA_ROUNDS 12
+#if !ASCON_INLINE_MODE
+#undef forceinline
+#define forceinline
+#endif
+
+forceinline void ascon_init(state_t* s) {
+  /* initialize */
+#ifdef ASCON_HASH
+  s->x0 = ASCON_HASH_IV0;
+  s->x1 = ASCON_HASH_IV1;
+  s->x2 = ASCON_HASH_IV2;
+  s->x3 = ASCON_HASH_IV3;
+  s->x4 = ASCON_HASH_IV4;
+#endif
+#ifdef ASCON_XOF
+  s->x0 = ASCON_XOF_IV0;
+  s->x1 = ASCON_XOF_IV1;
+  s->x2 = ASCON_XOF_IV2;
+  s->x3 = ASCON_XOF_IV3;
+  s->x4 = ASCON_XOF_IV4;
+#endif
+  printstate("initialization", s);
+}
+
+forceinline void ascon_absorb(state_t* s, const uint8_t* in, uint64_t inlen) {
+  /* absorb full plaintext blocks */
+  while (inlen >= ASCON_RATE) {
+    s->x0 = XOR(s->x0, LOAD(in, 8));
+    P(s, 12);
+    in += ASCON_RATE;
+    inlen -= ASCON_RATE;
+  }
+  /* absorb final plaintext block */
+  if (inlen) s->x0 = XOR(s->x0, LOAD(in, inlen));
+  s->x0 = XOR(s->x0, PAD(inlen));
+  P(s, 12);
+  printstate("absorb plaintext", s);
+}
+
+forceinline void ascon_squeeze(state_t* s, uint8_t* out, uint64_t outlen) {
+  /* squeeze full output blocks */
+  while (outlen > ASCON_RATE) {
+    STORE(out, s->x0, 8);
+    P(s, 12);
+    out += ASCON_RATE;
+    outlen -= ASCON_RATE;
+  }
+  /* squeeze final output block */
+  STORE(out, s->x0, outlen);
+  printstate("squeeze output", s);
+}
 
 int crypto_hash(unsigned char* out, const unsigned char* in,
                 unsigned long long inlen) {
-  u32_2 x0, x1, x2, x3, x4;
-  u32_2 t0;
-  u64 outlen, tmp0;
-  u32 i;
-
-  /* initialization */
-  x0.e = 0xa540dbc7;
-  x0.o = 0xf9afb5c6;
-  x1.e = 0x1445a340;
-  x1.o = 0xbd249301;
-  x2.e = 0x604d4fc8;
-  x2.o = 0xcb9ba8b5;
-  x3.e = 0x94514c98;
-  x3.o = 0x12a4eede;
-  x4.e = 0x6339f398;
-  x4.o = 0x4bca84c0;
-
-  /* absorb plaintext */
-  while (inlen >= RATE) {
-    to_bit_interleaving(t0, LOAD64(in));
-    x0.e ^= t0.e;
-    x0.o ^= t0.o;
-    P12();
-    inlen -= RATE;
-    in += RATE;
-  }
-  tmp0 = 0;
-  for (i = 0; i < inlen; ++i, ++in) tmp0 |= INS_BYTE64(*in, i);
-  tmp0 |= INS_BYTE64(0x80, inlen);
-  to_bit_interleaving(t0, tmp0);
-  x0.e ^= t0.e;
-  x0.o ^= t0.o;
-
-  P12();
-
-  /* squeeze output */
-  outlen = CRYPTO_BYTES;
-  while (outlen > RATE) {
-    from_bit_interleaving(tmp0, x0);
-    STORE64(out, tmp0);
-    P12();
-    outlen -= RATE;
-    out += RATE;
-  }
-  from_bit_interleaving(tmp0, x0);
-  STORE64(out, tmp0);
-
+  state_t s;
+  ascon_init(&s);
+  ascon_absorb(&s, in, inlen);
+  ascon_squeeze(&s, out, CRYPTO_BYTES);
   return 0;
 }
