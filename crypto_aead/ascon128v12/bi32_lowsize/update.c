@@ -5,12 +5,13 @@
 
 void ascon_update(state_t* s, uint8_t* out, const uint8_t* in, uint64_t len,
                   uint8_t mode) {
-  const int nr = (ASCON_RATE == 8) ? 6 : 8;
+  const int rate = 8;
+  const int nr = 6;
   word_t tmp0;
   int n = 0;
   while (len) {
     /* determine block size */
-    n = len < ASCON_RATE ? len : ASCON_RATE;
+    n = len < rate ? len : rate;
     /* absorb data */
     tmp0 = LOAD(in, n);
     s->x0 = XOR(s->x0, tmp0);
@@ -22,7 +23,7 @@ void ascon_update(state_t* s, uint8_t* out, const uint8_t* in, uint64_t len,
       s->x0 = XOR(s->x0, tmp0);
     }
     /* compute permutation for full blocks */
-    if (n == ASCON_RATE) P(s, nr);
+    if (n == rate) P(s, nr);
     in += n;
     out += n;
     len -= n;

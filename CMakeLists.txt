@@ -4,7 +4,8 @@ enable_testing()
 
 # set the default version, algorithms, implementations, tests, flags, defs
 set(DEFAULT_VERSIONS v12)
-set(DEFAULT_ALGS ascon128 ascon128a ascon80pq asconhash asconxof)
+set(DEFAULT_ALGS ascon128 ascon128a ascon80pq asconhash asconxof
+  asconhasha asconxofa ascon ascona)
 set(DEFAULT_IMPLS ref opt64 opt64_lowsize bi32 bi32_lowsize bi32_lowreg opt8 bi8)
 set(DEFAULT_TESTS genkat getcycles)
 set(DEFAULT_COMPILE_DEFS)
@@ -82,7 +83,7 @@ foreach(CRYPTO aead hash)
           target_link_libraries(${EXE_NAME} PRIVATE ${IMPL_NAME})
           if(${TEST_NAME} STREQUAL genkat)
             add_test(NAME ${EXE_NAME} COMMAND ${CMAKE_COMMAND}
-              -DEXE_NAME=${EXE_NAME} -DALG=${ALG}${VER}
+              -DEXE_NAME=${EXE_NAME} -DALG=${ALG}${VER} -DCRYPTO=${CRYPTO}
               -DSRC_DIR=${CMAKE_SOURCE_DIR} -DBIN_DIR=${CMAKE_BINARY_DIR}
               -DCONFIG=$<CONFIGURATION> -P ${CMAKE_SOURCE_DIR}/genkat.cmake)
           else()

@@ -13,10 +13,19 @@
 
 #define ASCON_128_RATE 8
 #define ASCON_128A_RATE 16
+#define ASCON_HASH_RATE 8
 
 #define ASCON_128_PA_ROUNDS 12
 #define ASCON_128_PB_ROUNDS 6
+
+#define ASCON_128A_PA_ROUNDS 12
 #define ASCON_128A_PB_ROUNDS 8
+
+#define ASCON_HASH_PA_ROUNDS 12
+#define ASCON_HASH_PB_ROUNDS 12
+
+#define ASCON_HASHA_PA_ROUNDS 12
+#define ASCON_HASHA_PB_ROUNDS 8
 
 #define ASCON_HASH_BYTES 32
 
@@ -26,10 +35,10 @@
    ((uint64_t)(ASCON_128_PA_ROUNDS) << 40) |    \
    ((uint64_t)(ASCON_128_PB_ROUNDS) << 32))
 
-#define ASCON_128A_IV                           \
-  (((uint64_t)(ASCON_128_KEYBYTES * 8) << 56) | \
-   ((uint64_t)(ASCON_128A_RATE * 8) << 48) |    \
-   ((uint64_t)(ASCON_128_PA_ROUNDS) << 40) |    \
+#define ASCON_128A_IV                            \
+  (((uint64_t)(ASCON_128A_KEYBYTES * 8) << 56) | \
+   ((uint64_t)(ASCON_128A_RATE * 8) << 48) |     \
+   ((uint64_t)(ASCON_128A_PA_ROUNDS) << 40) |    \
    ((uint64_t)(ASCON_128A_PB_ROUNDS) << 32))
 
 #define ASCON_80PQ_IV                            \
@@ -38,14 +47,27 @@
    ((uint64_t)(ASCON_128_PA_ROUNDS) << 40) |     \
    ((uint64_t)(ASCON_128_PB_ROUNDS) << 32))
 
-#define ASCON_HASH_IV                        \
-  (((uint64_t)(ASCON_128_RATE * 8) << 48) |  \
-   ((uint64_t)(ASCON_128_PA_ROUNDS) << 40) | \
+#define ASCON_HASH_IV                                                \
+  (((uint64_t)(ASCON_HASH_RATE * 8) << 48) |                         \
+   ((uint64_t)(ASCON_HASH_PA_ROUNDS) << 40) |                        \
+   ((uint64_t)(ASCON_HASH_PA_ROUNDS - ASCON_HASH_PB_ROUNDS) << 32) | \
    ((uint64_t)(ASCON_HASH_BYTES * 8) << 0))
 
-#define ASCON_XOF_IV                        \
-  (((uint64_t)(ASCON_128_RATE * 8) << 48) | \
-   ((uint64_t)(ASCON_128_PA_ROUNDS) << 40))
+#define ASCON_HASHA_IV                                                 \
+  (((uint64_t)(ASCON_HASH_RATE * 8) << 48) |                           \
+   ((uint64_t)(ASCON_HASHA_PA_ROUNDS) << 40) |                         \
+   ((uint64_t)(ASCON_HASHA_PA_ROUNDS - ASCON_HASHA_PB_ROUNDS) << 32) | \
+   ((uint64_t)(ASCON_HASH_BYTES * 8) << 0))
+
+#define ASCON_XOF_IV                          \
+  (((uint64_t)(ASCON_HASH_RATE * 8) << 48) |  \
+   ((uint64_t)(ASCON_HASH_PA_ROUNDS) << 40) | \
+   ((uint64_t)(ASCON_HASH_PA_ROUNDS - ASCON_HASH_PB_ROUNDS) << 32))
+
+#define ASCON_XOFA_IV                          \
+  (((uint64_t)(ASCON_HASH_RATE * 8) << 48) |   \
+   ((uint64_t)(ASCON_HASHA_PA_ROUNDS) << 40) | \
+   ((uint64_t)(ASCON_HASHA_PA_ROUNDS - ASCON_HASHA_PB_ROUNDS) << 32))
 
 static inline void P12(state_t* s) {
   printstate(" permutation input", s);

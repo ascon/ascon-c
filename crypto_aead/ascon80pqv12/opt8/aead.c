@@ -12,15 +12,19 @@
 forceinline void ascon_loadkey(word_t* K0, word_t* K1, word_t* K2,
                                const uint8_t* k) {
   KINIT(K0, K1, K2);
-  if (CRYPTO_KEYBYTES == 20) {
-    *K0 = XOR(*K0, KEYROT(WORD_T(0), LOAD(k, 4)));
-    k += 4;
+  if (CRYPTO_KEYBYTES == 16) {
+    *K1 = XOR(*K1, LOAD(k, 8));
+    *K2 = XOR(*K2, LOAD(k + 8, 8));
   }
-  *K1 = XOR(*K1, LOAD(k, 8));
-  *K2 = XOR(*K2, LOAD(k + 8, 8));
+  if (CRYPTO_KEYBYTES == 20) {
+    *K0 = XOR(*K0, KEYROT(WORD_T(0), LOADBYTES(k, 4)));
+    *K1 = XOR(*K1, LOADBYTES(k + 4, 8));
+    *K2 = XOR(*K2, LOADBYTES(k + 12, 8));
+  }
 }
 
-forceinline void ascon_init(state_t* s, const uint8_t* npub, const uint8_t* k) {
+forceinline void ascon_aeadinit(state_t* s, const uint8_t* npub,
+                                const uint8_t* k) {
   /* load nonce */
   word_t N0 = LOAD(npub, 8);
   word_t N1 = LOAD(npub + 8, 8);
@@ -29,9 +33,9 @@ forceinline void ascon_init(state_t* s, const uint8_t* npub, const uint8_t* k) {
   ascon_loadkey(&K0, &K1, &K2, k);
   /* initialize */
   PINIT(s);
-  if (CRYPTO_KEYBYTES == 16 && ASCON_RATE == 8)
+  if (CRYPTO_KEYBYTES == 16 && ASCON_AEAD_RATE == 8)
     s->x0 = XOR(s->x0, ASCON_128_IV);
-  if (CRYPTO_KEYBYTES == 16 && ASCON_RATE == 16)
+  if (CRYPTO_KEYBYTES == 16 && ASCON_AEAD_RATE == 16)
     s->x0 = XOR(s->x0, ASCON_128A_IV);
   if (CRYPTO_KEYBYTES == 20) s->x0 = XOR(s->x0, ASCON_80PQ_IV);
   if (CRYPTO_KEYBYTES == 20) s->x0 = XOR(s->x0, K0);
@@ -47,19 +51,19 @@ forceinline void ascon_init(state_t* s, const uint8_t* npub, const uint8_t* k) {
 }
 
 forceinline void ascon_adata(state_t* s, const uint8_t* ad, uint64_t adlen) {
-  const int nr = (ASCON_RATE == 8) ? 6 : 8;
+  const int nr = (ASCON_AEAD_RATE == 8) ? 6 : 8;
   if (adlen) {
     /* full associated data blocks */
-    while (adlen >= ASCON_RATE) {
+    while (adlen >= ASCON_AEAD_RATE) {
       s->x0 = XOR(s->x0, LOAD(ad, 8));
-      if (ASCON_RATE == 16) s->x1 = XOR(s->x1, LOAD(ad + 8, 8));
+      if (ASCON_AEAD_RATE == 16) s->x1 = XOR(s->x1, LOAD(ad + 8, 8));
       P(s, nr);
-      ad += ASCON_RATE;
-      adlen -= ASCON_RATE;
+      ad += ASCON_AEAD_RATE;
+      adlen -= ASCON_AEAD_RATE;
     }
     /* final associated data block */
     word_t* px = &s->x0;
-    if (ASCON_RATE == 16 && adlen >= 8) {
+    if (ASCON_AEAD_RATE == 16 && adlen >= 8) {
       s->x0 = XOR(s->x0, LOAD(ad, 8));
       px = &s->x1;
       ad += 8;
@@ -76,23 +80,23 @@ forceinline void ascon_adata(state_t* s, const uint8_t* ad, uint64_t adlen) {
 
 forceinline void ascon_encrypt(state_t* s, uint8_t* c, const uint8_t* m,
                                uint64_t mlen) {
-  const int nr = (ASCON_RATE == 8) ? 6 : 8;
+  const int nr = (ASCON_AEAD_RATE == 8) ? 6 : 8;
   /* full plaintext blocks */
-  while (mlen >= ASCON_RATE) {
+  while (mlen >= ASCON_AEAD_RATE) {
     s->x0 = XOR(s->x0, LOAD(m, 8));
     STORE(c, s->x0, 8);
-    if (ASCON_RATE == 16) {
+    if (ASCON_AEAD_RATE == 16) {
       s->x1 = XOR(s->x1, LOAD(m + 8, 8));
       STORE(c + 8, s->x1, 8);
     }
     P(s, nr);
-    m += ASCON_RATE;
-    c += ASCON_RATE;
-    mlen -= ASCON_RATE;
+    m += ASCON_AEAD_RATE;
+    c += ASCON_AEAD_RATE;
+    mlen -= ASCON_AEAD_RATE;
   }
   /* final plaintext block */
   word_t* px = &s->x0;
-  if (ASCON_RATE == 16 && mlen >= 8) {
+  if (ASCON_AEAD_RATE == 16 && mlen >= 8) {
     s->x0 = XOR(s->x0, LOAD(m, 8));
     STORE(c, s->x0, 8);
     px = &s->x1;
@@ -110,27 +114,27 @@ forceinline void ascon_encrypt(state_t* s, uint8_t* c, const uint8_t* m,
 
 forceinline void ascon_decrypt(state_t* s, uint8_t* m, const uint8_t* c,
                                uint64_t clen) {
-  const int nr = (ASCON_RATE == 8) ? 6 : 8;
+  const int nr = (ASCON_AEAD_RATE == 8) ? 6 : 8;
   /* full ciphertext blocks */
-  while (clen >= ASCON_RATE) {
+  while (clen >= ASCON_AEAD_RATE) {
     word_t cx = LOAD(c, 8);
     s->x0 = XOR(s->x0, cx);
     STORE(m, s->x0, 8);
     s->x0 = cx;
-    if (ASCON_RATE == 16) {
+    if (ASCON_AEAD_RATE == 16) {
       cx = LOAD(c + 8, 8);
       s->x1 = XOR(s->x1, cx);
       STORE(m + 8, s->x1, 8);
       s->x1 = cx;
     }
     P(s, nr);
-    m += ASCON_RATE;
-    c += ASCON_RATE;
-    clen -= ASCON_RATE;
+    m += ASCON_AEAD_RATE;
+    c += ASCON_AEAD_RATE;
+    clen -= ASCON_AEAD_RATE;
   }
   /* final ciphertext block */
   word_t* px = &s->x0;
-  if (ASCON_RATE == 16 && clen >= 8) {
+  if (ASCON_AEAD_RATE == 16 && clen >= 8) {
     word_t cx = LOAD(c, 8);
     s->x0 = XOR(s->x0, cx);
     STORE(m, s->x0, 8);
@@ -156,11 +160,11 @@ forceinline void ascon_final(state_t* s, const uint8_t* k) {
   word_t K0, K1, K2;
   ascon_loadkey(&K0, &K1, &K2, k);
   /* finalize */
-  if (CRYPTO_KEYBYTES == 16 && ASCON_RATE == 8) {
+  if (CRYPTO_KEYBYTES == 16 && ASCON_AEAD_RATE == 8) {
     s->x1 = XOR(s->x1, K1);
     s->x2 = XOR(s->x2, K2);
   }
-  if (CRYPTO_KEYBYTES == 16 && ASCON_RATE == 16) {
+  if (CRYPTO_KEYBYTES == 16 && ASCON_AEAD_RATE == 16) {
     s->x2 = XOR(s->x2, K1);
     s->x3 = XOR(s->x3, K2);
   }
@@ -184,7 +188,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   (void)nsec;
   *clen = mlen + CRYPTO_ABYTES;
   /* perform ascon computation */
-  ascon_init(&s, npub, k);
+  ascon_aeadinit(&s, npub, k);
   ascon_adata(&s, ad, adlen);
   ascon_encrypt(&s, c, m, mlen);
   ascon_final(&s, k);
@@ -204,7 +208,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   if (clen < CRYPTO_ABYTES) return -1;
   *mlen = clen = clen - CRYPTO_ABYTES;
   /* perform ascon computation */
-  ascon_init(&s, npub, k);
+  ascon_aeadinit(&s, npub, k);
   ascon_adata(&s, ad, adlen);
   ascon_decrypt(&s, m, c, clen);
   ascon_final(&s, k);

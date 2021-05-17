@@ -5,57 +5,40 @@
 
 void ascon_update(state_t* s, uint8_t* out, const uint8_t* in, uint64_t len,
                   uint8_t mode) {
-  const int nr = (ASCON_RATE == 8) ? 6 : 8;
+  const int rate = 16;
+  const int nr = 8;
   word_t tmp0, tmp1;
-  /* full blocks */
-  while (len >= ASCON_RATE) {
-    tmp0 = LOAD(in, 8);
-    tmp1 = LOAD(in + 8, 8);
+  int n = 0, n0 = 0, n1 = 0;
+  while (len) {
+    /* determine block size */
+    n0 = len < 8 ? len : 8;
+    n1 = len < 8 ? 0 : (len < 16 ? len - 8 : 8);
+    n = n0 + n1;
+    /* absorb data */
+    tmp0 = LOAD(in, n0);
     s->x0 = XOR(s->x0, tmp0);
-    s->x1 = XOR(s->x1, tmp1);
+    if (n1) tmp1 = LOAD(in + 8, n1);
+    if (n1) s->x1 = XOR(s->x1, tmp1);
+    /* extract data */
     if (mode & ASCON_SQUEEZE) {
-      STORE(out, s->x0, 8);
-      STORE(out + 8, s->x1, 8);
+      STORE(out, s->x0, n0);
+      if (n1) STORE(out + 8, s->x1, n1);
     }
+    /* insert data */
     if (mode & ASCON_INSERT) {
-      s->x0 = tmp0;
-      s->x1 = tmp1;
+      s->x0 = CLEAR(s->x0, n0);
+      s->x0 = XOR(s->x0, tmp0);
+      if (n1) s->x1 = CLEAR(s->x1, n1);
+      if (n1) s->x1 = XOR(s->x1, tmp1);
     }
-    P(s, nr);
-    in += ASCON_RATE;
-    out += ASCON_RATE;
-    len -= ASCON_RATE;
+    /* compute permutation for full blocks */
+    if (n == rate) P(s, nr);
+    in += n;
+    out += n;
+    len -= n;
   }
-  /* final block */
-  if (len) {
-    tmp1 = WORD_T(0);
-    if (len >= 8) tmp0 = LOAD(in, 8);
-    if (len > 8)
-      tmp1 = LOAD(in + 8, len - 8);
-    else
-      tmp0 = LOAD(in, len);
-    s->x0 = XOR(s->x0, tmp0);
-    s->x1 = XOR(s->x1, tmp1);
-    if (mode & ASCON_SQUEEZE) {
-      if (len >= 8) STORE(out, s->x0, 8);
-      if (len > 8)
-        STORE(out + 8, s->x1, len - 8);
-      else
-        STORE(out, s->x0, len);
-    }
-    if (mode & ASCON_INSERT) {
-      if (len >= 8) s->x0 = tmp0;
-      if (len > 8) {
-        s->x1 = CLEAR(s->x1, len - 8);
-        s->x1 = XOR(s->x1, tmp1);
-      } else {
-        s->x0 = CLEAR(s->x0, len);
-        s->x0 = XOR(s->x0, tmp0);
-      }
-    }
-  }
-  if (len < 8)
-    s->x0 = XOR(s->x0, PAD(len % 8));
+  if (n % rate < 8)
+    s->x0 = XOR(s->x0, PAD(n0 % 8));
   else
-    s->x1 = XOR(s->x1, PAD(len % 8));
+    s->x1 = XOR(s->x1, PAD(n1 % 8));
 }

@@ -18,11 +18,11 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
   printstate("initialization", &s);
 
   /* absorb full plaintext blocks */
-  while (len >= ASCON_128_RATE) {
+  while (len >= ASCON_HASH_RATE) {
     s.x0 ^= LOADBYTES(in, 8);
     P12(&s);
-    in += ASCON_128_RATE;
-    len -= ASCON_128_RATE;
+    in += ASCON_HASH_RATE;
+    len -= ASCON_HASH_RATE;
   }
   /* absorb final plaintext block */
   s.x0 ^= LOADBYTES(in, len);
@@ -32,11 +32,11 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
 
   /* squeeze full output blocks */
   len = CRYPTO_BYTES;
-  while (len > ASCON_128_RATE) {
+  while (len > ASCON_HASH_RATE) {
     STOREBYTES(out, s.x0, 8);
     P12(&s);
-    out += ASCON_128_RATE;
-    len -= ASCON_128_RATE;
+    out += ASCON_HASH_RATE;
+    len -= ASCON_HASH_RATE;
   }
   /* squeeze final output block */
   STOREBYTES(out, s.x0, len);

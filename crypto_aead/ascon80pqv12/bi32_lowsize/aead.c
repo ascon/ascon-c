@@ -5,18 +5,22 @@
 
 forceinline void ascon_loadkey(word_t* K0, word_t* K1, word_t* K2,
                                const uint8_t* k) {
-  if (CRYPTO_KEYBYTES == 20) {
-    *K0 = KEYROT(WORD_T(0), LOAD(k, 4));
-    k += 4;
+  KINIT(K0, K1, K2);
+  if (CRYPTO_KEYBYTES == 16) {
+    *K1 = XOR(*K1, LOAD(k, 8));
+    *K2 = XOR(*K2, LOAD(k + 8, 8));
   }
-  *K1 = LOAD(k, 8);
-  *K2 = LOAD(k + 8, 8);
+  if (CRYPTO_KEYBYTES == 20) {
+    *K0 = XOR(*K0, KEYROT(WORD_T(0), LOADBYTES(k, 4)));
+    *K1 = XOR(*K1, LOADBYTES(k + 4, 8));
+    *K2 = XOR(*K2, LOADBYTES(k + 12, 8));
+  }
 }
 
-forceinline void ascon_init(state_t* s, const uint8_t* npub, word_t K0,
-                            word_t K1, word_t K2) {
-  if (CRYPTO_KEYBYTES == 16 && ASCON_RATE == 8) s->x0 = ASCON_128_IV;
-  if (CRYPTO_KEYBYTES == 16 && ASCON_RATE == 16) s->x0 = ASCON_128A_IV;
+forceinline void ascon_aeadinit(state_t* s, const uint8_t* npub, word_t K0,
+                                word_t K1, word_t K2) {
+  if (CRYPTO_KEYBYTES == 16 && ASCON_AEAD_RATE == 8) s->x0 = ASCON_128_IV;
+  if (CRYPTO_KEYBYTES == 16 && ASCON_AEAD_RATE == 16) s->x0 = ASCON_128A_IV;
   if (CRYPTO_KEYBYTES == 20) s->x0 = ASCON_80PQ_IV;
   if (CRYPTO_KEYBYTES == 20) s->x0 = XOR(s->x0, K0);
   s->x1 = K1;
@@ -31,11 +35,11 @@ forceinline void ascon_init(state_t* s, const uint8_t* npub, word_t K0,
 }
 
 forceinline void ascon_final(state_t* s, word_t K0, word_t K1, word_t K2) {
-  if (CRYPTO_KEYBYTES == 16 && ASCON_RATE == 8) {
+  if (CRYPTO_KEYBYTES == 16 && ASCON_AEAD_RATE == 8) {
     s->x1 = XOR(s->x1, K1);
     s->x2 = XOR(s->x2, K2);
   }
-  if (CRYPTO_KEYBYTES == 16 && ASCON_RATE == 16) {
+  if (CRYPTO_KEYBYTES == 16 && ASCON_AEAD_RATE == 16) {
     s->x2 = XOR(s->x2, K1);
     s->x3 = XOR(s->x3, K2);
   }
@@ -53,11 +57,11 @@ forceinline void ascon_final(state_t* s, word_t K0, word_t K1, word_t K2) {
 void ascon_aead(state_t* s, uint8_t* out, const uint8_t* in, uint64_t tlen,
                 const uint8_t* ad, uint64_t adlen, const uint8_t* npub,
                 const uint8_t* k, uint8_t mode) {
-  const int nr = (ASCON_RATE == 8) ? 6 : 8;
+  const int nr = (ASCON_AEAD_RATE == 8) ? 6 : 8;
   word_t K0, K1, K2;
   ascon_loadkey(&K0, &K1, &K2, k);
   /* initialize */
-  ascon_init(s, npub, K0, K1, K2);
+  ascon_aeadinit(s, npub, K0, K1, K2);
   /* process associated data */
   if (adlen) {
     ascon_update(s, (void*)0, ad, adlen, ASCON_ABSORB);

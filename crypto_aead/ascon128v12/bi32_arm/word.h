@@ -64,7 +64,7 @@ forceinline int NOTZERO(word_t a, word_t b) {
 }
 
 forceinline word_t PAD(int i) {
-  return WORD_T((uint64_t)(0x08 << (28 - 4 * i)) << 32);
+  return WORD_T((uint64_t)(0x8ul << (28 - 4 * i)) << 32);
 }
 
 forceinline word_t CLEAR(word_t w, int n) {

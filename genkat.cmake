@@ -1,11 +1,16 @@
 # setup KAT file name
-if(${ALG} STREQUAL ascon128v12 OR ${ALG} STREQUAL ascon128av12)
+if(${CRYPTO} STREQUAL aead AND
+    (${ALG} STREQUAL ascon128v12 OR ${ALG} STREQUAL ascon128av12 OR
+    ${ALG} STREQUAL asconv12 OR ${ALG} STREQUAL asconav12))
   set(KAT_PATH crypto_aead/${ALG})
   set(KAT_FILE LWC_AEAD_KAT_128_128.txt)
 elseif(${ALG} STREQUAL ascon80pqv12)
   set(KAT_PATH crypto_aead/${ALG})
   set(KAT_FILE LWC_AEAD_KAT_160_128.txt)
-elseif(${ALG} STREQUAL asconhashv12 OR ${ALG} STREQUAL asconxofv12)
+elseif(${CRYPTO} STREQUAL hash AND
+    (${ALG} STREQUAL asconhashv12 OR ${ALG} STREQUAL asconhashav12 OR
+    ${ALG} STREQUAL asconxofv12 OR ${ALG} STREQUAL asconxofav12 OR
+    ${ALG} STREQUAL asconv12 OR ${ALG} STREQUAL asconav12))
   set(KAT_PATH crypto_hash/${ALG})
   set(KAT_FILE LWC_HASH_KAT_256.txt)
 else()

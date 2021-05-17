@@ -1,16 +1,18 @@
 # Reference and optimized C and ASM implementations of Ascon
 
-Ascon is a family of lightweight authenticated encryption schemes with associated data (AEAD), including a hash and extendible output function (XOF).
+Ascon is a family of lightweight authenticated encryption schemes with associated data (AEAD), including hash and extendible output functions (XOF).
 
 For more information on Ascon visit: https://ascon.iaik.tugraz.at/
 
-This repository contains the following 5 Ascon algorithms:
+This repository contains the following 7 Ascon algorithms:
 
 - `crypto_aead/ascon128v12`: Ascon-128 v1.2
 - `crypto_aead/ascon128av12`: Ascon-128a v1.2
 - `crypto_aead/ascon80pqv12`: Ascon-80pq v1.2
 - `crypto_hash/asconhashv12`: Ascon-Hash v1.2
 - `crypto_hash/asconxofv12`: Ascon-Xof v1.2
+- `crypto_hash/asconhashav12`: Ascon-Hasha v1.2
+- `crypto_hash/asconxofav12`: Ascon-Xofa v1.2
 
 and the following implementations:
 
@@ -66,7 +68,19 @@ and the following implementations:
 All implementations use the interface defined by the ECRYPT Benchmarking of Cryptographic Systems (eBACS):
 
 - https://bench.cr.yp.to/call-aead.html for CRYPTO\_AEAD (Ascon-128, Ascon-128a, Ascon-80pq)
-- https://bench.cr.yp.to/call-hash.html for CRYPTO\_HASH (Ascon-Hash) and XOF (Ascon-Xof)
+- https://bench.cr.yp.to/call-hash.html for CRYPTO\_HASH (Ascon-Hash, Ascon-Hasha, Ascon-Xof, Ascon-Xofa)
+
+
+## Combined AEAD and hashing implementations
+
+Ascon implementations supporting both AEAD and hashing are located in `crypto_aead_hash`.
+We provide the following examples of pairing AEAD with hashing:
+
+- Ascon128 with AsconHash in `crypto_aead_hash/asconv12`
+- Ascon128a with AsconHasha in `crypto_aead_hash/asconav12`
+
+These implementations are also symlinked in `crypto_aead` and `crypto_hash` to reuse
+their test suits.
 
 
 ## Manually build and run a single Ascon target:
@@ -97,9 +111,19 @@ Generate KATs and get CPU cycles:
 
 ```
 mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake ..
 cmake --build .
 ctest
+```
+
+
+## Build and test all Ascon v1.2 targets on Windows:
+
+```
+mkdir build && cd build
+cmake ..
+cmake --build . --config Release
+ctest -C Release
 ```
 
 
