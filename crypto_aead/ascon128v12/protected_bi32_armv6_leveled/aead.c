@@ -107,7 +107,7 @@ void ascon_decrypt(state_t* s, mask_m_uint32_t* m, const mask_c_uint32_t* c,
     s->x[0] = MXOR(s->x[0], cx, NUM_SHARES_C);
     MSTORE((uint32_t*)m, s->x[0], NUM_SHARES_M);
     word_t mask = MMASK(s->x[5], clen);
-    s->x[0] = MXORAND(cx, s->x[0], mask, NUM_SHARES_M);
+    s->x[0] = MXORAND(cx, mask, s->x[0], NUM_SHARES_M);
     s->x[5] = MREUSE(s->x[5], 0, NUM_SHARES_M);
   }
   printstate("pad ciphertext", s, NUM_SHARES_M);

@@ -177,12 +177,11 @@ forceinline word_t MZERO(int ns) {
   return w;
 }
 
-forceinline word_t MMASK(int n, int ns) {
+forceinline word_t MMASK(word_t w, int n) {
   uint32_t mask = 0xffffffff >> (n * 4);
-  word_t m = MZERO(ns);
-  m.s[0].w[0] ^= mask;
-  m.s[0].w[1] ^= mask;
-  return m;
+  w.s[0].w[0] ^= mask;
+  w.s[0].w[1] ^= mask;
+  return w;
 }
 
 forceinline word_t MREFRESH(word_t w, int ns) {
