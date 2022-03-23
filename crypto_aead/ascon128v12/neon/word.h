@@ -2,36 +2,27 @@
 #define WORD_H_
 
 #include <stdint.h>
+#include <string.h>
 
 #include "endian.h"
 #include "forceinline.h"
 
-typedef uint64_t word_t;
+typedef union {
+  uint64_t x;
+  uint32_t w[2];
+  uint8_t b[8];
+} word_t;
 
-#define WORD_T
-#define UINT64_T
-#define U64TOWORD
-#define WORDTOU64
+#define U64TOWORD(x) U64BIG(x)
+#define WORDTOU64(x) U64BIG(x)
 
-/* get byte from Ascon 64-bit word */
-#define GETBYTE(x, i) ((uint8_t)((uint64_t)(x) >> (56 - 8 * (i))))
+forceinline uint64_t ROR(uint64_t x, int n) { return x >> n | x << (-n & 63); }
 
-/* set byte in Ascon 64-bit word */
-#define SETBYTE(b, i) ((uint64_t)(b) << (56 - 8 * (i)))
-
-forceinline word_t ROR(word_t x, int n) { return x >> n | x << (64 - n); }
-
-forceinline word_t NOT(word_t a) { return ~a; }
-
-forceinline word_t XOR(word_t a, word_t b) { return a ^ b; }
-
-forceinline word_t AND(word_t a, word_t b) { return a & b; }
-
-forceinline word_t KEYROT(word_t lo2hi, word_t hi2lo) {
+forceinline uint64_t KEYROT(uint64_t lo2hi, uint64_t hi2lo) {
   return lo2hi << 32 | hi2lo >> 32;
 }
 
-forceinline int NOTZERO(word_t a, word_t b) {
+forceinline int NOTZERO(uint64_t a, uint64_t b) {
   uint64_t result = a | b;
   result |= result >> 32;
   result |= result >> 16;
@@ -39,11 +30,13 @@ forceinline int NOTZERO(word_t a, word_t b) {
   return ((((int)(result & 0xff) - 1) >> 8) & 1) - 1;
 }
 
-forceinline word_t PAD(int i) { return 0x80ull << (56 - 8 * i); }
+forceinline uint64_t PAD(int i) { return 0x80ull << (56 - 8 * i); }
 
-forceinline word_t CLEAR(word_t w, int n) {
+forceinline uint64_t PRFS_MLEN(uint64_t len) { return len << 51; }
+
+forceinline uint64_t CLEAR(uint64_t w, int n) {
   /* undefined for n == 0 */
-  uint64_t mask = 0x00ffffffffffffffull >> (n * 8 - 8);
+  uint64_t mask = ~0ull >> (8 * n);
   return w & mask;
 }
 
@@ -52,29 +45,25 @@ forceinline uint64_t MASK(int n) {
   return ~0ull >> (64 - 8 * n);
 }
 
-forceinline word_t LOAD(const uint8_t* bytes, int n) {
+forceinline uint64_t LOAD(const uint8_t* bytes, int n) {
   uint64_t x = *(uint64_t*)bytes & MASK(n);
-  return U64BIG(x);
+  return U64TOWORD(x);
 }
 
-forceinline void STORE(uint8_t* bytes, word_t w, int n) {
+forceinline void STORE(uint8_t* bytes, uint64_t w, int n) {
   *(uint64_t*)bytes &= ~MASK(n);
-  *(uint64_t*)bytes |= U64BIG(w);
+  *(uint64_t*)bytes |= WORDTOU64(w);
 }
 
-forceinline word_t LOADBYTES(const uint8_t* bytes, int n) {
+forceinline uint64_t LOADBYTES(const uint8_t* bytes, int n) {
   uint64_t x = 0;
-  for (int i = 0; i < n; ++i) ((uint8_t*)&x)[7 - i] = bytes[i];
-  return x;
+  memcpy(&x, bytes, n);
+  return U64TOWORD(x);
 }
 
-forceinline void STOREBYTES(uint8_t* bytes, word_t w, int n) {
-  for (int i = 0; i < n; ++i) bytes[i] = ((uint8_t*)&w)[7 - i];
-}
-
-static inline uint64_t CLEARBYTES(uint64_t x, int n) {
-  for (int i = 0; i < n; ++i) x &= ~SETBYTE(0xff, i);
-  return x;
+forceinline void STOREBYTES(uint8_t* bytes, uint64_t w, int n) {
+  uint64_t x = WORDTOU64(w);
+  memcpy(bytes, &x, n);
 }
 
 #endif /* WORD_H_ */

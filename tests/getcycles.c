@@ -2,100 +2,99 @@
 #include <stdlib.h>
 
 #include "api.h"
-#if defined(CRYPTO_AEAD)
+#include "cpucycles.h"
+
+#if defined(CRYPTO_AEAD_SHARED)
+#include "crypto_aead_shared.h"
+#elif defined(CRYPTO_AEAD)
 #include "crypto_aead.h"
 #elif defined(CRYPTO_HASH)
 #include "crypto_hash.h"
-#endif
-
-#if !defined(__arm__) && !defined(_M_ARM)
-#ifdef PRAGMA_GETCYCLES
-#pragma message("Using RDTSC to count cycles")
-#endif
-#ifdef _MSC_VER
-#include <intrin.h>
-#define ALIGN(x)
-#else
-#include <x86intrin.h>
-#define ALIGN(x) __attribute__((aligned(x)))
-#endif
-#define init_cpucycles()
-#define cpucycles(cycles) cycles = __rdtsc()
-//#define cpucycles(cycles) cycles = __rdtscp(&tmp)
-#endif
-
-#if defined(__ARM_ARCH_6__) || __ARM_ARCH == 6 || _M_ARM == 6
-#define ALIGN(x) __attribute__((aligned(x)))
-#ifdef PRAGMA_GETCYCLES
-#pragma message("Using ARMv6 PMU to count cycles")
-#endif
-#define init_cpucycles() \
-  __asm__ __volatile__("mcr p15, 0, %0, c15, c12, 0" ::"r"(1))
-#define cpucycles(cycles) \
-  __asm__ __volatile__("mrc p15, 0, %0, c15, c12, 1" : "=r"(cycles))
-#elif defined(__arm__) || defined(_M_ARM)
-#define ALIGN(x) __attribute__((aligned(x)))
-#ifdef PRAGMA_GETCYCLES
-#pragma message("Using ARMv7 PMU to count cycles")
-#endif
-#define init_cpucycles()                                                \
-  __asm__ __volatile__("mcr p15, 0, %0, c9, c12, 0" ::"r"(17));         \
-  __asm__ __volatile__("mcr p15, 0, %0, c9, c12, 1" ::"r"(0x8000000f)); \
-  __asm__ __volatile__("mcr p15, 0, %0, c9, c12, 3" ::"r"(0x8000000f))
-#define cpucycles(cycles) \
-  __asm__ __volatile__("mrc p15, 0, %0, c9, c13, 0" : "=r"(cycles))
+#elif defined(CRYPTO_AUTH)
+#include "crypto_auth.h"
 #endif
 
 #define NUM_RUNS 16
-#define NUM_BYTES 32768
-#define MAX_LEN 32768
 #define NUM_MLENS 7
+#define MAX_LEN (1 << 11)
 
-unsigned long long mlens[] = {1, 8, 16, 32, 64, 1536, 32768};
-unsigned char ALIGN(16) m[MAX_LEN];
-#if defined(CRYPTO_AEAD)
+#if defined(CRYPTO_AEAD_SHARED)
+unsigned long long alen = 0;
+unsigned long long clen = 0;
+mask_ad_uint32_t ALIGN(16) a[NUM_WORDS(MAX_LEN)];
+mask_m_uint32_t ALIGN(16) m[NUM_WORDS(MAX_LEN)];
+mask_c_uint32_t ALIGN(16) c[NUM_WORDS(MAX_LEN + CRYPTO_ABYTES)];
+mask_npub_uint32_t ALIGN(16) n[NUM_WORDS(CRYPTO_NPUBBYTES)];
+mask_key_uint32_t ALIGN(16) k[NUM_WORDS(CRYPTO_KEYBYTES)];
+#elif defined(CRYPTO_AEAD)
 unsigned long long alen = 0;
 unsigned long long clen = 0;
 unsigned char ALIGN(16) a[MAX_LEN];
+unsigned char ALIGN(16) m[MAX_LEN];
 unsigned char ALIGN(16) c[MAX_LEN + CRYPTO_ABYTES];
-unsigned char ALIGN(16) nsec[CRYPTO_NSECBYTES ? CRYPTO_NSECBYTES : 1];
-unsigned char ALIGN(16) npub[CRYPTO_NPUBBYTES ? CRYPTO_NPUBBYTES : 1];
+unsigned char ALIGN(16) n[CRYPTO_NPUBBYTES];
 unsigned char ALIGN(16) k[CRYPTO_KEYBYTES];
 #elif defined(CRYPTO_HASH)
+unsigned char ALIGN(16) m[MAX_LEN];
 unsigned char ALIGN(16) h[CRYPTO_BYTES];
+#elif defined(CRYPTO_AUTH)
+unsigned char ALIGN(16) k[CRYPTO_KEYBYTES];
+unsigned char ALIGN(16) m[MAX_LEN];
+unsigned char ALIGN(16) t[CRYPTO_BYTES];
 #endif
 
+unsigned long long mlens[] = {1, 8, 16, 32, 64, 1536, MAX_LEN};
 unsigned long long cycles[NUM_MLENS][NUM_RUNS * 2];
 unsigned int tmp;
 
 void init_input() {
-  int i;
-  for (i = 0; i < MAX_LEN; ++i) m[i] = rand();
-#if defined(CRYPTO_AEAD)
+  int i, j;
+#if defined(CRYPTO_AEAD_SHARED)
+  for (i = 0; i < NUM_WORDS(MAX_LEN); ++i)
+    for (j = 0; j < NUM_SHARES_AD; ++j)
+      a[i].shares[j] = rand();
+  for (i = 0; i < NUM_WORDS(MAX_LEN); ++i)
+    for (j = 0; j < NUM_SHARES_M; ++j)
+      m[i].shares[j] = rand();
+  for (i = 0; i < NUM_WORDS(CRYPTO_KEYBYTES); ++i)
+    for (j = 0; j < NUM_SHARES_KEY; ++j)
+      k[i].shares[j] = rand();
+  for (i = 0; i < NUM_WORDS(CRYPTO_NPUBBYTES); ++i)
+    for (j = 0; j < NUM_SHARES_NPUB; ++j)
+      n[i].shares[j] = rand();
+#elif defined(CRYPTO_AEAD)
   for (i = 0; i < MAX_LEN; ++i) a[i] = rand();
+  for (i = 0; i < MAX_LEN; ++i) m[i] = rand();
   for (i = 0; i < CRYPTO_KEYBYTES; ++i) k[i] = rand();
-  for (i = 0; i < CRYPTO_NPUBBYTES; ++i) npub[i] = rand();
+  for (i = 0; i < CRYPTO_NPUBBYTES; ++i) n[i] = rand();
+#else
+  for (i = 0; i < MAX_LEN; ++i) m[i] = rand();
 #endif
 }
 
 unsigned long long measure(unsigned long long mlen) {
-  unsigned long long NREPS = NUM_BYTES / mlen;
+  unsigned long long NREPS = MAX_LEN / mlen;
   unsigned long long i;
-#if defined(__arm__) || defined(_M_ARM)
-  unsigned int before, after;
-#else
-  unsigned long long before, after;
-#endif
+  int result = 0;
   init_input();
-  cpucycles(before);
-  for (i = 0; i < NREPS; ++i)
-#if defined(CRYPTO_AEAD)
-    crypto_aead_encrypt(c, &clen, m, mlen, a, alen, nsec, npub, k);
+  cpucycles_reset();
+  cpucycles_start();
+  for (i = 0; i < NREPS; ++i) {
+#if defined(CRYPTO_AEAD_SHARED)
+    result |= crypto_aead_encrypt_shared(c, &clen, m, mlen, a, alen, n, k);
+#elif defined(CRYPTO_AEAD)
+    result |= crypto_aead_encrypt(c, &clen, m, mlen, a, alen, NULL, n, k);
 #elif defined(CRYPTO_HASH)
-    crypto_hash(h, m, mlen);
+    result |= crypto_hash(h, m, mlen);
+#elif defined(CRYPTO_AUTH)
+    result |= crypto_auth(t, m, mlen, k);
 #endif
-  cpucycles(after);
-  return after - before;
+  }
+  cpucycles_stop();
+  if (!result)
+    return cpucycles_result();
+  else
+    return -1;
 }
 
 int compare_uint64(const void* first, const void* second) {
@@ -111,7 +110,7 @@ int main(int argc, char* argv[]) {
   double factor = 1.0;
   if (argc == 2) factor = atof(argv[1]);
 
-  init_cpucycles();
+  cpucycles_init();
 
   for (i = 0; i < NUM_MLENS; ++i) {
     for (j = 0; j < NUM_RUNS; ++j) cycles[i][j] = measure(mlens[i]);
@@ -120,19 +119,26 @@ int main(int argc, char* argv[]) {
 
   printf("\nsorted cycles:\n");
   for (i = 0; i < NUM_MLENS; ++i) {
-    unsigned long long NREPS = NUM_BYTES / mlens[i];
+    unsigned long long NREPS = MAX_LEN / mlens[i];
     printf("%5d: ", (int)mlens[i]);
-    for (j = 0; j < NUM_RUNS; ++j) printf("%d ", (int)(cycles[i][j] / NREPS));
+    for (j = 0; j < NUM_RUNS; ++j)
+      if (cycles[i][j] == -1)
+        printf(" - ");
+      else
+        printf("%d ", (int)(cycles[i][j] / NREPS));
     printf("\n");
   }
 
   printf("\ncycles per byte (min,median):\n");
   for (i = 0; i < NUM_MLENS; ++i) {
-    unsigned long long NREPS = NUM_BYTES / mlens[i];
+    unsigned long long NREPS = MAX_LEN / mlens[i];
     unsigned long long bytes = mlens[i] * NREPS;
-    printf("%5d: %6.1f %6.1f\n", (int)mlens[i],
-           factor * cycles[i][0] / bytes + 0.05,
-           factor * cycles[i][NUM_RUNS / 2] / bytes + 0.05);
+    printf("%5d: ", (int)mlens[i]);
+    if (cycles[i][0] == -1)
+      printf("   -      -   \n");
+    else
+      printf("%6.1f %6.1f\n", factor * cycles[i][0] / bytes + 0.05,
+             factor * cycles[i][NUM_RUNS / 2] / bytes + 0.05);
   }
   printf("\n");
 
@@ -141,9 +147,11 @@ int main(int argc, char* argv[]) {
   for (i = 0; i < NUM_MLENS; ++i) printf("|------:");
   printf("|\n");
   for (i = 0; i < NUM_MLENS; ++i) {
-    unsigned long long NREPS = NUM_BYTES / mlens[i];
+    unsigned long long NREPS = MAX_LEN / mlens[i];
     unsigned long long bytes = mlens[i] * NREPS;
-    if (mlens[i] <= 32)
+    if (cycles[i][0] == -1)
+      printf("|   -   ");
+    else if ((mlens[i] <= 32) || (factor * cycles[i][0] / bytes + 0.5 >= 1000))
       printf("| %5.0f ", factor * cycles[i][0] / bytes + 0.5);
     else
       printf("| %5.1f ", factor * cycles[i][0] / bytes + 0.05);

@@ -6,6 +6,8 @@
 #include "crypto_aead.h"
 #elif defined(CRYPTO_HASH)
 #include "crypto_hash.h"
+#elif defined(CRYPTO_AUTH)
+#include "crypto_auth.h"
 #endif
 
 void print(unsigned char c, unsigned char* x, unsigned long long xlen) {
@@ -56,6 +58,19 @@ int main() {
   printf(" -> ");
   result |= crypto_hash(h, m, mlen);
   print('h', h, CRYPTO_BYTES);
+  printf("\n");
+#elif defined(CRYPTO_AUTH)
+  unsigned char k[CRYPTO_KEYBYTES] = {0};
+  unsigned long long mlen = 0;
+  unsigned char m[] = "ascon";
+  unsigned char t[CRYPTO_BYTES] = {0};
+  mlen = strlen((const char*)m);
+  print('k', k, CRYPTO_KEYBYTES);
+  printf(" ");
+  print('m', m, mlen);
+  printf(" -> ");
+  result |= crypto_auth(t, m, mlen, k);
+  print('h', t, CRYPTO_BYTES);
   printf("\n");
 #endif
   return result;

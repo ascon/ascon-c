@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 typedef struct {
-  uint64_t x0, x1, x2, x3, x4;
+  uint64_t x[5];
 } state_t;
 
-#endif /* ASCON_H */
+#endif /* ASCON_H_ */

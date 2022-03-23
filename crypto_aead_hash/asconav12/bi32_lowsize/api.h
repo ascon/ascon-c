@@ -1,4 +1,4 @@
-#define CRYPTO_VERSION "1.2.5"
+#define CRYPTO_VERSION "1.2.6"
 
 // AEAD defines
 #define CRYPTO_KEYBYTES 16
@@ -10,5 +10,5 @@
 
 // Hash defines
 #define CRYPTO_BYTES 32
-#define ASCON_HASH_OUTLEN 32 /* HASH */
+#define ASCON_HASH_BYTES 32 /* HASH */
 #define ASCON_HASH_ROUNDS 8

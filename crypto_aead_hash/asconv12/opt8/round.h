@@ -4,50 +4,61 @@
 #include "ascon.h"
 #include "printstate.h"
 
-forceinline void KINIT(word_t* K0, word_t* K1, word_t* K2) {
-  *K0 = WORD_T(0);
-  *K1 = WORD_T(0);
-  *K2 = WORD_T(0);
+forceinline void LINEAR_LAYER(state_t* s, uint64_t xtemp) {
+  uint64_t temp;
+  temp = s->x[2] ^ ROR(s->x[2], 28 - 19);
+  s->x[0] = s->x[2] ^ ROR(temp, 19);
+  temp = s->x[4] ^ ROR(s->x[4], 6 - 1);
+  s->x[2] = s->x[4] ^ ROR(temp, 1);
+  temp = s->x[1] ^ ROR(s->x[1], 41 - 7);
+  s->x[4] = s->x[1] ^ ROR(temp, 7);
+  temp = s->x[3] ^ ROR(s->x[3], 61 - 39);
+  s->x[1] = s->x[3] ^ ROR(temp, 39);
+  temp = xtemp ^ ROR(xtemp, 17 - 10);
+  s->x[3] = xtemp ^ ROR(temp, 10);
 }
 
-forceinline void PINIT(state_t* s) {
-  s->x0 = WORD_T(0);
-  s->x1 = WORD_T(0);
-  s->x2 = WORD_T(0);
-  s->x3 = WORD_T(0);
-  s->x4 = WORD_T(0);
+forceinline void NONLINEAR_LAYER(state_t* s, word_t* xtemp, uint8_t pos) {
+  uint8_t t0;
+  uint8_t t1;
+  uint8_t t2;
+  // Based on the round description of Ascon given in the Bachelor's thesis:
+  //"Optimizing Ascon on RISC-V" of Lars Jellema
+  // see https://github.com/Lucus16/ascon-riscv/
+  t0 = XOR8(s->b[1][pos], s->b[2][pos]);
+  t1 = XOR8(s->b[0][pos], s->b[4][pos]);
+  t2 = XOR8(s->b[3][pos], s->b[4][pos]);
+  s->b[4][pos] = OR8(s->b[3][pos], NOT8(s->b[4][pos]));
+  s->b[4][pos] = XOR8(s->b[4][pos], t0);
+  s->b[3][pos] = XOR8(s->b[3][pos], s->b[1][pos]);
+  s->b[3][pos] = OR8(s->b[3][pos], t0);
+  s->b[3][pos] = XOR8(s->b[3][pos], t1);
+  s->b[2][pos] = XOR8(s->b[2][pos], t1);
+  s->b[2][pos] = OR8(s->b[2][pos], s->b[1][pos]);
+  s->b[2][pos] = XOR8(s->b[2][pos], t2);
+  s->b[1][pos] = AND8(s->b[1][pos], NOT8(t1));
+  s->b[1][pos] = XOR8(s->b[1][pos], t2);
+  s->b[0][pos] = OR8(s->b[0][pos], t2);
+  (*xtemp).b[pos] = XOR8(s->b[0][pos], t0);
 }
 
-forceinline void ROUND(state_t* s, word_t C) {
+forceinline void ROUND(state_t* s, uint8_t C) {
   word_t xtemp;
   /* round constant */
-  s->x2 = XOR(s->x2, C);
+  s->b[2][0] = XOR8(s->b[2][0], C);
   /* s-box layer */
-  s->x0 = XOR(s->x0, s->x4);
-  s->x4 = XOR(s->x4, s->x3);
-  s->x2 = XOR(s->x2, s->x1);
-  xtemp = AND(s->x0, NOT(s->x4));
-  s->x0 = XOR(s->x0, AND(s->x2, NOT(s->x1)));
-  s->x2 = XOR(s->x2, AND(s->x4, NOT(s->x3)));
-  s->x4 = XOR(s->x4, AND(s->x1, NOT(s->x0)));
-  s->x1 = XOR(s->x1, AND(s->x3, NOT(s->x2)));
-  s->x3 = XOR(s->x3, xtemp);
-  s->x1 = XOR(s->x1, s->x0);
-  s->x3 = XOR(s->x3, s->x2);
-  s->x0 = XOR(s->x0, s->x4);
+  for (uint8_t i = 0; i < 8; i++) NONLINEAR_LAYER(s, &xtemp, i);
   /* linear layer */
-  xtemp = XOR(s->x0, ROR(s->x0, 28 - 19));
-  s->x0 = XOR(s->x0, ROR(xtemp, 19));
-  xtemp = XOR(s->x1, ROR(s->x1, 61 - 39));
-  s->x1 = XOR(s->x1, ROR(xtemp, 39));
-  xtemp = XOR(s->x2, ROR(s->x2, 6 - 1));
-  s->x2 = XOR(s->x2, ROR(xtemp, 1));
-  xtemp = XOR(s->x3, ROR(s->x3, 17 - 10));
-  s->x3 = XOR(s->x3, ROR(xtemp, 10));
-  xtemp = XOR(s->x4, ROR(s->x4, 41 - 7));
-  s->x4 = XOR(s->x4, ROR(xtemp, 7));
-  s->x2 = NOT(s->x2);
+  LINEAR_LAYER(s, xtemp.x);
   printstate(" round output", s);
+}
+
+forceinline void PROUNDS(state_t* s, int nr) {
+  int i = START(nr);
+  do {
+    ROUND(s, RC(i));
+    i += INC;
+  } while (i != END);
 }
 
 #endif /* ROUND_H_ */

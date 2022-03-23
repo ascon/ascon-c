@@ -3,7 +3,7 @@
 
 /* inline the ascon mode */
 #ifndef ASCON_INLINE_MODE
-#define ASCON_INLINE_MODE 0
+#define ASCON_INLINE_MODE 1
 #endif
 
 /* inline all permutations */

@@ -6,103 +6,43 @@
 #include "api.h"
 #include "ascon.h"
 #include "config.h"
+#include "constants.h"
 #include "printstate.h"
 #include "round.h"
 
-#define ASCON_128_KEYBYTES 16
-#define ASCON_128A_KEYBYTES 16
-#define ASCON_80PQ_KEYBYTES 20
-
-#define ASCON_128_RATE 8
-#define ASCON_128A_RATE 16
-#define ASCON_HASH_RATE 8
-
-#define ASCON_128_PA_ROUNDS 12
-#define ASCON_128_PB_ROUNDS 6
-
-#define ASCON_128A_PA_ROUNDS 12
-#define ASCON_128A_PB_ROUNDS 8
-
-#define ASCON_HASH_PA_ROUNDS 12
-#define ASCON_HASH_PB_ROUNDS 12
-
-#define ASCON_HASHA_PA_ROUNDS 12
-#define ASCON_HASHA_PB_ROUNDS 8
-
-#define ASCON_HASH_BYTES 32
-
-#define ASCON_128_IV WORD_T(0x80400c0600000000ull)
-#define ASCON_128A_IV WORD_T(0x80800c0800000000ull)
-#define ASCON_80PQ_IV WORD_T(0xa0400c0600000000ull)
-#define ASCON_HASH_IV WORD_T(0x00400c0000000100ull)
-#define ASCON_HASHA_IV WORD_T(0x00400c0400000100ull)
-#define ASCON_XOF_IV WORD_T(0x00400c0000000000ull)
-#define ASCON_XOFA_IV WORD_T(0x00400c0400000000ull)
-
-#define ASCON_HASH_IV0 WORD_T(0xee9398aadb67f03dull)
-#define ASCON_HASH_IV1 WORD_T(0x8bb21831c60f1002ull)
-#define ASCON_HASH_IV2 WORD_T(0xb48a92db98d5da62ull)
-#define ASCON_HASH_IV3 WORD_T(0x43189921b8f8e3e8ull)
-#define ASCON_HASH_IV4 WORD_T(0x348fa5c9d525e140ull)
-
-#define ASCON_HASHA_IV0 WORD_T(0x01470194fc6528a6ull)
-#define ASCON_HASHA_IV1 WORD_T(0x738ec38ac0adffa7ull)
-#define ASCON_HASHA_IV2 WORD_T(0x2ec8e3296c76384cull)
-#define ASCON_HASHA_IV3 WORD_T(0xd6f6a54d7f52377dull)
-#define ASCON_HASHA_IV4 WORD_T(0xa13c42a223be8d87ull)
-
-#define ASCON_XOF_IV0 WORD_T(0xb57e273b814cd416ull)
-#define ASCON_XOF_IV1 WORD_T(0x2b51042562ae2420ull)
-#define ASCON_XOF_IV2 WORD_T(0x66a3a7768ddf2218ull)
-#define ASCON_XOF_IV3 WORD_T(0x5aad0a7a8153650cull)
-#define ASCON_XOF_IV4 WORD_T(0x4f3e0e32539493b6ull)
-
-#define ASCON_XOFA_IV0 WORD_T(0x44906568b77b9832ull)
-#define ASCON_XOFA_IV1 WORD_T(0xcd8d6cae53455532ull)
-#define ASCON_XOFA_IV2 WORD_T(0xf7b5212756422129ull)
-#define ASCON_XOFA_IV3 WORD_T(0x246885e1de0d225bull)
-#define ASCON_XOFA_IV4 WORD_T(0xa8cb5ce33449973full)
-
-#define START(n) ((3 + (n)) << 4 | (12 - (n)))
-#define RC(c) WORD_T(c)
-
 forceinline void P12ROUNDS(state_t* s) {
-  ROUND(s, RC(0xf0));
-  ROUND(s, RC(0xe1));
-  ROUND(s, RC(0xd2));
-  ROUND(s, RC(0xc3));
-  ROUND(s, RC(0xb4));
-  ROUND(s, RC(0xa5));
-  ROUND(s, RC(0x96));
-  ROUND(s, RC(0x87));
-  ROUND(s, RC(0x78));
-  ROUND(s, RC(0x69));
-  ROUND(s, RC(0x5a));
-  ROUND(s, RC(0x4b));
+  ROUND(s, RC0);
+  ROUND(s, RC1);
+  ROUND(s, RC2);
+  ROUND(s, RC3);
+  ROUND(s, RC4);
+  ROUND(s, RC5);
+  ROUND(s, RC6);
+  ROUND(s, RC7);
+  ROUND(s, RC8);
+  ROUND(s, RC9);
+  ROUND(s, RCa);
+  ROUND(s, RCb);
 }
 
 forceinline void P8ROUNDS(state_t* s) {
-  ROUND(s, RC(0xb4));
-  ROUND(s, RC(0xa5));
-  ROUND(s, RC(0x96));
-  ROUND(s, RC(0x87));
-  ROUND(s, RC(0x78));
-  ROUND(s, RC(0x69));
-  ROUND(s, RC(0x5a));
-  ROUND(s, RC(0x4b));
+  ROUND(s, RC4);
+  ROUND(s, RC5);
+  ROUND(s, RC6);
+  ROUND(s, RC7);
+  ROUND(s, RC8);
+  ROUND(s, RC9);
+  ROUND(s, RCa);
+  ROUND(s, RCb);
 }
 
 forceinline void P6ROUNDS(state_t* s) {
-  ROUND(s, RC(0x96));
-  ROUND(s, RC(0x87));
-  ROUND(s, RC(0x78));
-  ROUND(s, RC(0x69));
-  ROUND(s, RC(0x5a));
-  ROUND(s, RC(0x4b));
-}
-
-forceinline void PROUNDS(state_t* s, int nr) {
-  for (int i = START(nr); i > 0x4a; i -= 0x0f) ROUND(s, RC(i));
+  ROUND(s, RC6);
+  ROUND(s, RC7);
+  ROUND(s, RC8);
+  ROUND(s, RC9);
+  ROUND(s, RCa);
+  ROUND(s, RCb);
 }
 
 #if ASCON_INLINE_PERM && ASCON_UNROLL_LOOPS

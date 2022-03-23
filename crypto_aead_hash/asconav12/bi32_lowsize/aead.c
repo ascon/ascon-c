@@ -3,77 +3,93 @@
 #include "permutations.h"
 #include "printstate.h"
 
-forceinline void ascon_loadkey(word_t* K0, word_t* K1, word_t* K2,
-                               const uint8_t* k) {
-  KINIT(K0, K1, K2);
-  if (CRYPTO_KEYBYTES == 16) {
-    *K1 = XOR(*K1, LOAD(k, 8));
-    *K2 = XOR(*K2, LOAD(k + 8, 8));
-  }
-  if (CRYPTO_KEYBYTES == 20) {
-    *K0 = XOR(*K0, KEYROT(WORD_T(0), LOADBYTES(k, 4)));
-    *K1 = XOR(*K1, LOADBYTES(k + 4, 8));
-    *K2 = XOR(*K2, LOADBYTES(k + 12, 8));
-  }
+#if !ASCON_INLINE_MODE
+#undef forceinline
+#define forceinline
+#endif
+
+#ifdef ASCON_AEAD_RATE
+
+forceinline void ascon_loadkey(key_t* key, const uint8_t* k) {
+#if CRYPTO_KEYBYTES == 16
+  key->k1 = LOAD(k, 8);
+  key->k2 = LOAD(k + 8, 8);
+#else /* CRYPTO_KEYBYTES == 20 */
+  key->k0 = KEYROT(0, LOADBYTES(k, 4));
+  key->k1 = LOADBYTES(k + 4, 8);
+  key->k2 = LOADBYTES(k + 12, 8);
+#endif
 }
 
-forceinline void ascon_aeadinit(state_t* s, const uint8_t* npub, word_t K0,
-                                word_t K1, word_t K2) {
-  if (CRYPTO_KEYBYTES == 16 && ASCON_AEAD_RATE == 8) s->x0 = ASCON_128_IV;
-  if (CRYPTO_KEYBYTES == 16 && ASCON_AEAD_RATE == 16) s->x0 = ASCON_128A_IV;
-  if (CRYPTO_KEYBYTES == 20) s->x0 = ASCON_80PQ_IV;
-  if (CRYPTO_KEYBYTES == 20) s->x0 = XOR(s->x0, K0);
-  s->x1 = K1;
-  s->x2 = K2;
-  s->x3 = LOAD(npub, 8);
-  s->x4 = LOAD(npub + 8, 8);
+forceinline void ascon_initaead(state_t* s, const uint8_t* npub,
+                                const key_t* key) {
+#if CRYPTO_KEYBYTES == 16
+  if (ASCON_AEAD_RATE == 8) s->x[0] = ASCON_128_IV;
+  if (ASCON_AEAD_RATE == 16) s->x[0] = ASCON_128A_IV;
+#else /* CRYPTO_KEYBYTES == 20 */
+  s->x[0] = ASCON_80PQ_IV ^ key->k0;
+#endif
+  s->x[1] = key->k1;
+  s->x[2] = key->k2;
+  s->x[3] = LOAD(npub, 8);
+  s->x[4] = LOAD(npub + 8, 8);
+  printstate("init 1st key xor", s);
   P(s, 12);
-  if (CRYPTO_KEYBYTES == 20) s->x2 = XOR(s->x2, K0);
-  s->x3 = XOR(s->x3, K1);
-  s->x4 = XOR(s->x4, K2);
-  printstate("initialization", s);
+#if CRYPTO_KEYBYTES == 20
+  s->x[2] ^= key->k0;
+#endif
+  s->x[3] ^= key->k1;
+  s->x[4] ^= key->k2;
+  printstate("init 2nd key xor", s);
 }
 
-forceinline void ascon_final(state_t* s, word_t K0, word_t K1, word_t K2) {
-  if (CRYPTO_KEYBYTES == 16 && ASCON_AEAD_RATE == 8) {
-    s->x1 = XOR(s->x1, K1);
-    s->x2 = XOR(s->x2, K2);
+forceinline void ascon_final(state_t* s, const key_t* key) {
+#if CRYPTO_KEYBYTES == 16
+  if (ASCON_AEAD_RATE == 8) {
+    s->x[1] ^= key->k1;
+    s->x[2] ^= key->k2;
+  } else {
+    s->x[2] ^= key->k1;
+    s->x[3] ^= key->k2;
   }
-  if (CRYPTO_KEYBYTES == 16 && ASCON_AEAD_RATE == 16) {
-    s->x2 = XOR(s->x2, K1);
-    s->x3 = XOR(s->x3, K2);
-  }
-  if (CRYPTO_KEYBYTES == 20) {
-    s->x1 = XOR(s->x1, KEYROT(K0, K1));
-    s->x2 = XOR(s->x2, KEYROT(K1, K2));
-    s->x3 = XOR(s->x3, KEYROT(K2, WORD_T(0)));
-  }
+#else /* CRYPTO_KEYBYTES == 20 */
+  s->x[1] ^= KEYROT(key->k0, key->k1);
+  s->x[2] ^= KEYROT(key->k1, key->k2);
+  s->x[3] ^= KEYROT(key->k2, 0);
+#endif
+  printstate("final 1st key xor", s);
   P(s, 12);
-  s->x3 = XOR(s->x3, K1);
-  s->x4 = XOR(s->x4, K2);
-  printstate("finalization", s);
+  s->x[3] ^= key->k1;
+  s->x[4] ^= key->k2;
+  printstate("final 2nd key xor", s);
 }
 
-void ascon_aead(state_t* s, uint8_t* out, const uint8_t* in, uint64_t tlen,
+void ascon_aead(uint8_t* t, uint8_t* out, const uint8_t* in, uint64_t tlen,
                 const uint8_t* ad, uint64_t adlen, const uint8_t* npub,
                 const uint8_t* k, uint8_t mode) {
   const int nr = (ASCON_AEAD_RATE == 8) ? 6 : 8;
-  word_t K0, K1, K2;
-  ascon_loadkey(&K0, &K1, &K2, k);
+  key_t key;
+  ascon_loadkey(&key, k);
   /* initialize */
-  ascon_aeadinit(s, npub, K0, K1, K2);
+  state_t s;
+  ascon_initaead(&s, npub, &key);
   /* process associated data */
   if (adlen) {
-    ascon_update(s, (void*)0, ad, adlen, ASCON_ABSORB);
-    P(s, nr);
+    ascon_update(&s, (void*)0, ad, adlen, ASCON_ABSORB);
+    printstate("pad adata", &s);
+    P(&s, nr);
   }
   /* domain separation */
-  s->x4 = XOR(s->x4, WORD_T(1));
-  printstate("process associated data", s);
+  s.x[4] ^= 1;
+  printstate("domain separation", &s);
   /* process plaintext/ciphertext */
-  ascon_update(s, out, in, tlen, mode);
-  if (mode == ASCON_ENCRYPT) printstate("process plaintext", s);
-  if (mode == ASCON_DECRYPT) printstate("process ciphertext", s);
+  ascon_update(&s, out, in, tlen, mode);
+  if (mode == ASCON_ENCRYPT) printstate("pad plaintext", &s);
+  if (mode == ASCON_DECRYPT) printstate("pad ciphertext", &s);
   /* finalize */
-  ascon_final(s, K0, K1, K2);
+  ascon_final(&s, &key);
+  ((uint64_t*)t)[0] = WORDTOU64(s.x[3]);
+  ((uint64_t*)t)[1] = WORDTOU64(s.x[4]);
 }
+
+#endif

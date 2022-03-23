@@ -6,7 +6,15 @@
 #include "word.h"
 
 typedef struct {
-  word_t x0, x1, x2, x3, x4;
+  uint64_t x[5];
 } state_t;
 
-#endif /* ASCON_H */
+typedef struct {
+#if (CRYPTO_KEYBYTES == 20)
+  uint64_t k0;
+#endif
+  uint64_t k1;
+  uint64_t k2;
+} key_t;
+
+#endif /* ASCON_H_ */

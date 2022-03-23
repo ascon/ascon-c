@@ -1,12 +1,12 @@
 #ifndef PRINTSTATE_H_
 #define PRINTSTATE_H_
 
-#ifdef ASCON_PRINTSTATE
+#ifdef ASCON_PRINT_STATE
 
 #include "ascon.h"
 #include "word.h"
 
-void printword(const char* text, const word_t x);
+void printword(const char* text, const uint64_t x);
 void printstate(const char* text, const state_t* s);
 
 #else

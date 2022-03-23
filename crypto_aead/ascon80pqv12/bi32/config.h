@@ -16,4 +16,14 @@
 #define ASCON_UNROLL_LOOPS 1
 #endif
 
+/* inline bitinterleaving */
+#ifndef ASCON_INLINE_BI
+#define ASCON_INLINE_BI 1
+#endif
+
+/* extern bitinterleaving */
+#ifndef ASCON_EXTERN_BI
+#define ASCON_EXTERN_BI 0
+#endif
+
 #endif /* CONFIG_H_ */

@@ -4,21 +4,7 @@
 #include "ascon.h"
 #include "printstate.h"
 
-forceinline void KINIT(word_t* K0, word_t* K1, word_t* K2) {
-  *K0 = WORD_T(0);
-  *K1 = WORD_T(0);
-  *K2 = WORD_T(0);
-}
-
-forceinline void PINIT(state_t* s) {
-  s->x0 = WORD_T(0);
-  s->x1 = WORD_T(0);
-  s->x2 = WORD_T(0);
-  s->x3 = WORD_T(0);
-  s->x4 = WORD_T(0);
-}
-
-forceinline void ROUND(state_t* s, word_t C) {
+forceinline void ROUND(state_t* s, uint64_t C) {
   uint64_t x = 0;
   __mmask8 mxor1 = 0x15;
   __mmask8 mxor2 = 0x0b;
@@ -46,6 +32,10 @@ forceinline void ROUND(state_t* s, word_t C) {
   t2 = _mm512_rorv_epi64(t0, rot2);
   s->z = _mm512_ternarylogic_epi64(t0, t1, t2, 0x96);
   printstate(" round output", s);
+}
+
+forceinline void PROUNDS(state_t* s, int nr) {
+  for (int i = START(nr); i != END; i += INC) ROUND(s, (i));
 }
 
 #endif /* ROUND_H_ */
