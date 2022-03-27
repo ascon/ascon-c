@@ -7,14 +7,16 @@
 forceinline void ROUND_LOOP(state_t* s, const uint8_t* C, const uint8_t* E) {
   uint32_t tmp0, tmp1;
   __asm__ __volatile__(
+      "@.syntax_unified\n\t"
       "rbegin_%=:;\n\t"
-      "ldrb %[tmp2], [%[tmp1]], #1\n\t"
+      "ldrb %[tmp2], [%[tmp1], #0]\n\t"
       "push  {%[tmp0]}\n\t"
       "eor %[x0_l], %[x0_l], %[x4_l]\n\t"
       "eor %[x4_l], %[x4_l], %[x3_l]\n\t"
       "eor %[x2_l], %[x2_l], %[x1_l]\n\t"
       "eor %[x2_l], %[x2_l], %[tmp2]\n\t"
-      "ldrb %[tmp2], [%[tmp1]], #1\n\t"
+      "ldrb %[tmp2], [%[tmp1], #1]\n\t"
+      "add %[tmp1], %[tmp1], #2\n\t"
       "movs %[tmp0], %[x2_h]\n\t"
       "push  {%[tmp1]}\n\t"
       "eor %[tmp0], %[tmp0], %[tmp2]\n\t"
@@ -151,7 +153,9 @@ forceinline void ROUND_LOOP(state_t* s, const uint8_t* C, const uint8_t* E) {
       "movs %[x0_h], %[x2_h]\n\t"
       "movs %[x2_h], %[tmp2]\n\t"
       "cmp %[tmp1], %[tmp0]\n\t"
-      "bne rbegin_%=\n\t"
+      "beq rend_%=\n\t"
+      "b rbegin_%=\n\t"
+      "rend_%=:;\n\t"
       : [ x0_l ] "+l"(s->w[0][0]), [ x0_h ] "+r"(s->w[0][1]),
         [ x1_l ] "+l"(s->w[1][0]), [ x1_h ] "+r"(s->w[1][1]),
         [ x2_l ] "+l"(s->w[2][0]), [ x2_h ] "+r"(s->w[2][1]),

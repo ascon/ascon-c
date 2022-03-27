@@ -163,7 +163,9 @@ forceinline void ROUND_LOOP(state_t* s, uint32_t C) {
       "movs %[x0_h], %[tmp0]\n\t"
       "sub %[tmp1], %[tmp1], #15\n\t"
       "cmp %[tmp1], #60\n\t"
-      "bne rbegin_%=\n\t"
+      "beq rend_%=\n\t"
+      "b rbegin_%=\n\t"
+      "rend_%=:;\n\t"
       : [ x0_l ] "+l"(s->w[0][0]), [ x0_h ] "+r"(s->w[0][1]),
         [ x1_l ] "+l"(s->w[1][0]), [ x1_h ] "+r"(s->w[1][1]),
         [ x2_l ] "+l"(s->w[2][0]), [ x2_h ] "+r"(s->w[2][1]),
