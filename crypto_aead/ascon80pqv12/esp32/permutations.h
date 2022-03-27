@@ -29,20 +29,20 @@ u32_4 ascon_rev8(u32_4 in);
 u32_2 ascon_rev8_half(u32_2 in);
 
 #define to_big_immediate(out, in) \
-  do { \
-    u64 big_in = U64BIG(in); \
-    u32 hi = (big_in) >> 32; \
-    u32 lo = (u32)(big_in); \
-    out.h = hi; \
-    out.l = lo; \
+  do {                            \
+    u64 big_in = U64BIG(in);      \
+    u32 hi = (big_in) >> 32;      \
+    u32 lo = (u32)(big_in);       \
+    out.h = hi;                   \
+    out.l = lo;                   \
   } while (0)
 
 #define from_big_immediate(out, in) \
-  do { \
-    u32 hi = in.h; \
-    u32 lo = in.l; \
-    out = (u64)hi << 32 | lo; \
-    out = U64BIG(out); \
+  do {                              \
+    u32 hi = in.h;                  \
+    u32 lo = in.l;                  \
+    out = (u64)hi << 32 | lo;       \
+    out = U64BIG(out);              \
   } while (0)
 
 void P(state *p, u8 round_const, u8 rounds);

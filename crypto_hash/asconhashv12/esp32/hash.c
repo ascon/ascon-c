@@ -1,4 +1,5 @@
 #include <string.h>
+
 #include "api.h"
 #include "endian.h"
 #include "permutations.h"
@@ -14,11 +15,16 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
   unsigned long len = inlen;
 
   // initialization
-  s.x0.h = 0xee9398aa; s.x0.l = 0xdb67f03d;
-  s.x1.h = 0x8bb21831; s.x1.l = 0xc60f1002;
-  s.x2.h = 0xb48a92db; s.x2.l = 0x98d5da62;
-  s.x3.h = 0x43189921; s.x3.l = 0xb8f8e3e8;
-  s.x4.h = 0x348fa5c9; s.x4.l = 0xd525e140;
+  s.x0.h = 0xee9398aa;
+  s.x0.l = 0xdb67f03d;
+  s.x1.h = 0x8bb21831;
+  s.x1.l = 0xc60f1002;
+  s.x2.h = 0xb48a92db;
+  s.x2.l = 0x98d5da62;
+  s.x3.h = 0x43189921;
+  s.x3.l = 0xb8f8e3e8;
+  s.x4.h = 0x348fa5c9;
+  s.x4.l = 0xd525e140;
 
   while (len >= RATE) {
     tmp.h = ((u32*)in)[0];
@@ -60,4 +66,3 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
 
   return 0;
 }
-

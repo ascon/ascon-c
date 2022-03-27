@@ -1,7 +1,9 @@
-#include <string.h>
 #include "core.h"
 
-void ascon_duplex(state* s, unsigned char* out, const unsigned char* in, unsigned long len, u8 mode) {
+#include <string.h>
+
+void ascon_duplex(state* s, unsigned char* out, const unsigned char* in,
+                  unsigned long len, u8 mode) {
   u32_2 tmp;
 
   while (len >= RATE) {

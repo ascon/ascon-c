@@ -14,7 +14,7 @@
 #define PB_ROUNDS 6
 #define PA_START_ROUND 0xf0
 #define PB_START_ROUND 0x96
-#define IV                                                        \
+#define IV                                                      \
   ((u64)(8 * (CRYPTO_KEYBYTES)) << 0 | (u64)(8 * (RATE)) << 8 | \
    (u64)(PA_ROUNDS) << 16 | (u64)(PB_ROUNDS) << 24)
 
