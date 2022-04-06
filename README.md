@@ -16,7 +16,7 @@ For more information on Ascon visit: https://ascon.iaik.tugraz.at/
 
 ## Algorithms
 
-This repository contains implementations of the following 10 Ascon v1.2 algorithms:
+This repository contains implementations of the following 12 Ascon v1.2 algorithms:
 
 - `crypto_aead/ascon128v12`: Ascon-128
 - `crypto_aead/ascon128av12`: Ascon-128a
@@ -26,7 +26,9 @@ This repository contains implementations of the following 10 Ascon v1.2 algorith
 - `crypto_hash/asconxofv12`: Ascon-Xof
 - `crypto_hash/asconxofav12`: Ascon-Xofa
 - `crypto_auth/asconmacv12`: Ascon-Mac
+- `crypto_auth/asconmacav12`: Ascon-Maca
 - `crypto_auth/asconprfv12`: Ascon-Prf
+- `crypto_auth/asconprfav12`: Ascon-Prfa
 - `crypto_auth/asconprfsv12`: Ascon-PrfShort
 
 We also provide two combined algorithm implementations supporting both AEAD and
@@ -163,6 +165,15 @@ preliminary results can found at: https://github.com/ascon/simpleserial-ascon
 | Intel Core i5-6300U      |  369 |   46 |   24 |   18 | 11.7 |  6.4 |  6.3 |
 | Intel Core i5-4200U      |  506 |   63 |   32 |   24 | 16.2 |  8.8 |  8.7 |
 | ARM1176JZF-S (ARMv6)     | 1769 |  223 |  117 |   85 | 57.5 | 31.9 | 31.6 |
+
+
+## Ascon-Maca and Ascon-Prfa
+
+| Message Length in Bytes  |    1 |    8 |   16 |   32 |   64 | 1536 | long |
+|:-------------------------|-----:|-----:|-----:|-----:|-----:|-----:|-----:|
+| Intel Core i5-6300U      |  355 |   45 |   23 |   12 |  7.7 |  3.5 |  3.5 |
+| Intel Core i5-4200U      |  506 |   63 |   32 |   16 | 11.1 |  5.3 |  5.1 |
+| ARM1176JZF-S (ARMv6)     | 2028 |  252 |  128 |   65 | 43.5 | 19.0 | 18.8 |
 
 
 ## Ascon-PrfShort
