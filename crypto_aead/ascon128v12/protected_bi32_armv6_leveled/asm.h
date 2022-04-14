@@ -18,9 +18,9 @@
     __asm__ volatile("mov %0, %1\n\t" : "=r"(r) : "i"(v)); \
   } while (0)
 
-#define MOVI(rd, imm) __asm__ volatile("mov %0, %1\n\t" : "=r"(rd) : "i"(imm))
+#define MOV(rd, imm) __asm__ volatile("mov %0, %1\n\t" : "=r"(rd) : "i"(imm))
 
-#define RORI(rd, rn, imm) \
+#define ROR(rd, rn, imm) \
   __asm__ volatile("ror %0, %1, #%c2\n\t" : "=r"(rd) : "r"(rn), "i"(imm))
 
 #define EOR_ROR(rd, rn, rm, imm)                  \

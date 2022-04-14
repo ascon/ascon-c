@@ -146,31 +146,31 @@ forceinline word_t MREUSE(word_t w, uint64_t val, int ns) {
 forceinline word_t MZERO(int ns) {
   word_t w;
   if (ns == 1) {
-    MOVI(w.s[0].w[0], 0);
-    MOVI(w.s[0].w[1], 0);
+    MOV(w.s[0].w[0], 0);
+    MOV(w.s[0].w[1], 0);
   }
   if (ns >= 2) {
     RND(w.s[1].w[0]);
     RND(w.s[1].w[1]);
-    RORI(w.s[1].w[0], w.s[1].w[0], 7);
-    RORI(w.s[1].w[1], w.s[1].w[1], 7);
-    RORI(w.s[0].w[0], w.s[1].w[0], ROT(1));
-    RORI(w.s[0].w[1], w.s[1].w[1], ROT(1));
+    ROR(w.s[1].w[0], w.s[1].w[0], 7);
+    ROR(w.s[1].w[1], w.s[1].w[1], 7);
+    ROR(w.s[0].w[0], w.s[1].w[0], ROT(1));
+    ROR(w.s[0].w[1], w.s[1].w[1], ROT(1));
     if (ns == 2) CLEAR();
   }
   if (ns >= 3) {
     RND(w.s[2].w[0]);
     RND(w.s[2].w[1]);
-    RORI(w.s[2].w[0], w.s[2].w[0], 13);
-    RORI(w.s[2].w[1], w.s[2].w[1], 13);
+    ROR(w.s[2].w[0], w.s[2].w[0], 13);
+    ROR(w.s[2].w[1], w.s[2].w[1], 13);
     EOR_ROR(w.s[0].w[0], w.s[0].w[0], w.s[2].w[0], ROT(2));
     EOR_ROR(w.s[0].w[1], w.s[0].w[1], w.s[2].w[1], ROT(2));
   }
   if (ns >= 4) {
     RND(w.s[3].w[0]);
     RND(w.s[3].w[1]);
-    RORI(w.s[3].w[0], w.s[3].w[0], 29);
-    RORI(w.s[3].w[1], w.s[3].w[1], 29);
+    ROR(w.s[3].w[0], w.s[3].w[0], 29);
+    ROR(w.s[3].w[1], w.s[3].w[1], 29);
     EOR_ROR(w.s[0].w[0], w.s[0].w[0], w.s[3].w[0], ROT(3));
     EOR_ROR(w.s[0].w[1], w.s[0].w[1], w.s[3].w[1], ROT(3));
   }
