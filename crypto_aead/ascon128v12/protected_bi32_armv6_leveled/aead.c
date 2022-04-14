@@ -209,5 +209,3 @@ void ascon_level_final(state_t* s) {
   s->x[4] = MEXPAND(s->x[4], NUM_SHARES_M, NUM_SHARES_KEY);
   s->x[5] = MEXPAND(s->x[5], NUM_SHARES_M, NUM_SHARES_KEY);
 }
-
-#endif

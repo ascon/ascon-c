@@ -162,39 +162,6 @@ forceinline word_t MREFRESH(word_t w, int ns) {
   return MXOR(w, r, ns);
 }
 
-forceinline int MNOTZERO(word_t a, word_t b, int ns) {
-  word_t c = MZERO(ns);
-  /* note: OR(a,b) = ~BIC(~a,b) */
-  a.s[0].w[0] = ~a.s[0].w[0];
-  a.s[0].w[1] = ~a.s[0].w[1];
-  /* OR first and second 64-bit word */
-  c = MXORBIC(c, a, b, 0, ns);
-  c = MXORBIC(c, a, b, 1, ns);
-  /* OR even and odd words */
-  if (ns >= 1) b.s[0].w[0] = c.s[0].w[1];
-  if (ns >= 2) b.s[1].w[0] = c.s[1].w[1];
-  if (ns >= 3) b.s[2].w[0] = c.s[2].w[1];
-  if (ns >= 4) b.s[3].w[0] = c.s[3].w[1];
-  a = MXORBIC(a, b, c, 0, ns);
-  /* loop to OR 16/8/4/2/1 bit chunks */
-  for (int i = 16; i > 0; i >>= 1) {
-    if (ns >= 1) b.s[0].w[0] = ROR32(a.s[0].w[0], i);
-    if (ns >= 2) b.s[1].w[0] = ROR32(a.s[1].w[0], i);
-    if (ns >= 3) b.s[2].w[0] = ROR32(a.s[2].w[0], i);
-    if (ns >= 4) b.s[3].w[0] = ROR32(a.s[3].w[0], i);
-    c = MXORBIC(c, a, b, 0, ns);
-    if (ns >= 1) a.s[0].w[0] = c.s[0].w[0];
-    if (ns >= 2) a.s[1].w[0] = c.s[1].w[0];
-    if (ns >= 3) a.s[2].w[0] = c.s[2].w[0];
-    if (ns >= 4) a.s[3].w[0] = c.s[3].w[0];
-  }
-  /* unmask result */
-  if (ns >= 2) a.s[0].w[0] ^= ROR32(a.s[1].w[0], ROT(1));
-  if (ns >= 3) a.s[0].w[0] ^= ROR32(a.s[2].w[0], ROT(2));
-  if (ns >= 4) a.s[0].w[0] ^= ROR32(a.s[3].w[0], ROT(3));
-  return ~a.s[0].w[0];
-}
-
 forceinline share_t LOADSHARE(uint32_t* data, int ns) {
   share_t s;
   uint32_t lo, hi;
