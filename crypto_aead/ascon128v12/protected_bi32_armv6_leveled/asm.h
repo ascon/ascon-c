@@ -5,11 +5,28 @@
 #define __asm__ asm
 #endif
 
+#define LDR(rd, ptr, offset) \
+  __asm__ volatile("ldr %0, [%1, %2]\n\t" : "=r"(rd) : "r"(ptr), "ri"(offset))
+
+#define STR(rd, ptr, offset)                                                \
+  __asm__ volatile("str %0, [%1, %2]\n\t" ::"r"(rd), "r"(ptr), "ri"(offset) \
+                   : "memory")
+
 #define CLEAR()                                            \
   do {                                                     \
     uint32_t r, v = 0;                                     \
     __asm__ volatile("mov %0, %1\n\t" : "=r"(r) : "i"(v)); \
   } while (0)
+
+#define MOVI(rd, imm) __asm__ volatile("mov %0, %1\n\t" : "=r"(rd) : "i"(imm))
+
+#define RORI(rd, rn, imm) \
+  __asm__ volatile("ror %0, %1, #%c2\n\t" : "=r"(rd) : "r"(rn), "i"(imm))
+
+#define EOR_ROR(rd, rn, rm, imm)                  \
+  __asm__ volatile("eor %0, %1, %2, ror #%c3\n\t" \
+                   : "=r"(rd)                     \
+                   : "r"(rn), "r"(rm), "i"(imm))
 
 #define EOR_AND_ROR(ce, ae, be, imm, tmp)                       \
   __asm__ volatile(                                             \

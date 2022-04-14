@@ -8,8 +8,8 @@ void ascon_initaead(state_t* s, const mask_npub_uint32_t* n,
   word_t N0, N1;
   word_t K1, K2;
   /* randomize the initial state */
-  s->x[0] = MZERO(NUM_SHARES_KEY);
   s->x[5] = MZERO(NUM_SHARES_KEY);
+  s->x[0] = MZERO(NUM_SHARES_KEY);
   /* set the initial value */
   s->x[0].s[0].w[0] ^= 0x08220000;
   s->x[0].s[0].w[1] ^= 0x80210000;
@@ -138,19 +138,6 @@ void ascon_settag(state_t* s, mask_c_uint32_t* t) {
   MSTORE((uint32_t*)(t + 2), s->x[4], NUM_SHARES_C);
 }
 
-#if 0
-
-void ascon_xortag(state_t* s, mask_c_uint32_t* t) {
-  s->x[3] = MXOR(s->x[3], MLOAD((uint32_t*)t, NUM_SHARES_MC), NUM_SHARES_KEY);
-  s->x[4] = MXOR(s->x[4], MLOAD((uint32_t*)(t + 2), NUM_SHARES_MC), NUM_SHARES_KEY);
-}
-
-int ascon_iszero(state_t* s) {
-  return MNOTZERO(s->x[3], s->x[4]);
-}
-
-#else
-
 /* expected value of x3,x4 for P(0) */
 #if ASCON_PB_ROUNDS == 1
 static const uint32_t c[4] = {0x4b000009, 0x1c800003, 0x00000000, 0x00000000};
@@ -173,8 +160,8 @@ void ascon_xortag(state_t* s, const mask_c_uint32_t* t) {
   s->x[2] = MREUSE(s->x[2], 0, NUM_SHARES_KEY);
   /* xor tag to x3, x4 */
   word_t t0 = MLOAD((uint32_t*)t, NUM_SHARES_C);
-  word_t t1 = MLOAD((uint32_t*)(t + 2), NUM_SHARES_C);
   s->x[3] = MXOR(s->x[3], t0, NUM_SHARES_C);
+  word_t t1 = MLOAD((uint32_t*)(t + 2), NUM_SHARES_C);
   s->x[4] = MXOR(s->x[4], t1, NUM_SHARES_C);
   /* compute P(0) if tags are equal */
   P(s, ASCON_PB_ROUNDS, NUM_SHARES_KEY);
@@ -186,13 +173,11 @@ void ascon_xortag(state_t* s, const mask_c_uint32_t* t) {
 }
 
 int ascon_iszero(state_t* s) {
-  uint32_t result = 0;
   s->x[3] = MREDUCE(s->x[3], NUM_SHARES_KEY, 1);
   s->x[4] = MREDUCE(s->x[4], NUM_SHARES_KEY, 1);
-  result ^= s->x[3].s[0].w[0];
-  result ^= s->x[3].s[0].w[1];
-  result ^= s->x[4].s[0].w[0];
-  result ^= s->x[4].s[0].w[1];
+  uint32_t result;
+  result = s->x[3].s[0].w[0] ^ s->x[3].s[0].w[1];
+  result ^= s->x[4].s[0].w[0] ^ s->x[4].s[0].w[1];
   result |= result >> 16;
   result |= result >> 8;
   return ((((int)(result & 0xff) - 1) >> 8) & 1) - 1;

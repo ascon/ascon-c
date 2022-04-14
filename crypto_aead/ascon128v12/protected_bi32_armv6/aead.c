@@ -188,8 +188,3 @@ int ascon_iszero(state_t* s) {
   result |= result >> 8;
   return ((((int)(result & 0xff) - 1) >> 8) & 1) - 1;
 }
-
-int ascon_verify(state_t* s, const mask_c_uint32_t* t) {
-  ascon_xortag(s, t);
-  return ascon_iszero(s);
-}

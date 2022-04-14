@@ -36,5 +36,6 @@ int crypto_aead_decrypt_shared(mask_m_uint32_t* ms, unsigned long long* mlen,
   ascon_adata(&s, ads, adlen);
   ascon_decrypt(&s, ms, cs, *mlen);
   ascon_final(&s, ks);
-  return ascon_verify(&s, cs + NUM_WORDS(*mlen));
+  ascon_xortag(&s, cs + NUM_WORDS(*mlen));
+  return ascon_iszero(&s);
 }

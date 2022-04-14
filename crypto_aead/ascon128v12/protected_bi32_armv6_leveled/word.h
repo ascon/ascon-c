@@ -197,24 +197,30 @@ forceinline int MNOTZERO(word_t a, word_t b, int ns) {
 
 forceinline share_t LOADSHARE(uint32_t* data, int ns) {
   share_t s;
+  uint32_t lo, hi;
+  LDR(lo, data, 0);
+  LDR(hi, data, 4 * ns);
 #if !ASCON_EXTERN_BI
-  BD(s.w[0], s.w[1], data[0], data[ns]);
+  BD(s.w[0], s.w[1], lo, hi);
   if (ns == 2) CLEAR();
 #else
-  s.w[0] = data[0];
-  s.w[1] = data[ns];
+  s.w[0] = lo;
+  s.w[1] = hi;
 #endif
   return s;
 }
 
 forceinline void STORESHARE(uint32_t* data, share_t s, int ns) {
+  uint32_t lo, hi;
 #if !ASCON_EXTERN_BI
-  BI(data[0], data[ns], s.w[0], s.w[1]);
+  BI(lo, hi, s.w[0], s.w[1]);
   if (ns == 2) CLEAR();
 #else
-  data[0] = s.w[0];
-  data[ns] = s.w[1];
+  lo = s.w[0];
+  hi = s.w[1];
 #endif
+  STR(lo, data, 0);
+  STR(hi, data, 4 * ns);
 }
 
 forceinline word_t MLOAD(uint32_t* data, int ns) {
