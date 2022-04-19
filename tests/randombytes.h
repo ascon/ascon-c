@@ -3,7 +3,9 @@
 
 #include <stdlib.h>
 
-inline void randombytes(unsigned char* x, unsigned long long len) {
+#include "forceinline.h"
+
+forceinline void randombytes(unsigned char* x, unsigned long long len) {
   for (unsigned long long i = 0; i < len; ++i) x[i] = rand();
 }
 

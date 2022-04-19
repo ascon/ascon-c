@@ -5,11 +5,9 @@
 
 #include "api.h"
 #include "config.h"
-#include "randombytes.h"
 
 #define NUM_WORDS(len) ((((len) + 7) / 8) * 2)
 #define ROT(i) (((i) * (ASCON_ROR_SHARES)) & 31)
-#define RND(rnd) randombytes((unsigned char*)&rnd, 4)
 
 typedef struct {
   uint32_t shares[NUM_SHARES_M];

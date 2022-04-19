@@ -7,6 +7,7 @@
 #include "endian.h"
 #include "forceinline.h"
 #include "interleave.h"
+#include "randombytes.h"
 
 forceinline uint32_t ROR32(uint32_t x, int n) {
   return x >> n | x << (-n & 31);
@@ -73,15 +74,14 @@ void generate_shares(uint32_t* s, int num_shares, const uint8_t* data,
     s[(i + 0) * num_shares + 0] = 0;
     s[(i + 1) * num_shares + 0] = 0;
     for (int d = 1; d < num_shares; ++d) {
-      RND(rnd0);
-      RND(rnd1);
-      s[(i + 0) * num_shares + d] = rnd0;
-      s[(i + 1) * num_shares + d] = rnd1;
+      randombytes((uint8_t*)&rnd, 8);
+      s[(i + 0) * num_shares + d] = (uint32_t)rnd;
+      s[(i + 1) * num_shares + d] = (uint32_t)(rnd >> 32);
 #if ASCON_EXTERN_BI
-      s[(i + 0) * num_shares + 0] ^= ROR32(rnd0, ROT(d));
-      s[(i + 1) * num_shares + 0] ^= ROR32(rnd1, ROT(d));
+      s[(i + 0) * num_shares + 0] ^= ROR32((uint32_t)rnd, ROT(d));
+      s[(i + 1) * num_shares + 0] ^= ROR32((uint32_t)(rnd >> 32), ROT(d));
 #else
-      rnd = ROR64((uint64_t)rnd1 << 32 | rnd0, ROT(2 * d));
+      rnd = ROR64(rnd, ROT(2 * d));
       s[(i + 0) * num_shares + 0] ^= (uint32_t)rnd;
       s[(i + 1) * num_shares + 0] ^= (uint32_t)(rnd >> 32);
 #endif

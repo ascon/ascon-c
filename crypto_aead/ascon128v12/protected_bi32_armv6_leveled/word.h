@@ -9,6 +9,7 @@
 #include "endian.h"
 #include "forceinline.h"
 #include "interleave.h"
+#include "randombytes.h"
 #include "shares.h"
 
 typedef struct {
@@ -101,13 +102,9 @@ forceinline word_t MXORAND(word_t c, word_t a, word_t b, int ns) {
 }
 
 forceinline word_t MRND(int ns) {
-  word_t w = {0};
-  if (ns >= 2) RND(w.s[1].w[0]);
-  if (ns >= 2) RND(w.s[1].w[1]);
-  if (ns >= 3) RND(w.s[2].w[0]);
-  if (ns >= 3) RND(w.s[2].w[1]);
-  if (ns >= 4) RND(w.s[3].w[0]);
-  if (ns >= 4) RND(w.s[3].w[1]);
+  word_t w;
+  randombytes((uint8_t*)&(w.s[1].w[0]), (ns - 1) * 8);
+  w.s[0].w[0] = w.s[0].w[1] = 0;
   return w;
 }
 
