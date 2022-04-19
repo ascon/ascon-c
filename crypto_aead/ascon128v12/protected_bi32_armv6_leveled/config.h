@@ -18,4 +18,20 @@
 #define ASCON_PB_ROUNDS 6
 #endif
 
+#if NUM_SHARES_M > NUM_SHARES_KEY
+#error "NUM_SHARES_M > NUM_SHARES_KEY currently not supported"
+#endif
+
+#if NUM_SHARES_C > NUM_SHARES_M
+#error "NUM_SHARES_C > NUM_SHARES_M currently not supported"
+#endif
+
+#if NUM_SHARES_AD > NUM_SHARES_M
+#error "NUM_SHARES_AD > NUM_SHARES_M currently not supported"
+#endif
+
+#if NUM_SHARES_NPUB > NUM_SHARES_KEY
+#error "NUM_SHARES_NPUB > NUM_SHARES_KEY currently not supported"
+#endif
+
 #endif /* CONFIG_H_ */

@@ -183,6 +183,7 @@ int ascon_iszero(state_t* s) {
   return ((((int)(result & 0xff) - 1) >> 8) & 1) - 1;
 }
 
+#if NUM_SHARES_KEY != NUM_SHARES_AD
 void ascon_level_adata(state_t* s) {
   s->x[0] = MREDUCE(s->x[0], NUM_SHARES_KEY, NUM_SHARES_AD);
   s->x[1] = MREDUCE(s->x[1], NUM_SHARES_KEY, NUM_SHARES_AD);
@@ -191,7 +192,9 @@ void ascon_level_adata(state_t* s) {
   s->x[4] = MREDUCE(s->x[4], NUM_SHARES_KEY, NUM_SHARES_AD);
   s->x[5] = MREDUCE(s->x[5], NUM_SHARES_KEY, NUM_SHARES_AD);
 }
+#endif
 
+#if NUM_SHARES_AD != NUM_SHARES_M
 void ascon_level_encdec(state_t* s) {
   s->x[0] = MEXPAND(s->x[0], NUM_SHARES_AD, NUM_SHARES_M);
   s->x[1] = MEXPAND(s->x[1], NUM_SHARES_AD, NUM_SHARES_M);
@@ -199,8 +202,18 @@ void ascon_level_encdec(state_t* s) {
   s->x[3] = MEXPAND(s->x[3], NUM_SHARES_AD, NUM_SHARES_M);
   s->x[4] = MEXPAND(s->x[4], NUM_SHARES_AD, NUM_SHARES_M);
   s->x[5] = MEXPAND(s->x[5], NUM_SHARES_AD, NUM_SHARES_M);
+#if NUM_SHARES_M > NUM_SHARES_AD
+  s->x[0] = MREFRESH(s->x[0], NUM_SHARES_M);
+  s->x[1] = MREFRESH(s->x[1], NUM_SHARES_M);
+  s->x[2] = MREFRESH(s->x[2], NUM_SHARES_M);
+  s->x[3] = MREFRESH(s->x[3], NUM_SHARES_M);
+  s->x[4] = MREFRESH(s->x[4], NUM_SHARES_M);
+  s->x[5] = MREFRESH(s->x[5], NUM_SHARES_M);
+#endif
 }
+#endif
 
+#if NUM_SHARES_M != NUM_SHARES_KEY
 void ascon_level_final(state_t* s) {
   s->x[0] = MEXPAND(s->x[0], NUM_SHARES_M, NUM_SHARES_KEY);
   s->x[1] = MEXPAND(s->x[1], NUM_SHARES_M, NUM_SHARES_KEY);
@@ -208,4 +221,13 @@ void ascon_level_final(state_t* s) {
   s->x[3] = MEXPAND(s->x[3], NUM_SHARES_M, NUM_SHARES_KEY);
   s->x[4] = MEXPAND(s->x[4], NUM_SHARES_M, NUM_SHARES_KEY);
   s->x[5] = MEXPAND(s->x[5], NUM_SHARES_M, NUM_SHARES_KEY);
+#if NUM_SHARES_KEY > NUM_SHARES_M
+  s->x[0] = MREFRESH(s->x[0], NUM_SHARES_KEY);
+  s->x[1] = MREFRESH(s->x[1], NUM_SHARES_KEY);
+  s->x[2] = MREFRESH(s->x[2], NUM_SHARES_KEY);
+  s->x[3] = MREFRESH(s->x[3], NUM_SHARES_KEY);
+  s->x[4] = MREFRESH(s->x[4], NUM_SHARES_KEY);
+  s->x[5] = MREFRESH(s->x[5], NUM_SHARES_KEY);
+#endif
 }
+#endif

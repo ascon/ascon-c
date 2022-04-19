@@ -101,7 +101,7 @@ forceinline word_t MXORAND(word_t c, word_t a, word_t b, int ns) {
 }
 
 forceinline word_t MRND(int ns) {
-  word_t w;
+  word_t w = {0};
   if (ns >= 2) RND(w.s[1].w[0]);
   if (ns >= 2) RND(w.s[1].w[1]);
   if (ns >= 3) RND(w.s[2].w[0]);
@@ -111,7 +111,9 @@ forceinline word_t MRND(int ns) {
   return w;
 }
 
-forceinline word_t MMIX(word_t w, int ns) {
+forceinline word_t MMIX(word_t w, uint64_t val, int ns) {
+  if (ns >= 1) w.s[0].w[0] = (uint32_t)val;
+  if (ns >= 1) w.s[0].w[1] = val >> 32;
   if (ns >= 2) w.s[1].w[0] = ROR32(w.s[1].w[0], 7);
   if (ns >= 2) w.s[1].w[1] = ROR32(w.s[1].w[1], 7);
   if (ns >= 3) w.s[2].w[0] = ROR32(w.s[2].w[0], 13);
@@ -121,33 +123,41 @@ forceinline word_t MMIX(word_t w, int ns) {
   return w;
 }
 
-forceinline word_t MREDUCE(word_t w, int nsi, int nso) {
-  if (nsi >= 2 && nso < 2) w.s[0].w[0] ^= ROR32(w.s[1].w[0], ROT(1));
-  if (nsi >= 2 && nso < 2) w.s[0].w[1] ^= ROR32(w.s[1].w[1], ROT(1));
-  if (nsi >= 3 && nso < 3) w.s[0].w[0] ^= ROR32(w.s[2].w[0], ROT(2));
-  if (nsi >= 3 && nso < 3) w.s[0].w[1] ^= ROR32(w.s[2].w[1], ROT(2));
-  if (nsi >= 4 && nso < 4) w.s[0].w[0] ^= ROR32(w.s[3].w[0], ROT(3));
-  if (nsi >= 4 && nso < 4) w.s[0].w[1] ^= ROR32(w.s[3].w[1], ROT(3));
+forceinline word_t MREMASK(word_t w, word_t r, int nsi, int nso) {
+  if (nsi >= 2 && nso < 2) w.s[0].w[0] ^= ROR32(r.s[1].w[0], ROT(1));
+  if (nsi >= 2 && nso < 2) w.s[0].w[1] ^= ROR32(r.s[1].w[1], ROT(1));
+  if (nsi >= 3 && nso < 3) w.s[0].w[0] ^= ROR32(r.s[2].w[0], ROT(2));
+  if (nsi >= 3 && nso < 3) w.s[0].w[1] ^= ROR32(r.s[2].w[1], ROT(2));
+  if (nsi >= 4 && nso < 4) w.s[0].w[0] ^= ROR32(r.s[3].w[0], ROT(3));
+  if (nsi >= 4 && nso < 4) w.s[0].w[1] ^= ROR32(r.s[3].w[1], ROT(3));
   return w;
 }
 
+forceinline word_t MREDUCE(word_t w, int nsi, int nso) {
+  return MREMASK(w, w, nsi, nso);
+}
+
 forceinline word_t MEXPAND(word_t w, int nsi, int nso) {
-  return MREDUCE(w, nso, nsi);
+  return MREMASK(w, w, nso, nsi);
 }
 
 forceinline word_t MREUSE(word_t w, uint64_t val, int ns) {
-  w.s[0].w[0] = (uint32_t)val;
-  w.s[0].w[1] = val >> 32;
-  w = MMIX(w, ns);
-  w = MEXPAND(w, 1, ns);
+  w = MMIX(w, val, ns);
+  w = MREMASK(w, w, ns, 1);
   return w;
 }
 
 forceinline word_t MZERO(int ns) {
-  word_t w;
-  w = MRND(ns);
+  word_t w = MRND(ns);
   w = MREUSE(w, 0, ns);
   return w;
+}
+
+forceinline word_t MREFRESH(word_t w, int ns) {
+  // word_t r = MMIX(w, 0, ns);
+  word_t r = MRND(ns);
+  w = MREMASK(w, r, ns, 1);
+  return MXOR(w, r, ns);
 }
 
 forceinline word_t MMASK(word_t w, int n) {
@@ -155,11 +165,6 @@ forceinline word_t MMASK(word_t w, int n) {
   w.s[0].w[0] ^= mask;
   w.s[0].w[1] ^= mask;
   return w;
-}
-
-forceinline word_t MREFRESH(word_t w, int ns) {
-  word_t r = MZERO(ns);
-  return MXOR(w, r, ns);
 }
 
 forceinline share_t LOADSHARE(uint32_t* data, int ns) {
