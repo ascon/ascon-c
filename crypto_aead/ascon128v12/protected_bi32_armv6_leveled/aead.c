@@ -68,7 +68,8 @@ void ascon_encrypt(state_t* s, mask_c_uint32_t* c, const mask_m_uint32_t* m,
   while (mlen >= ASCON_AEAD_RATE) {
     word_t ms = MLOAD((uint32_t*)m, NUM_SHARES_M);
     s->x[0] = MXOR(s->x[0], ms, NUM_SHARES_M);
-    MSTORE((uint32_t*)c, s->x[0], NUM_SHARES_C);
+    word_t cx = MREDUCE(s->x[0], NUM_SHARES_M, NUM_SHARES_C);
+    MSTORE((uint32_t*)c, cx, NUM_SHARES_C);
     printstate("absorb plaintext", s, NUM_SHARES_M);
     P(s, nr, NUM_SHARES_M);
     mlen -= ASCON_AEAD_RATE;
@@ -80,7 +81,8 @@ void ascon_encrypt(state_t* s, mask_c_uint32_t* c, const mask_m_uint32_t* m,
   if (mlen) {
     word_t ms = MLOAD((uint32_t*)m, NUM_SHARES_M);
     s->x[0] = MXOR(s->x[0], ms, NUM_SHARES_M);
-    MSTORE((uint32_t*)c, s->x[0], NUM_SHARES_C);
+    word_t cx = MREDUCE(s->x[0], NUM_SHARES_M, NUM_SHARES_C);
+    MSTORE((uint32_t*)c, cx, NUM_SHARES_C);
   }
   printstate("pad plaintext", s, NUM_SHARES_M);
 }
@@ -93,7 +95,7 @@ void ascon_decrypt(state_t* s, mask_m_uint32_t* m, const mask_c_uint32_t* c,
     word_t cx = MLOAD((uint32_t*)c, NUM_SHARES_C);
     s->x[0] = MXOR(s->x[0], cx, NUM_SHARES_C);
     MSTORE((uint32_t*)m, s->x[0], NUM_SHARES_M);
-    s->x[0] = cx;
+    s->x[0] = MEXPAND(cx, NUM_SHARES_C, NUM_SHARES_M);
     printstate("insert ciphertext", s, NUM_SHARES_M);
     P(s, nr, NUM_SHARES_M);
     clen -= ASCON_AEAD_RATE;
@@ -107,6 +109,7 @@ void ascon_decrypt(state_t* s, mask_m_uint32_t* m, const mask_c_uint32_t* c,
     s->x[0] = MXOR(s->x[0], cx, NUM_SHARES_C);
     MSTORE((uint32_t*)m, s->x[0], NUM_SHARES_M);
     word_t mask = MMASK(s->x[5], clen);
+    cx = MEXPAND(cx, NUM_SHARES_C, NUM_SHARES_M);
     s->x[0] = MXORAND(cx, mask, s->x[0], NUM_SHARES_M);
     s->x[5] = MREUSE(s->x[5], 0, NUM_SHARES_M);
   }
