@@ -2,17 +2,22 @@ cmake_minimum_required(VERSION 3.9)
 project(ascon LANGUAGES C ASM)
 enable_testing()
 
-# set the default version, algorithms, implementations, tests, flags, defs
+# set the default version
 set(DEFAULT_VERSIONS v12)
-set(DEFAULT_ALGS ascon128 ascon128a ascon80pq asconhash asconhasha
-  asconxof asconxofa asconprf asconmac asconprfs ascon ascona)
+
+# default to all Ascon algorithms:
+set(DEFAULT_ALGS ascon128 ascon128a ascon80pq
+  asconhash asconhasha asconxof asconxofa
+  asconmac asconmaca asconprf asconprfa asconprfs
+  ascon128bi32 ascon128abi32 asconhashbi32 asconhashabi32
+  ascon ascona asconabi32 asconbi32)
 
 # default to all C implementations:
 set(DEFAULT_IMPLS ref opt64 opt64_lowsize opt32 opt32_lowsize bi32 bi32_lowsize bi32_lowreg esp32 opt8 bi8)
 
-# tests: genkat, getcycles
-set(DEFAULT_TESTS genkat)
+# default flags, tests {genkat, getcycles}, emulator {"qemu-arm;-L;/usr/arm-linux-gnueabi", "sde;--"}
 set(DEFAULT_COMPILE_DEFS)
+set(DEFAULT_TESTS genkat)
 set(DEFAULT_EMULATOR)
 
 if(MSVC)
