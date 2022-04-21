@@ -108,9 +108,7 @@ forceinline word_t MRND(int ns) {
   return w;
 }
 
-forceinline word_t MMIX(word_t w, uint64_t val, int ns) {
-  if (ns >= 1) w.s[0].w[0] = (uint32_t)val;
-  if (ns >= 1) w.s[0].w[1] = val >> 32;
+forceinline word_t MMIX(word_t w, int ns) {
   if (ns >= 2) w.s[1].w[0] = ROR32(w.s[1].w[0], 7);
   if (ns >= 2) w.s[1].w[1] = ROR32(w.s[1].w[1], 7);
   if (ns >= 3) w.s[2].w[0] = ROR32(w.s[2].w[0], 13);
@@ -139,19 +137,21 @@ forceinline word_t MEXPAND(word_t w, int nsi, int nso) {
 }
 
 forceinline word_t MREUSE(word_t w, uint64_t val, int ns) {
-  w = MMIX(w, val, ns);
+  w.s[0].w[0] = (uint32_t)val;
+  w.s[0].w[1] = val >> 32;
+  w = MMIX(w, ns);
   w = MREMASK(w, w, ns, 1);
   return w;
 }
 
 forceinline word_t MZERO(int ns) {
   word_t w = MRND(ns);
-  w = MREUSE(w, 0, ns);
+  w = MMIX(w, ns);
+  w = MREMASK(w, w, ns, 1);
   return w;
 }
 
 forceinline word_t MREFRESH(word_t w, int ns) {
-  // word_t r = MMIX(w, 0, ns);
   word_t r = MRND(ns);
   w = MREMASK(w, r, ns, 1);
   return MXOR(w, r, ns);

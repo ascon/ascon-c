@@ -67,7 +67,6 @@ void combine_shares_decrypt(const mask_m_uint32_t* ms, unsigned char* m,
 
 void generate_shares(uint32_t* s, int num_shares, const uint8_t* data,
                      uint64_t len) {
-  uint32_t rnd0, rnd1;
   uint64_t rnd, i;
   /* generate random shares */
   for (i = 0; i < NUM_WORDS(len); i += 2) {
