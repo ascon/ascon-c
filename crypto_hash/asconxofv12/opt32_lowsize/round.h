@@ -2,6 +2,7 @@
 #define ROUND_H_
 
 #include "ascon.h"
+#include "constants.h"
 #include "printstate.h"
 
 forceinline void ROUND(state_t* s, uint8_t C) {

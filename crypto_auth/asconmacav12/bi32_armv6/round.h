@@ -2,6 +2,7 @@
 #define ROUND_H_
 
 #include "ascon.h"
+#include "constants.h"
 #include "printstate.h"
 
 forceinline void ROUND_LOOP(state_t* s, const uint8_t* C, const uint8_t* E) {

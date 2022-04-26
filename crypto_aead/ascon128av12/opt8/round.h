@@ -2,6 +2,7 @@
 #define ROUND_H_
 
 #include "ascon.h"
+#include "constants.h"
 #include "printstate.h"
 
 forceinline void LINEAR_LAYER(state_t* s, uint64_t xtemp) {

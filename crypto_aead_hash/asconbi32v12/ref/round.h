@@ -2,6 +2,7 @@
 #define ROUND_H_
 
 #include "ascon.h"
+#include "constants.h"
 #include "printstate.h"
 
 static inline uint32_t ROR32(uint32_t x, int n) {
