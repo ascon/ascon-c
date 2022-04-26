@@ -394,6 +394,13 @@ To test only Ascon, just run the following commands:
 ./do-part crypto_hash asconxofv12
 ```
 
+Show the cycles/Byte for a 1536 Byte long message:
+
+```
+cat bench/*/data | grep '_cycles 1536 ' | awk '{printf "%.1f\t%s\t%s\n", $9/$8,
+$6, $7}' | sort -nr
+```
+
 
 ## Evaluate and optimize Ascon on constraint devices:
 
