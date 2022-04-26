@@ -5,8 +5,8 @@
 #include "constants.h"
 #include "printstate.h"
 
-forceinline void ROUND(state_t* s, uint8_t C) {
-  state_t t;
+forceinline void ROUND(ascon_state_t* s, uint8_t C) {
+  ascon_state_t t;
   /* round constant */
   s->x[2] ^= C;
   /* s-box layer */
@@ -36,7 +36,7 @@ forceinline void ROUND(state_t* s, uint8_t C) {
   printstate(" round output", s);
 }
 
-forceinline void PROUNDS(state_t* s, int nr) {
+forceinline void PROUNDS(ascon_state_t* s, int nr) {
   int i = START(nr);
   do {
     ROUND(s, RC(i));

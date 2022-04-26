@@ -5,6 +5,6 @@
 
 typedef struct {
   uint64_t x[5];
-} state_t;
+} ascon_state_t;
 
 #endif /* ASCON_H_ */

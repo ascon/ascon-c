@@ -11,7 +11,7 @@
 
 #ifdef ASCON_HASH_BYTES
 
-forceinline void ascon_inithash(state_t* s) {
+forceinline void ascon_inithash(ascon_state_t* s) {
   /* initialize */
 #ifdef ASCON_PRINT_STATE
 #if ASCON_HASH_BYTES == 32 && ASCON_HASH_ROUNDS == 12
@@ -44,7 +44,8 @@ forceinline void ascon_inithash(state_t* s) {
   printstate("initialization", s);
 }
 
-forceinline void ascon_absorb(state_t* s, const uint8_t* in, uint64_t inlen) {
+forceinline void ascon_absorb(ascon_state_t* s, const uint8_t* in,
+                              uint64_t inlen) {
   /* absorb full plaintext blocks */
   while (inlen >= ASCON_HASH_RATE) {
     s->x[0] ^= LOAD(in, 8);
@@ -59,7 +60,8 @@ forceinline void ascon_absorb(state_t* s, const uint8_t* in, uint64_t inlen) {
   printstate("pad plaintext", s);
 }
 
-forceinline void ascon_squeeze(state_t* s, uint8_t* out, uint64_t outlen) {
+forceinline void ascon_squeeze(ascon_state_t* s, uint8_t* out,
+                               uint64_t outlen) {
   /* squeeze full output blocks */
   P(s, 12);
   while (outlen > ASCON_HASH_RATE) {
@@ -76,7 +78,7 @@ forceinline void ascon_squeeze(state_t* s, uint8_t* out, uint64_t outlen) {
 
 int crypto_hash(unsigned char* out, const unsigned char* in,
                 unsigned long long inlen) {
-  state_t s;
+  ascon_state_t s;
   ascon_inithash(&s);
   ascon_absorb(&s, in, inlen);
   ascon_squeeze(&s, out, CRYPTO_BYTES);

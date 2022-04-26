@@ -5,7 +5,7 @@
 #include "constants.h"
 #include "printstate.h"
 
-forceinline void LINEAR_LAYER(state_t* s, uint64_t xtemp) {
+forceinline void LINEAR_LAYER(ascon_state_t* s, uint64_t xtemp) {
   uint64_t temp;
   temp = s->x[2] ^ ROR(s->x[2], 28 - 19);
   s->x[0] = s->x[2] ^ ROR(temp, 19);
@@ -19,7 +19,7 @@ forceinline void LINEAR_LAYER(state_t* s, uint64_t xtemp) {
   s->x[3] = xtemp ^ ROR(temp, 10);
 }
 
-forceinline void NONLINEAR_LAYER(state_t* s, word_t* xtemp, uint8_t pos) {
+forceinline void NONLINEAR_LAYER(ascon_state_t* s, word_t* xtemp, uint8_t pos) {
   uint8_t t0;
   uint8_t t1;
   uint8_t t2;
@@ -43,7 +43,7 @@ forceinline void NONLINEAR_LAYER(state_t* s, word_t* xtemp, uint8_t pos) {
   (*xtemp).b[pos] = XOR8(s->b[0][pos], t0);
 }
 
-forceinline void ROUND(state_t* s, uint8_t C) {
+forceinline void ROUND(ascon_state_t* s, uint8_t C) {
   word_t xtemp;
   /* round constant */
   s->b[2][0] = XOR8(s->b[2][0], C);
@@ -54,7 +54,7 @@ forceinline void ROUND(state_t* s, uint8_t C) {
   printstate(" round output", s);
 }
 
-forceinline void PROUNDS(state_t* s, int nr) {
+forceinline void PROUNDS(ascon_state_t* s, int nr) {
   int i = START(nr);
   do {
     ROUND(s, RC(i));

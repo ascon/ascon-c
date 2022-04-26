@@ -15,7 +15,7 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   const word_t K0 = LOAD(k, 8);
   const word_t K1 = LOAD(k + 8, 8);
   /* initialize */
-  state_t s;
+  ascon_state_t s;
   if (ASCON_PRF_BYTES == 0) s.x[0] = WORD_T(ASCON_PRF_IV);
   if (ASCON_PRF_BYTES == 16) s.x[0] = WORD_T(ASCON_MAC_IV);
   if (ASCON_PRF_BYTES != 16)

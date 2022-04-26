@@ -10,7 +10,7 @@
 
 #ifdef ASCON_AEAD_RATE
 
-forceinline void ascon_loadkey(key_t* key, const uint8_t* k) {
+forceinline void ascon_loadkey(ascon_key_t* key, const uint8_t* k) {
 #if CRYPTO_KEYBYTES == 16
   key->k1 = LOAD(k, 8);
   key->k2 = LOAD(k + 8, 8);
@@ -21,8 +21,8 @@ forceinline void ascon_loadkey(key_t* key, const uint8_t* k) {
 #endif
 }
 
-forceinline void ascon_initaead(state_t* s, const uint8_t* npub,
-                                const key_t* key) {
+forceinline void ascon_initaead(ascon_state_t* s, const ascon_key_t* key,
+                                const uint8_t* npub) {
 #if CRYPTO_KEYBYTES == 16
   if (ASCON_AEAD_RATE == 8) s->x[0] = ASCON_128_IV;
   if (ASCON_AEAD_RATE == 16) s->x[0] = ASCON_128A_IV;
@@ -43,7 +43,7 @@ forceinline void ascon_initaead(state_t* s, const uint8_t* npub,
   printstate("init 2nd key xor", s);
 }
 
-forceinline void ascon_final(state_t* s, const key_t* key) {
+forceinline void ascon_final(ascon_state_t* s, const ascon_key_t* key) {
 #if CRYPTO_KEYBYTES == 16
   if (ASCON_AEAD_RATE == 8) {
     s->x[1] ^= key->k1;
@@ -68,11 +68,11 @@ void ascon_aead(uint8_t* t, uint8_t* out, const uint8_t* in, uint64_t tlen,
                 const uint8_t* ad, uint64_t adlen, const uint8_t* npub,
                 const uint8_t* k, uint8_t mode) {
   const int nr = (ASCON_AEAD_RATE == 8) ? 6 : 8;
-  key_t key;
+  ascon_key_t key;
   ascon_loadkey(&key, k);
   /* initialize */
-  state_t s;
-  ascon_initaead(&s, npub, &key);
+  ascon_state_t s;
+  ascon_initaead(&s, &key, npub);
   /* process associated data */
   if (adlen) {
     ascon_update(&s, (void*)0, ad, adlen, ASCON_ABSORB);

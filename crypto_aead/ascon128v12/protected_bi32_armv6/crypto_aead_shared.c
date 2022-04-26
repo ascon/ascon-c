@@ -13,9 +13,9 @@ int crypto_aead_encrypt_shared(mask_c_uint32_t* cs, unsigned long long* clen,
                                unsigned long long adlen,
                                const mask_npub_uint32_t* npubs,
                                const mask_key_uint32_t* ks) {
-  state_t s;
+  ascon_state_t s;
   *clen = mlen + CRYPTO_ABYTES;
-  ascon_initaead(&s, npubs, ks);
+  ascon_initaead(&s, ks, npubs);
   ascon_adata(&s, ads, adlen);
   ascon_encrypt(&s, cs, ms, mlen);
   ascon_final(&s, ks);
@@ -30,9 +30,9 @@ int crypto_aead_decrypt_shared(mask_m_uint32_t* ms, unsigned long long* mlen,
                                unsigned long long adlen,
                                const mask_npub_uint32_t* npubs,
                                const mask_key_uint32_t* ks) {
-  state_t s;
+  ascon_state_t s;
   *mlen = clen - CRYPTO_ABYTES;
-  ascon_initaead(&s, npubs, ks);
+  ascon_initaead(&s, ks, npubs);
   ascon_adata(&s, ads, adlen);
   ascon_decrypt(&s, ms, cs, *mlen);
   ascon_final(&s, ks);

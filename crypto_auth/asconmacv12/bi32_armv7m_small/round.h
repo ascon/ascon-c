@@ -5,7 +5,8 @@
 #include "constants.h"
 #include "printstate.h"
 
-forceinline void ROUND_LOOP(state_t* s, const uint8_t* C, const uint8_t* E) {
+forceinline void ROUND_LOOP(ascon_state_t* s, const uint8_t* C,
+                            const uint8_t* E) {
   uint32_t tmp0, tmp1;
   __asm__ __volatile__(
       "rbegin_%=:;\n\t"
@@ -77,7 +78,7 @@ forceinline void ROUND_LOOP(state_t* s, const uint8_t* C, const uint8_t* E) {
       : "cc");
 }
 
-forceinline void ROUND(state_t* s, uint64_t C) {
+forceinline void ROUND(ascon_state_t* s, uint64_t C) {
   uint32_t tmp0, tmp1;
   __asm__ __volatile__(
       "eor %[x0_l], %[x0_l], %[x4_l]\n\t"
@@ -211,7 +212,7 @@ forceinline void ROUND(state_t* s, uint64_t C) {
         :);                                                                 \
   } while (0)
 
-forceinline void PROUNDS(state_t* s, int nr) {
+forceinline void PROUNDS(ascon_state_t* s, int nr) {
   ROUND_LOOP(s, constants + START(nr), constants + 24);
 }
 

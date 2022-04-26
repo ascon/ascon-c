@@ -5,7 +5,7 @@
 #include "constants.h"
 #include "printstate.h"
 
-forceinline void ROUND(state_t* s, uint64_t C) {
+forceinline void ROUND(ascon_state_t* s, uint64_t C) {
   uint64_t x = 0;
   __mmask8 mxor1 = 0x15;
   __mmask8 mxor2 = 0x0b;
@@ -35,7 +35,7 @@ forceinline void ROUND(state_t* s, uint64_t C) {
   printstate(" round output", s);
 }
 
-forceinline void PROUNDS(state_t* s, int nr) {
+forceinline void PROUNDS(ascon_state_t* s, int nr) {
   for (int i = START(nr); i != END; i += INC) ROUND(s, (i));
 }
 

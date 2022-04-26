@@ -23,7 +23,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   const uint64_t N1 = LOADBYTES(npub + 8, 8);
 
   /* initialize */
-  state_t s;
+  ascon_state_t s;
   s.x[0] = ASCON_80PQ_IV | K0;
   s.x[1] = K1;
   s.x[2] = K2;
@@ -109,7 +109,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   const uint64_t N1 = LOADBYTES(npub + 8, 8);
 
   /* initialize */
-  state_t s;
+  ascon_state_t s;
   s.x[0] = ASCON_80PQ_IV | K0;
   s.x[1] = K1;
   s.x[2] = K2;

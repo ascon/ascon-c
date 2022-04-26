@@ -49,7 +49,7 @@ const uint64_t C[12] = {
   ROUND(80)         \
   ROUND(88)
 
-forceinline void P12(state_t* s) {
+forceinline void P12(ascon_state_t* s) {
   __asm__ __volatile__ ( \
       ".arm \n\t" \
       ".fpu neon \n\t" \
@@ -65,7 +65,7 @@ forceinline void P12(state_t* s) {
         "d31", "memory");
 }
 
-forceinline void P8(state_t* s) {
+forceinline void P8(ascon_state_t* s) {
   __asm__ __volatile__ ( \
       ".arm \n\t" \
       ".fpu neon \n\t" \
@@ -81,7 +81,7 @@ forceinline void P8(state_t* s) {
         "d31", "memory");
 }
 
-forceinline void P6(state_t* s) {
+forceinline void P6(ascon_state_t* s) {
   __asm__ __volatile__ ( \
       ".arm \n\t" \
       ".fpu neon \n\t" \
@@ -97,7 +97,7 @@ forceinline void P6(state_t* s) {
         "d31", "memory");
 }
 
-forceinline void P(state_t* s, int nr) {
+forceinline void P(ascon_state_t* s, int nr) {
   if (nr == 12) P12(s);
   if (nr == 8) P8(s);
   if (nr == 6) P6(s);

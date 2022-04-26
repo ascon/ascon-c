@@ -11,7 +11,7 @@
 
 #ifdef ASCON_AEAD_RATE
 
-forceinline void ascon_loadkey(key_t* key, const uint8_t* k) {
+forceinline void ascon_loadkey(ascon_key_t* key, const uint8_t* k) {
 #if CRYPTO_KEYBYTES == 16
   key->k1 = LOAD(k, 8);
   key->k2 = LOAD(k + 8, 8);
@@ -22,8 +22,8 @@ forceinline void ascon_loadkey(key_t* key, const uint8_t* k) {
 #endif
 }
 
-forceinline void ascon_initaead(state_t* s, const uint8_t* npub,
-                                const key_t* key) {
+forceinline void ascon_initaead(ascon_state_t* s, const ascon_key_t* key,
+                                const uint8_t* npub) {
 #if CRYPTO_KEYBYTES == 16
   if (ASCON_AEAD_RATE == 8) s->x[0] = ASCON_128_IV;
   if (ASCON_AEAD_RATE == 16) s->x[0] = ASCON_128A_IV;
@@ -44,7 +44,8 @@ forceinline void ascon_initaead(state_t* s, const uint8_t* npub,
   printstate("init 2nd key xor", s);
 }
 
-forceinline void ascon_adata(state_t* s, const uint8_t* ad, uint64_t adlen) {
+forceinline void ascon_adata(ascon_state_t* s, const uint8_t* ad,
+                             uint64_t adlen) {
   const int nr = (ASCON_AEAD_RATE == 8) ? 6 : 8;
   if (adlen) {
     /* full associated data blocks */
@@ -74,7 +75,7 @@ forceinline void ascon_adata(state_t* s, const uint8_t* ad, uint64_t adlen) {
   printstate("domain separation", s);
 }
 
-forceinline void ascon_encrypt(state_t* s, uint8_t* c, const uint8_t* m,
+forceinline void ascon_encrypt(ascon_state_t* s, uint8_t* c, const uint8_t* m,
                                uint64_t mlen) {
   const int nr = (ASCON_AEAD_RATE == 8) ? 6 : 8;
   /* full plaintext blocks */
@@ -109,7 +110,7 @@ forceinline void ascon_encrypt(state_t* s, uint8_t* c, const uint8_t* m,
   printstate("pad plaintext", s);
 }
 
-forceinline void ascon_decrypt(state_t* s, uint8_t* m, const uint8_t* c,
+forceinline void ascon_decrypt(ascon_state_t* s, uint8_t* m, const uint8_t* c,
                                uint64_t clen) {
   const int nr = (ASCON_AEAD_RATE == 8) ? 6 : 8;
   /* full ciphertext blocks */
@@ -153,7 +154,7 @@ forceinline void ascon_decrypt(state_t* s, uint8_t* m, const uint8_t* c,
   printstate("pad ciphertext", s);
 }
 
-forceinline void ascon_final(state_t* s, const key_t* key) {
+forceinline void ascon_final(ascon_state_t* s, const ascon_key_t* key) {
 #if CRYPTO_KEYBYTES == 16
   if (ASCON_AEAD_RATE == 8) {
     s->x[1] ^= key->k1;
@@ -183,7 +184,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   (void)nsec;
   *clen = mlen + CRYPTO_ABYTES;
   /* perform ascon computation */
-  key_t key;
+  akey_t key;
   ascon_loadkey(&key, k);
   ascon_initaead(&s, npub, &key);
   ascon_adata(&s, ad, adlen);
@@ -205,7 +206,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   if (clen < CRYPTO_ABYTES) return -1;
   *mlen = clen = clen - CRYPTO_ABYTES;
   /* perform ascon computation */
-  key_t key;
+  akey_t key;
   ascon_loadkey(&key, k);
   ascon_initaead(&s, npub, &key);
   ascon_adata(&s, ad, adlen);

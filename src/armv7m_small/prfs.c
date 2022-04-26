@@ -15,7 +15,7 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   const uint64_t K0 = LOAD(k, 8);
   const uint64_t K1 = LOAD(k + 8, 8);
   /* initialize */
-  state_t s;
+  ascon_state_t s;
   s.x[0] = ASCON_PRFS_IV ^ PRFS_MLEN(inlen);
   s.x[1] = K0;
   s.x[2] = K1;

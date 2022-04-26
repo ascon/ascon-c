@@ -11,8 +11,8 @@
 #define ASCON_AEAD_ROUNDS ASCON_128A_PB_ROUNDS
 #endif
 
-void ascon_update(state_t* s, uint8_t* out, const uint8_t* in, uint64_t len,
-                  uint8_t mode) {
+void ascon_update(ascon_state_t* s, uint8_t* out, const uint8_t* in,
+                  uint64_t len, uint8_t mode) {
 #if defined(ASCON_HASH_BYTES)
   const int nr = (mode & ASCON_HASH) ? ASCON_HASH_ROUNDS : ASCON_AEAD_ROUNDS;
   const int rate = (mode & ASCON_HASH) ? ASCON_HASH_RATE : ASCON_AEAD_RATE;

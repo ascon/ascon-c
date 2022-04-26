@@ -28,7 +28,7 @@
     s->x[4] = e.x;                   \
   } while (0)
 
-forceinline void P12ROUNDS(state_t* s) {
+forceinline void P12ROUNDS(ascon_state_t* s) {
   word_t x0, x1, x2, x3, x4;
   LOADSTATE(s, x0, x1, x2, x3, x4);
   ROUND5(x0, x1, x2, x3, x4, RC0);
@@ -52,7 +52,7 @@ forceinline void P12ROUNDS(state_t* s) {
 #endif
 }
 
-forceinline void P8ROUNDS(state_t* s) {
+forceinline void P8ROUNDS(ascon_state_t* s) {
   word_t x0, x1, x2, x3, x4;
   LOADSTATE(s, x0, x1, x2, x3, x4);
   ROUND5(x0, x1, x2, x3, x4, RC4);
@@ -73,7 +73,7 @@ forceinline void P8ROUNDS(state_t* s) {
 #endif
 }
 
-forceinline void P6ROUNDS(state_t* s) {
+forceinline void P6ROUNDS(ascon_state_t* s) {
   word_t x0, x1, x2, x3, x4;
   LOADSTATE(s, x0, x1, x2, x3, x4);
   ROUND5(x0, x1, x2, x3, x4, RC6);
@@ -92,7 +92,7 @@ forceinline void P6ROUNDS(state_t* s) {
 
 #if ASCON_INLINE_PERM && ASCON_UNROLL_LOOPS
 
-forceinline void P(state_t* s, int nr) {
+forceinline void P(ascon_state_t* s, int nr) {
   if (nr == 12) P12ROUNDS(s);
   if (nr == 8) P8ROUNDS(s);
   if (nr == 6) P6ROUNDS(s);
@@ -100,11 +100,11 @@ forceinline void P(state_t* s, int nr) {
 
 #elif !ASCON_INLINE_PERM && ASCON_UNROLL_LOOPS
 
-void P12(state_t* s);
-void P8(state_t* s);
-void P6(state_t* s);
+void P12(ascon_state_t* s);
+void P8(ascon_state_t* s);
+void P6(ascon_state_t* s);
 
-forceinline void P(state_t* s, int nr) {
+forceinline void P(ascon_state_t* s, int nr) {
   if (nr == 12) P12(s);
   if (nr == 8) P8(s);
   if (nr == 6) P6(s);
@@ -112,11 +112,11 @@ forceinline void P(state_t* s, int nr) {
 
 #elif ASCON_INLINE_PERM && !ASCON_UNROLL_LOOPS
 
-forceinline void P(state_t* s, int nr) { PROUNDS(s, nr); }
+forceinline void P(ascon_state_t* s, int nr) { PROUNDS(s, nr); }
 
 #else /* !ASCON_INLINE_PERM && !ASCON_UNROLL_LOOPS */
 
-void P(state_t* s, int nr);
+void P(ascon_state_t* s, int nr);
 
 #endif
 

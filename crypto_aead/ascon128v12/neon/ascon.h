@@ -7,7 +7,7 @@
 
 typedef struct {
   uint64_t x[5];
-} state_t;
+} ascon_state_t;
 
 typedef struct {
 #if (CRYPTO_KEYBYTES == 20)
@@ -15,6 +15,6 @@ typedef struct {
 #endif
   uint64_t k1;
   uint64_t k2;
-} key_t;
+} ascon_key_t;
 
 #endif /* ASCON_H_ */

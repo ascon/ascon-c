@@ -7,7 +7,7 @@
 #include "word.h"
 
 void printword(const char* text, const uint64_t x);
-void printstate(const char* text, const state_t* s);
+void printstate(const char* text, const ascon_state_t* s);
 
 #else
 

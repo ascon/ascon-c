@@ -5,14 +5,14 @@
 #include "constants.h"
 #include "printstate.h"
 
-forceinline state_t AFFINE1(state_t s, int i, int d) {
+forceinline ascon_state_t AFFINE1(ascon_state_t s, int i, int d) {
   s.x[2].s[d].w[i] ^= s.x[1].s[d].w[i];
   s.x[0].s[d].w[i] ^= s.x[4].s[d].w[i];
   s.x[4].s[d].w[i] ^= s.x[3].s[d].w[i];
   return s;
 }
 
-forceinline state_t AFFINE2(state_t s, int i, int d) {
+forceinline ascon_state_t AFFINE2(ascon_state_t s, int i, int d) {
   s.x[2].s[d].w[i] ^= s.x[5].s[d].w[i];
   s.x[1].s[d].w[i] ^= s.x[0].s[d].w[i];
   s.x[0].s[d].w[i] ^= s.x[4].s[d].w[i];
@@ -20,7 +20,7 @@ forceinline state_t AFFINE2(state_t s, int i, int d) {
   return s;
 }
 
-forceinline state_t SBOX(state_t s, int i, int ns) {
+forceinline ascon_state_t SBOX(ascon_state_t s, int i, int ns) {
   /* affine layer 1 */
   if (ns >= 1) s = AFFINE1(s, i, 0);
   if (ns >= 2) s = AFFINE1(s, i, 1);
@@ -41,8 +41,8 @@ forceinline state_t SBOX(state_t s, int i, int ns) {
   return s;
 }
 
-forceinline state_t LINEAR(state_t s, int d) {
-  state_t t;
+forceinline ascon_state_t LINEAR(ascon_state_t s, int d) {
+  ascon_state_t t;
   t.x[0].s[d].w[0] = s.x[0].s[d].w[0] ^ ROR32(s.x[0].s[d].w[1], 4);
   t.x[0].s[d].w[1] = s.x[0].s[d].w[1] ^ ROR32(s.x[0].s[d].w[0], 5);
   t.x[1].s[d].w[0] = s.x[1].s[d].w[0] ^ ROR32(s.x[1].s[d].w[0], 11);
@@ -66,8 +66,8 @@ forceinline state_t LINEAR(state_t s, int d) {
   return s;
 }
 
-forceinline void ROUND_(state_t* p, uint8_t C_o, uint8_t C_e, int ns) {
-  state_t s = *p;
+forceinline void ROUND_(ascon_state_t* p, uint8_t C_o, uint8_t C_e, int ns) {
+  ascon_state_t s = *p;
   /* constant and sbox layer*/
   s.x[2].s[0].w[0] ^= C_e;
   s = SBOX(s, 0, ns);
@@ -84,11 +84,11 @@ forceinline void ROUND_(state_t* p, uint8_t C_o, uint8_t C_e, int ns) {
   printstate(" round output", &s, ns);
 }
 
-forceinline void ROUND(state_t* p, uint64_t C, int ns) {
+forceinline void ROUND(ascon_state_t* p, uint64_t C, int ns) {
   ROUND_(p, C >> 32, C, ns);
 }
 
-forceinline void PROUNDS(state_t* s, int nr, int ns) {
+forceinline void PROUNDS(ascon_state_t* s, int nr, int ns) {
   int i = START(nr);
   do {
     ROUND_(s, RC(i), ns);

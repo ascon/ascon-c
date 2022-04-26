@@ -18,7 +18,7 @@ void printword(const char* text, const uint64_t x) {
   printf("%s=%016" PRIx64, text, U64BIG(WORDTOU64(x)));
 }
 
-void printstate(const char* text, const state_t* s) {
+void printstate(const char* text, const ascon_state_t* s) {
   printf("%s:", text);
   for (int i = strlen(text); i < 17; ++i) printf(" ");
   printword(" x0", s->x[0]);

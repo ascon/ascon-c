@@ -31,7 +31,7 @@ void printword(const char* text, const word_t x, int ns) {
 #endif
 }
 
-void printstate(const char* text, const state_t* s, int ns) {
+void printstate(const char* text, const ascon_state_t* s, int ns) {
   printf("%s:", text);
   for (int i = strlen(text); i < 17; ++i) printf(" ");
   printword(" x0", s->x[0], ns);

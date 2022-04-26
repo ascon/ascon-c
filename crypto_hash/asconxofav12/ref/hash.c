@@ -8,7 +8,7 @@
 int crypto_hash(unsigned char* out, const unsigned char* in,
                 unsigned long long len) {
   /* initialize */
-  state_t s;
+  ascon_state_t s;
   s.x[0] = ASCON_XOFA_IV;
   s.x[1] = 0;
   s.x[2] = 0;

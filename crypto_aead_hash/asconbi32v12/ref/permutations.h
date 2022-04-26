@@ -8,7 +8,7 @@
 #include "printstate.h"
 #include "round.h"
 
-static inline void P12(state_t* s) {
+static inline void P12(ascon_state_t* s) {
   ROUND(s, RC0);
   ROUND(s, RC1);
   ROUND(s, RC2);
@@ -23,7 +23,7 @@ static inline void P12(state_t* s) {
   ROUND(s, RCb);
 }
 
-static inline void P8(state_t* s) {
+static inline void P8(ascon_state_t* s) {
   ROUND(s, RC4);
   ROUND(s, RC5);
   ROUND(s, RC6);
@@ -34,7 +34,7 @@ static inline void P8(state_t* s) {
   ROUND(s, RCb);
 }
 
-static inline void P6(state_t* s) {
+static inline void P6(ascon_state_t* s) {
   ROUND(s, RC6);
   ROUND(s, RC7);
   ROUND(s, RC8);
