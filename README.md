@@ -315,6 +315,19 @@ Generate KATs and get CPU cycles:
 ```
 
 
+## Manually build and run an AVR target:
+
+Example to build, run and test an AEAD algorithm using `avr-gcc`, `avr-libc` and `simavr`:
+
+```
+sudo apt install gcc-avr avr-libc simavr
+git clone https://github.com/JohannCahier/avr_uart.git
+avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/ascon128v12/opt8 crypto_aead/ascon128v12/opt8/*.[cS] -Itests -DCRYPTO_AEAD tests/demo.c -o demo \
+    -Iavr_uart -DAVR_UART avr_uart/avr_uart.c
+simavr -m atmega128 ./demo
+```
+
+
 # Benchmarking
 
 ## Hints to get more reliable getcycles results on Intel/AMD CPUs:

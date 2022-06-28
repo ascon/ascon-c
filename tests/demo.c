@@ -2,6 +2,9 @@
 #include <string.h>
 
 #include "api.h"
+#if defined(AVR_UART)
+#include "avr_uart.h"
+#endif
 #if defined(CRYPTO_AEAD)
 #include "crypto_aead.h"
 #elif defined(CRYPTO_HASH)
@@ -29,6 +32,11 @@ int main() {
   unsigned long long mlen = 8;
   unsigned long long clen = CRYPTO_ABYTES;
   int result = 0;
+#if defined(AVR_UART)
+  avr_uart_init();
+  stdout = &avr_uart_output;
+  stdin = &avr_uart_input_echo;
+#endif
 #if defined(CRYPTO_AEAD)
   print('k', k, CRYPTO_KEYBYTES);
   printf(" ");
