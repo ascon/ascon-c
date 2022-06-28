@@ -315,6 +315,19 @@ Generate KATs and get CPU cycles:
 ```
 
 
+## Manually build and run an RV32 target:
+
+Example to build, run and test an AEAD algorithm using `gcc`, `picolibc` and `qemu`:
+
+```
+sudo apt install gcc-riscv64-unknown-elf picolibc-riscv64-unknown-elf qemu-system-misc
+riscv64-unknown-elf-gcc -O2 -march=rv32i -mabi=ilp32 --specs=picolibc.specs --oslib=semihost --crt0=hosted -Ttests/rv32.ld \
+    -Icrypto_aead/ascon128v12/asm_rv32i crypto_aead/ascon128v12/asm_rv32i/*.[cS] -Itests tests/genkat_aead.c -o genkat
+qemu-system-riscv32 -semihosting-config enable=on -monitor none -serial none -nographic -machine virt,accel=tcg -cpu rv32 -bios none -kernel genkat
+diff LWC_AEAD_KAT_128_128.txt crypto_aead/ascon128v12/LWC_AEAD_KAT_128_128.txt
+```
+
+
 ## Manually build and run an AVR target:
 
 Example to build, run and test an AEAD algorithm using `avr-gcc`, `avr-libc` and `simavr`:
