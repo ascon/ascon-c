@@ -1,10 +1,11 @@
 #ifndef CPUCYCLES_H_
 #define CPUCYCLES_H_
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#if !defined(__arm__) && !defined(_M_ARM)
+#if !defined(__arm__) && !defined(_M_ARM) && !defined(__AVR__)
 #ifdef PRAGMA_GETCYCLES
 #pragma message("Using RDTSC to count cycles")
 #endif
@@ -42,6 +43,16 @@
   __asm__ __volatile__("mrc p15, 0, %0, c9, c13, 0" : "=r"(cycles))
 #endif
 
+#if defined(__AVR__)
+#ifdef PRAGMA_GETCYCLES
+#pragma message("Using TCNT1 to count cycles")
+#endif
+#include "avr/io.h"
+#define ALIGN(x)
+#define cpucycles_init() TCCR1B = 5
+#define cpucycles(cycles) cycles = (uint32_t)1024 * (TCNT1L + 256 * TCNT1H)
+#endif
+
 #define cpucycles_reset() cpucycles_sum = 0
 
 #define cpucycles_start() cpucycles(cpucycles_before)
@@ -56,8 +67,8 @@
 
 unsigned long long cpucycles_sum;
 
-#if defined(__arm__) || defined(_M_ARM)
-unsigned int cpucycles_before, cpucycles_after;
+#if defined(__arm__) || defined(_M_ARM) || defined(__AVR__)
+uint32_t cpucycles_before, cpucycles_after;
 #else
 unsigned long long cpucycles_before, cpucycles_after;
 #endif
