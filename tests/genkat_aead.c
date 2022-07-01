@@ -139,7 +139,7 @@ int generate_test_vectors() {
 #if !defined(AVR_UART)
   fclose(fp);
 #else
-  fprintf(stderr, "Use Ctrl-C to quit\n");
+  fprintf(stderr, "Press Ctrl-C to quit\n");
 #endif
   return ret_val;
 }

@@ -343,22 +343,25 @@ Single test vector using `demo` and performance measurement using `getcycles`:
 
 ```
 avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/ascon128v12/opt8 crypto_aead/ascon128v12/opt8/*.[cS] \
-    -DCRYPTO_AEAD -Itests tests/demo.c -o demo \
-    -DAVR_UART -Iavr_uart avr_uart/avr_uart.c
+    -DAVR_UART -Iavr_uart avr_uart/avr_uart.c -Wno-incompatible-pointer-types -Wno-cpp \
+    -DCRYPTO_AEAD -Itests tests/demo.c -o demo
 simavr -m atmega128 ./demo
+```
+```
 avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/ascon128v12/opt8 crypto_aead/ascon128v12/opt8/*.[cS] \
-    -DCRYPTO_AEAD -Itests tests/getcycles.c -o getcycles \
-    -DAVR_UART -Iavr_uart avr_uart/avr_uart.c
+    -DAVR_UART -Iavr_uart avr_uart/avr_uart.c -Wno-incompatible-pointer-types -Wno-cpp \
+    -DCRYPTO_AEAD -Itests tests/getcycles.c -o getcycles
 simavr -t -m atmega128 ./getcycles
 ```
 
-Generate all test vectors and write to file (quit using Ctrl-C after about a minute):
+Generate all test vectors and write result to file. Press Ctrl-C to quit `simavr` after about a minute:
 
 ```
 avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/ascon128v12/opt8 crypto_aead/ascon128v12/opt8/*.[cS] \
-    -Itests tests/genkat_aead.c -o genkat \
-    -DAVR_UART -Iavr_uart avr_uart/avr_uart.c
-simavr -t -m atmega128 ./genkat 2> LWC_AEAD_KAT_128_128.txt
+    -DAVR_UART -Iavr_uart avr_uart/avr_uart.c -Wno-incompatible-pointer-types -Wno-cpp \
+    -Itests tests/genkat_aead.c -o genkat_aead
+echo "Press Ctrl-C to quit simavr after about a minute"
+simavr -t -m atmega128 ./genkat_aead 2> LWC_AEAD_KAT_128_128.txt
 sed -i -e 's/\x1b\[[0-9;]*m//g' -e 's/\.\.$//' LWC_AEAD_KAT_128_128.txt
 diff LWC_AEAD_KAT_128_128.txt crypto_aead/ascon128v12/LWC_AEAD_KAT_128_128.txt
 ```
