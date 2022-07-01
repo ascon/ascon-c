@@ -330,11 +330,18 @@ diff LWC_AEAD_KAT_128_128.txt crypto_aead/ascon128v12/LWC_AEAD_KAT_128_128.txt
 
 ## Manually build and run an AVR target:
 
-Example to build, run and test an AEAD algorithm using `avr-gcc`, `avr-libc` and `simavr`:
+Example to build, run and test an AEAD algorithm using `avr-gcc`, `avr-libc` and `simavr`.
+
+Setup:
 
 ```
 sudo apt install gcc-avr avr-libc simavr
 git clone https://github.com/JohannCahier/avr_uart.git
+```
+
+Single test vector using `demo` and performance measurement using `getcycles`:
+
+```
 avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/ascon128v12/opt8 crypto_aead/ascon128v12/opt8/*.[cS] \
     -DCRYPTO_AEAD -Itests tests/demo.c -o demo \
     -DAVR_UART -Iavr_uart avr_uart/avr_uart.c
@@ -343,6 +350,17 @@ avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/ascon128v12/opt8 crypto_aead/
     -DCRYPTO_AEAD -Itests tests/getcycles.c -o getcycles \
     -DAVR_UART -Iavr_uart avr_uart/avr_uart.c
 simavr -t -m atmega128 ./getcycles
+```
+
+Generate all test vectors and write to file (quit using Ctrl-C after about a minute):
+
+```
+avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/ascon128v12/opt8 crypto_aead/ascon128v12/opt8/*.[cS] \
+    -Itests tests/genkat_aead.c -o genkat \
+    -DAVR_UART -Iavr_uart avr_uart/avr_uart.c
+simavr -t -m atmega128 ./genkat 2> LWC_AEAD_KAT_128_128.txt
+sed -i -e 's/\x1b\[[0-9;]*m//g' -e 's/\.\.$//' LWC_AEAD_KAT_128_128.txt
+diff LWC_AEAD_KAT_128_128.txt crypto_aead/ascon128v12/LWC_AEAD_KAT_128_128.txt
 ```
 
 
