@@ -95,4 +95,63 @@ forceinline void STOREBYTES(uint8_t* bytes, uint64_t w, int n) {
   memcpy(bytes, &x, n);
 }
 
+forceinline void memxor(uint8_t* dst, const uint8_t* src, int n) {
+  while (n > 0) {
+    *dst++ ^= *src++;
+    --n;
+  }
+}
+
+forceinline void INSERT(uint8_t* s, const uint8_t* d, int n) {
+  s += 7;
+  while (n > 0) {
+    *s-- = *d++;
+    --n;
+  }
+}
+
+forceinline void SQUEEZE(uint8_t* d, const uint8_t* s, int n) {
+  s += 7;
+  while (n > 0) {
+    *d++ = *s--;
+    --n;
+  }
+}
+
+forceinline void ABSORB(uint8_t* s, const uint8_t* d, int n) {
+  s += 7;
+  while (n > 0) {
+    *s-- ^= *d++;
+    --n;
+  }
+}
+
+forceinline void ENCRYPT(uint8_t* s, uint8_t* c, const uint8_t* m, int n) {
+  s += 7;
+  while (n > 0) {
+    *c++ = (*s-- ^= *m++);
+    --n;
+  }
+}
+
+forceinline void DECRYPT(uint8_t* s, uint8_t* m, const uint8_t* c, int n) {
+  s += 7;
+  while (n > 0) {
+    uint8_t t = *c++;
+    *m++ = *s ^ t;
+    *s-- = t;
+    --n;
+  }
+}
+
+forceinline uint8_t VERIFY(const uint8_t* s, const uint8_t* d, int n) {
+  uint8_t r = 0;
+  s += 7;
+  while (n > 0) {
+    r |= *s-- ^ *d++;
+    --n;
+  }
+  return r;
+}
+
 #endif /* WORD_H_ */

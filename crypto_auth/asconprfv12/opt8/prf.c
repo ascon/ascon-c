@@ -26,8 +26,8 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   if (ASCON_PRF_BYTES != 16 && ASCON_PRF_BYTES != 0)
     s.x[0] ^= U64TOWORD(((uint64_t)(12 - ASCON_PRF_ROUNDS) << 32) |
                         ASCON_PRF_BYTES * 8);
-  s.x[1] = K0;
-  s.x[2] = K1;
+  INSERT(s.b[1], k, 8);
+  INSERT(s.b[2], k + 8, 8);
   s.x[3] = 0;
   s.x[4] = 0;
   printstate("initial value", &s);
@@ -37,7 +37,7 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   /* absorb full plaintext words */
   int i = 0;
   while (inlen >= 8) {
-    s.x[i] ^= LOAD(in, 8);
+    ABSORB(s.b[i], in, 8);
     if (++i == (ir / 8)) i = 0;
     if (i == 0) printstate("absorb plaintext", &s);
     if (i == 0) P(&s, nr);
@@ -45,11 +45,11 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
     inlen -= 8;
   }
   /* absorb final plaintext word */
-  if (inlen) s.x[i] ^= LOAD(in, inlen);
-  s.x[i] ^= PAD(inlen);
-  printstate("pad plaintext", &s);
+  ABSORB(s.b[i], in, inlen);
+  s.b[i][7 - inlen] ^= 0x80;
+  printstate("domain separation", &s);
   /* domain separation */
-  s.x[4] ^= 1;
+  s.b[4][0] ^= 1;
 
   /* squeeze */
   printstate("domain separation", &s);
@@ -57,7 +57,7 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   /* squeeze output words */
   i = 0;
   while (outlen > 8) {
-    STORE(out, s.x[i], 8);
+    SQUEEZE(out, s.b[i], 8);
     if (++i == or / 8) i = 0;
     if (i == 0) printstate("squeeze output", &s);
     if (i == 0) P(&s, nr);
@@ -65,7 +65,7 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
     outlen -= 8;
   }
   /* squeeze final output word */
-  STORE(out, s.x[i], outlen);
+  SQUEEZE(out, s.b[i], outlen);
   printstate("squeeze output", &s);
   return 0;
 }

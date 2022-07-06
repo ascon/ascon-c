@@ -12,36 +12,34 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
                const unsigned char* k) {
   if (inlen > 16 || outlen > 16 || outlen > CRYPTO_BYTES) return -1;
   /* load key */
-  const uint64_t K0 = LOAD(k, 8);
-  const uint64_t K1 = LOAD(k + 8, 8);
   /* initialize */
   ascon_state_t s;
   s.x[0] = ASCON_PRFS_IV ^ PRFS_MLEN(inlen);
-  s.x[1] = K0;
-  s.x[2] = K1;
+  INSERT(s.b[1], k, 8);
+  INSERT(s.b[2], k + 8, 8);
   s.x[3] = 0;
   s.x[4] = 0;
   printstate("initial value", &s);
 
   /* absorb plaintext words */
   if (inlen > 8) {
-    s.x[3] = LOAD(in, 8);
-    s.x[4] = LOAD(in + 8, inlen - 8);
+    ABSORB(s.b[3], in, 8);
+    ABSORB(s.b[4], in + 8, inlen - 8);
   } else if (inlen) {
-    s.x[3] = LOAD(in, inlen);
+    ABSORB(s.b[3], in, inlen);
   }
   printstate("absorb data", &s);
 
   /* squeeze */
   P(&s, 12);
-  s.x[3] ^= K0;
-  s.x[4] ^= K1;
+  ABSORB(s.b[3], k, 8);
+  ABSORB(s.b[4], k + 8, 8);
   printstate("squeeze", &s);
   if (outlen > 8) {
-    STORE(out, s.x[3], 8);
-    STORE(out + 8, s.x[4], outlen - 8);
+    SQUEEZE(out, s.b[3], 8);
+    SQUEEZE(out + 8, s.b[4], outlen - 8);
   } else if (outlen) {
-    STORE(out, s.x[3], outlen);
+    SQUEEZE(out, s.b[3], outlen);
   }
   return 0;
 }

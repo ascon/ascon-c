@@ -11,12 +11,10 @@ typedef union {
   uint8_t b[5][8];
 } ascon_state_t;
 
-typedef struct {
-#if (CRYPTO_KEYBYTES == 20)
-  uint64_t k0;
-#endif
-  uint64_t k1;
-  uint64_t k2;
+typedef union {
+  uint64_t x[3];
+  uint32_t w[3][2];
+  uint8_t b[3][8];
 } ascon_key_t;
 
 void ascon_loadkey(ascon_key_t* key, const uint8_t* k);
