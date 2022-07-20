@@ -1,15 +1,15 @@
 #!/bin/bash
 
-RESULTFILE=$1
-shift
 FACTOR=$1
+shift
+RESULTFILE=$1
 shift
 ALG=$1
 shift
 IMPL="$*"
 
-echo "RESULTFILE: $RESULTFILE"
 echo "FACTOR: $FACTOR"
+echo "RESULTFILE: $RESULTFILE"
 echo "ALGORITHM: $ALG"
 echo "IMPLEMENTATIONS: $IMPL"
 echo
@@ -35,7 +35,8 @@ for I in $IMPL; do
   done
 done
 
-sort -n -k7 -t\| -o $RESULTFILE $RESULTFILE
-
+sort -n -k8 -t\| -o $RESULTFILE $RESULTFILE
 echo -e "  size \t|     1 |     8 |    16 |    32 |    64 |  1536 |  long |        config       | implementation\n-------:|------:|------:|------:|------:|------:|------:|------:|:-------------------:|:---------------\n$(cat $RESULTFILE)" > $RESULTFILE
+echo
+cat $RESULTFILE
 

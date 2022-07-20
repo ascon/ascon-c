@@ -408,7 +408,7 @@ diff LWC_AEAD_KAT_128_128.txt crypto_aead/ascon128v12/LWC_AEAD_KAT_128_128.txt
 * Run the `benchmark-getcycles.sh` script with the frequency factor and a
   specific algorithm to benchmark all corresponding getcycles implementations:
   ```
-  ./benchmark-getcycles.sh $factor ascon128
+  scripts/benchmark-getcycles.sh $factor ascon128
   ```
 
 
@@ -464,7 +464,7 @@ $6, $7}' | sort -nr
   with an output file, frequency factor, the algorithm, and the list of
   implementations to test:
   ```
-  ./benchmark-config.sh results-config.md $factor ascon128 ref opt64 opt64_lowsize
+  scripts/benchmark-config.sh results-config.md $factor ascon128 ref opt64 opt64_lowsize
   ```
 * The `results-config.md` file then contains a markup table with size and cycles
   for each implementation and parameter set to evaluate several time-area
@@ -472,6 +472,6 @@ $6, $7}' | sort -nr
 * The `benchmark-all.sh` and `benchmark-size.sh` scripts provides a time/size
   and size-only table of all currently compiled implementations:
   ```
-  ./benchmark-all.sh results-all.md
-  ./benchmark-size.sh results-size.md
+  scripts/benchmark-all.sh results-all.md
+  scripts/benchmark-size.sh results-size.md
   ```
