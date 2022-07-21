@@ -134,6 +134,14 @@ int generate_test_vectors() {
         ret_val = KAT_CRYPTO_FAILURE;
         break;
       }
+      // test failed verification
+      ct[0] ^= 1;
+      if ((func_ret = crypto_aead_decrypt(msg2, &mlen2, NULL, ct, clen, ad,
+                                          adlen, nonce, key)) == 0) {
+        fprintf(fp, "crypto_aead_decrypt should have failed\n");
+        ret_val = KAT_CRYPTO_FAILURE;
+        break;
+      }
     }
   }
 #if !defined(AVR_UART)

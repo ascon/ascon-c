@@ -112,6 +112,13 @@ int generate_test_vectors() {
       ret_val = KAT_CRYPTO_FAILURE;
       break;
     }
+    // test failed verify
+    t[0] ^= 1;
+    if ((func_ret = crypto_auth_verify(t, d, dlen, key)) == 0) {
+      fprintf(fp, "crypto_auth_verify should have failed\n");
+      ret_val = KAT_CRYPTO_FAILURE;
+      break;
+    }
   }
 #if !defined(AVR_UART)
   fclose(fp);
