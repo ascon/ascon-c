@@ -13,8 +13,8 @@
 
 forceinline void ascon_loadkey(ascon_key_t* key, const uint8_t* k) {
 #if CRYPTO_KEYBYTES == 16
-  INSERT(key->b[1], k, 8);
-  INSERT(key->b[2], k + 8, 8);
+  INSERT(key->b[0], k, 8);
+  INSERT(key->b[1], k + 8, 8);
 #else /* CRYPTO_KEYBYTES == 20 */
   key->x[0] = KEYROT(0, LOADBYTES(k, 4));
   key->x[1] = LOADBYTES(k + 4, 8);
@@ -27,18 +27,20 @@ forceinline void ascon_initaead(ascon_state_t* s, const ascon_key_t* key,
 #if CRYPTO_KEYBYTES == 16
   if (ASCON_AEAD_RATE == 8) s->x[0] = ASCON_128_IV;
   if (ASCON_AEAD_RATE == 16) s->x[0] = ASCON_128A_IV;
+  memcpy(s->b[1], key->b[0], 16);
 #else /* CRYPTO_KEYBYTES == 20 */
-  s->x[0] = ASCON_80PQ_IV ^ key->x[0];
-#endif
+  s->x[0] = key->x[0] ^ ASCON_80PQ_IV;
   memcpy(s->b[1], key->b[1], 16);
+#endif
   INSERT(s->b[3], npub, 8);
   INSERT(s->b[4], npub + 8, 8);
   printstate("init 1st key xor", s);
   P(s, 12);
-#if CRYPTO_KEYBYTES == 20
-  s->x[2] ^= key->x[0];
+#if CRYPTO_KEYBYTES == 16
+  memxor(s->b[3], key->b[0], 16);
+#else /* CRYPTO_KEYBYTES == 20 */
+  memxor(s->b[2], key->b[0], 24);
 #endif
-  memxor(s->b[3], key->b[1], 16);
   printstate("init 2nd key xor", s);
 }
 
@@ -129,7 +131,7 @@ forceinline void ascon_decrypt(ascon_state_t* s, uint8_t* m, const uint8_t* c,
 
 forceinline void ascon_final(ascon_state_t* s, const ascon_key_t* key) {
 #if CRYPTO_KEYBYTES == 16
-  memxor(s->b[ASCON_AEAD_RATE / 8], key->b[1], 16);
+  memxor(s->b[ASCON_AEAD_RATE / 8], key->b[0], 16);
 #else /* CRYPTO_KEYBYTES == 20 */
   s->x[1] ^= KEYROT(key->x[0], key->x[1]);
   s->x[2] ^= KEYROT(key->x[1], key->x[2]);
@@ -137,7 +139,11 @@ forceinline void ascon_final(ascon_state_t* s, const ascon_key_t* key) {
 #endif
   printstate("final 1st key xor", s);
   P(s, 12);
+#if CRYPTO_KEYBYTES == 16
+  memxor(s->b[3], key->b[0], 16);
+#else /* CRYPTO_KEYBYTES == 20 */
   memxor(s->b[3], key->b[1], 16);
+#endif
   printstate("final 2nd key xor", s);
 }
 

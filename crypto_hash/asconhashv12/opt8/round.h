@@ -3,7 +3,9 @@
 
 #include "ascon.h"
 #include "constants.h"
+#include "forceinline.h"
 #include "printstate.h"
+#include "word.h"
 
 forceinline void LINEAR_LAYER(ascon_state_t* s, uint64_t xtemp) {
   uint64_t temp;

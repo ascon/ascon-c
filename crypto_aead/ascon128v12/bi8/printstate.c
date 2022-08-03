@@ -28,11 +28,11 @@ void printstate(const char* text, const ascon_state_t* s) {
   printword(" x4", s->x[4]);
 #ifdef ASCON_PRINT_BI
   printf(" ");
-  printf(" x0=%016" PRIx64, s->x[0]);
-  printf(" x1=%016" PRIx64, s->x[1]);
-  printf(" x2=%016" PRIx64, s->x[2]);
-  printf(" x3=%016" PRIx64, s->x[3]);
-  printf(" x4=%016" PRIx64, s->x[4]);
+  printf(" x0=%08x_%08x", s->w[0][1], s->w[0][0]);
+  printf(" x1=%08x_%08x", s->w[1][1], s->w[1][0]);
+  printf(" x2=%08x_%08x", s->w[2][1], s->w[2][0]);
+  printf(" x3=%08x_%08x", s->w[3][1], s->w[3][0]);
+  printf(" x4=%08x_%08x", s->w[4][1], s->w[4][0]);
 #endif
   printf("\n");
 }

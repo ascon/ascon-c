@@ -3,7 +3,9 @@
 
 #include "ascon.h"
 #include "constants.h"
+#include "forceinline.h"
 #include "printstate.h"
+#include "word.h"
 
 forceinline void ROUND_LOOP(ascon_state_t* s, uint32_t C) {
   uint32_t tmp0, tmp1;

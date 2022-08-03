@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 base="src"
 
@@ -31,8 +31,8 @@ IMPL_LIST=" \
   armv6m \
   armv6m_lowsize \
   armv7m \
-  armv7m_small \
   armv7m_lowsize \
+  armv7m_small \
   bi32 \
   bi32_armv6 \
   bi32_armv6m \
@@ -48,14 +48,92 @@ IMPL_LIST=" \
   opt8 \
   "
 
+COMMON_FILES=" \
+  aead.c \
+  ascon.h \
+  endian.h \
+  forceinline.h \
+  goal-constbranch \
+  goal-constindex \
+  hash.c \
+  implementors \
+  permutations.c \
+  permutations.h \
+  prf.c \
+  prfs.c \
+  printstate.c \
+  printstate.h \
+  word.h \
+  "
+
+LOWSIZE_FILES=" \
+  aead.c \
+  ascon.h \
+  config.h \
+  crypto_aead.c \
+  hash.c \
+  prf.c \
+  prfs.c \
+  update.c \
+  "
+
+BI32_FILES=" \
+  constants.c \
+  constants.h \
+  interleave.c \
+  interleave.h \
+  word.h \
+  "
+
+ARM_FILES=" \
+  architectures \
+  "
+
 for alg in $ALG_LIST; do
   for impl in $IMPL_LIST; do
+    echo
     echo "$alg - $impl"
     mkdir -p $alg/$impl
-    for i in $(ls $base/$impl | grep -v api.h); do
-      cmp --silent $base/$impl/$i $alg/$impl/$i || cp $base/$impl/$i $alg/$impl
+    for i in $COMMON_FILES; do
+      a=$base/$i
+      b=$alg/$impl/$i
+      echo "  cp $a $b"
+      cmp --silent $a $b || cp $a $b
     done
-    cmp --silent $alg/ref/api.h $alg/$impl/api.h || cp $alg/ref/api.h $alg/$impl
+    if [[ $impl == *"lowsize"* ]]; then
+      for i in $LOWSIZE_FILES; do
+        a=$base/lowsize/$i
+        b=$alg/$impl/$i
+        echo "  cp $a $b"
+        cmp --silent $a $b || cp $a $b
+      done
+    fi
+    if [[ $impl == *"bi32"* ]]; then
+      for i in $BI32_FILES; do
+        a=$base/bi32/$i
+        b=$alg/$impl/$i
+        echo "  cp $a $b"
+        cmp --silent $a $b || cp $a $b
+      done
+    fi
+    if [[ $impl == *"arm"* ]]; then
+      for i in $ARM_FILES; do
+        a=$base/arm/$i
+        b=$alg/$impl/$i
+        echo "  cp $a $b"
+        cmp --silent $a $b || cp $a $b
+      done
+    fi
+    for i in $(ls $base/$impl); do
+      a=$base/$impl/$i
+      b=$alg/$impl/$i
+      echo "  cp $a $b"
+      cmp --silent $a $b || cp $a $b
+    done
+    a=$alg/ref/api.h
+    b=$alg/$impl/api.h
+    echo "  cp $a $b"
+    cmp --silent $a $b || cp $a $b
   done
   echo
 done
@@ -77,18 +155,10 @@ rm -f crypto_auth/asconprfsv12/*/prf.c
 rm -f crypto_auth/*/*/hash.c
 rm -f crypto_auth/*/*/aead.c
 rm -rf crypto_auth/*/*lowsize
-for i in crypto_auth/*/*/ascon.h; do
-  git restore -q $i
-done
 
 rm -rf crypto_*/*bi32*/arm*
 rm -rf crypto_*/*bi32*/bi8*
 rm -rf crypto_*/*bi32*/opt*
 
 sed -i 's/ASCON_EXTERN_BI 0/ASCON_EXTERN_BI 1/' crypto_*/*bi32*/*/config.h
-
-#cp crypto_aead/ascon128v12/neon/* crypto_aead/ascon128av12/neon
-#cp crypto_aead/ascon128v12/avx512/* crypto_aead/ascon128av12/avx512
-#git checkout crypto_aead/ascon128av12/neon/aead.c
-#git checkout crypto_aead/ascon128av12/avx512/aead.c
 

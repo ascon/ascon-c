@@ -3,7 +3,9 @@
 
 #include "ascon.h"
 #include "constants.h"
+#include "forceinline.h"
 #include "printstate.h"
+#include "word.h"
 
 forceinline void ROUND(ascon_state_t* s, uint8_t C) {
   ascon_state_t t;

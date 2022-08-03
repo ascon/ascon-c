@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "word.h"
+#include "api.h"
 
 typedef union {
   uint64_t x[5];
@@ -11,10 +11,14 @@ typedef union {
   uint8_t b[5][8];
 } ascon_state_t;
 
+#ifdef ASCON_AEAD_RATE
+
+#define ASCON_KEYWORDS (CRYPTO_KEYBYTES + 7) / 8
+
 typedef union {
-  uint64_t x[3];
-  uint32_t w[3][2];
-  uint8_t b[3][8];
+  uint64_t x[ASCON_KEYWORDS];
+  uint32_t w[ASCON_KEYWORDS][2];
+  uint8_t b[ASCON_KEYWORDS][8];
 } ascon_key_t;
 
 void ascon_loadkey(ascon_key_t* key, const uint8_t* k);
@@ -27,8 +31,14 @@ void ascon_decrypt(ascon_state_t* s, uint8_t* m, const uint8_t* c,
                    uint64_t clen);
 void ascon_final(ascon_state_t* s, const ascon_key_t* k);
 
+#endif
+
+#ifdef ASCON_HASH_BYTES
+
 void ascon_inithash(ascon_state_t* s);
 void ascon_absorb(ascon_state_t* s, const uint8_t* in, uint64_t inlen);
 void ascon_squeeze(ascon_state_t* s, uint8_t* out, uint64_t outlen);
+
+#endif
 
 #endif /* ASCON_H_ */
