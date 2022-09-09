@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
-// ascon_avr.S: AVR Assembler implementation (GCC) of the ASCON permutation. //
-// Version 1.0.3 (04-Jun-2022), see <http://github.com/ascon/> for updates.  //
+// ascon_avr.S: AVR Assembler implementation (GCC) of the permutations.      //
+// Version 1.0.4 (09-Sep-2022), see <http://github.com/ascon/> for updates.  //
 // Author: L. Cardoso and J. Groszschaedl, (DCS, University of Luxembourg).  //
 // License: CC0-1.0, see <http://creativecommons.org/publicdomain/zero/1.0/> //
 ///////////////////////////////////////////////////////////////////////////////
@@ -8,13 +8,12 @@
 
 // Function prototype:
 // -------------------
-// void P(State *s, int r)
+// void P(State *s, int nr)
 //
 // Parameters:
 // -----------
-// `s`: pointer to a struct containing five 64-bit state-words in big
-//      endian representation
-// `r`: number of rounds
+// `s`:  pointer to a struct containing five 64-bit state-words
+// `nr`: number of rounds
 //
 // Return value:
 // -------------
@@ -47,10 +46,6 @@
 #define DR9 r20,r21
 #define DR10 r22,r23
 #define DR11 r24,r25
-
-// Dual-byte register with reversed byte-order
-#define DR11R r25,r24
-
 
 // Eight AVR registers form an Octa-byte Register (OR) that can store a 64-bit
 // operand, whereby little-endian format is used, i.e. the least-significant
@@ -88,12 +83,6 @@
 #define OF24 24,25,26,27,28,29,30,31
 #define OF32 32,33,34,35,36,37,38,39
 
-// Offset values for reversed byte-order
-#define OF0R  7,6,5,4,3,2,1,0
-#define OF8R  15,14,13,12,11,10,9,8
-#define OF16R 23,22,21,20,19,18,17,16
-#define OF24R 31,30,29,28,27,26,25,24
-#define OF32R 39,38,37,36,35,34,33,32
 
 // Register to determine loop termination
 #define rstop r0
@@ -510,24 +499,23 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-// The macro `LDSLICE` loads a 16-bit slice of each the four 64-bit state-words
-// X0, X1, X3, and X4. Note that the four 16-bit slices are converted from big
-// endian to little endian representation. The 16-bit slice of state-word X2
-// does not need to be loaded because X2 is kept in OR2 during the computation
+// The macro `LDSLICE` loads a 16-bit slice of each of the four 64-bit
+// state-words X0, X1, X3, and X4. The 16-bit slice of state-word X2 does
+// not need to be loaded because X2 is kept in OR2 during the computation
 // of the permutation.
 
 .macro LDSLICE
-    DLDZO   DR0, 1,0
-    DLDZO   DR1, 9,8
-    DLDZO   DR3, 25,24
-    DLDZO   DR4, 33,32
+    DLDZO   DR0, 0,1
+    DLDZO   DR1, 8,9
+    DLDZO   DR3, 24,25
+    DLDZO   DR4, 32,33
 .endm
 
 
 // The macro `SBOXSLICE` computes a 16-bit slice of the non-linear substitution
 // operation. This implementation uses the improved formulae of Campos et al
 // (Proceedings of CANS 2020). The 16-bit slices of the state-words X0, X1, X2,
-// X3, and X4 are stored in the five double-byte registers DR0, DR1, DR11, DR3,
+// X3, and X4 are stored in the five double-byte registers DR0, DR1, DR8, DR3,
 // and DR4, respectively. DR5, DR6, and DR7 serve as temporary registers.
 
 .macro SBOXSLICE
@@ -535,17 +523,17 @@
     DMOV    DR6, DR1        // t6 = i1
     DMOV    DR7, DR3        // t7 = i3
     DXOR    DR5, DR4        // t5 = t5 ^ i4 = i0 ^ i4
-    DXOR    DR6, DR11       // t6 = t6 ^ i2 = i1 ^ i2
+    DXOR    DR6, DR8        // t6 = t6 ^ i2 = i1 ^ i2
     DXOR    DR7, DR4        // t7 = t7 ^ i4 = i3 ^ i4
     DINV    DR4             // i4 = ~i4
     DIOR    DR4, DR3        // i4 = i4 | i3
     DXOR    DR4, DR6        // i4 = i4 ^ t6 -> i4 contains o2
-    DXOR    DR3, DR11       // i3 = i3 ^ i2
+    DXOR    DR3, DR8        // i3 = i3 ^ i2
     DIOR    DR3, DR6        // i3 = i3 | t6
     DXOR    DR3, DR5        // i3 = i3 ^ t5 -> i3 contains o1
-    DXOR    DR11, DR5       // i2 = i2 ^ t5
-    DIOR    DR11, DR1       // i2 = i2 | i1
-    DXOR    DR11, DR7       // i2 = i2 ^ t7 -> i2 contains o0
+    DXOR    DR8, DR5        // i2 = i2 ^ t5
+    DIOR    DR8, DR1        // i2 = i2 | i1
+    DXOR    DR8, DR7        // i2 = i2 ^ t7 -> i2 contains o0
     DINV    DR5             // t5 = ~t5
     DAND    DR1, DR5        // i1 = i1 & t5
     DXOR    DR1, DR7        // i1 = i1 ^ t7 -> i1 contains o4
@@ -554,23 +542,22 @@
 .endm
 
 
-// The macro `STSLICE` stores a 16-bit slice of each of the four 64-bit state-
-// words X0, X1, X3, and X4. Note that the four 16-bit slices are converted
-// from little endian to bit endian representation. The 16-bit slice of state-
-// word X2 does not need to be stored because X2 is kept in OR2 during the
-// computation of the permutation. However, OR2 is rotated by 16 bits so that
-// DR11 contains the right 16-bit slice for the subsequent iteration of the
+// The macro `STSLICE` stores a 16-bit slice of each of the four 64-bit
+// state-words X0, X1, X3, and X4. The 16-bit slice of state-word X2 does
+// not need to be stored because X2 is kept in OR2 during the computation
+// of the permutation. However, OR2 is rotated by 16 bits so that DR8
+// contains the right 16-bit slice for the subsequent iteration of the
 // round-loop.
 
 .macro STSLICE
-    DSTZI   DR11R
-    DSTZO   DR3, 7,6
-    DSTZO   DR0, 23,22
-    DSTZO   DR1, 31,30
-    DMOV    DR11, DR10
-    DMOV    DR10, DR9
-    DMOV    DR9, DR8
-    DMOV    DR8, DR4
+    DSTZI   DR8
+    DSTZO   DR3, 6,7
+    DSTZO   DR0, 22,23
+    DSTZO   DR1, 30,31
+    DMOV    DR8, DR9
+    DMOV    DR9, DR10
+    DMOV    DR10, DR11
+    DMOV    DR11, DR4
 .endm
 
 
@@ -597,34 +584,30 @@
 
 
 // The macro `LINSWX0` computes the linear diffusion operation on state-word
-// X0: X0 = X0 ^ (X0 >>> 19) ^ (X0 >>> 28). Note that X0 is converted from big
-// endian to little endian representation when it is loaded from RAM and then
-// converted back to big endian when it is stored.
+// X0: X0 = X0 ^ (X0 >>> 19) ^ (X0 >>> 28).
 
 .macro LINSWX0
-    OLDZO   OR0, OF0R
+    OLDZO   OR0, OF0
     OMOV    OR1, OR0
     OROR3   OR1
     OXOR    OR0, OR1R16
     OROR    OR1
     OXOR    OR0, OR1R24
-    OSTZO   OR0, OF0R
+    OSTZO   OR0, OF0
 .endm
 
 
 // The macro `LINSWX1` computes the linear diffusion operation on state-word
-// X1: X1 = X1 ^ (X1 >>> 61) ^ (X1 >>> 39). Note that X1 is converted from big
-// endian to little endian representation when it is loaded from RAM and then
-// converted back to big endian when it is stored.
+// X1: X1 = X1 ^ (X1 >>> 61) ^ (X1 >>> 39).
 
 .macro LINSWX1
-    OLDZO   OR0, OF8R
+    OLDZO   OR0, OF8
     OMOV    OR1, OR0
     OROL    OR1
     OXOR    OR0, OR1L24
     OROL2   OR1
     OXOR    OR0, OR1
-    OSTZO   OR0, OF8R
+    OSTZO   OR0, OF8
 .endm
 
 
@@ -642,34 +625,30 @@
 
 
 // The macro `LINSWX3` computes the linear diffusion operation on state-word
-// X3: X3 = X3 ^ (X3 >>> 10) ^ (X3 >>> 17). Note that X3 is converted from big
-// endian to little endian representation when it is loaded from RAM and then
-// converted back to big endian when it is stored.
+// X3: X3 = X3 ^ (X3 >>> 10) ^ (X3 >>> 17).
 
 .macro LINSWX3
-    OLDZO   OR0, OF24R
+    OLDZO   OR0, OF24
     OMOV    OR1, OR0
     OROR    OR1
     OXOR    OR0, OR1R16
     OROR    OR1
     OXOR    OR0, OR1R8
-    OSTZO   OR0, OF24R
+    OSTZO   OR0, OF24
 .endm
 
 
 // The macro `LINSWX4` computes the linear diffusion operation on state-word
-// X4: X4 = X4 ^ (X4 >>> 7) ^ (X4 >>> 41). Note that X4 is converted from big
-// endian to little endian representation when it is loaded from RAM and then
-// converted back to big endian when it is stored.
+// X4: X4 = X4 ^ (X4 >>> 7) ^ (X4 >>> 41).
 
 .macro LINSWX4
-    OLDZO   OR0, OF32R
+    OLDZO   OR0, OF32
     OMOV    OR1, OR0
     OROR    OR1
     OXOR    OR0, OR1L24
     OROL2   OR1
     OXOR    OR0, OR1R8
-    OSTZO   OR0, OF32R
+    OSTZO   OR0, OF32
 .endm
 
 
@@ -696,7 +675,7 @@
 P:
     PROLOGUE                // push callee-saved registers
     INITVARS                // initialize local variables
-    OLDZO OR2, OF16R        // load state-word X2 to octa-register OR2
+    OLDZO OR2, OF16         // load state-word X2 to octa-register OR2
 .LROUNDLOOP:                // start of round-loop
     ADDRCON                 // macro for addition of round-constant
     SBOXLAYER               // macro for nonlinear substitution layer
@@ -704,7 +683,7 @@ P:
     subi rcon, 15           // subtract 15 from round-constant
     cpse rcon, rstop        // check whether round-constant is below 0x4B
     rjmp .LROUNDLOOP        // if not then jump back to start of loop
-    OSTZO OR2, OF16R        // store octa-register OR2 in state-word X2
+    OSTZO OR2, OF16         // store octa-register OR2 in state-word X2
     EPILOGUE                // pop callee-saved registers and return
 .endfunc
 
