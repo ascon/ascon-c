@@ -33,6 +33,7 @@ IMPL_LIST=" \
   armv7m \
   armv7m_lowsize \
   armv7m_small \
+  avr \
   bi32 \
   bi32_armv6 \
   bi32_armv6m \
@@ -90,6 +91,10 @@ ARM_FILES=" \
   architectures \
   "
 
+AVR_FILES=" \
+  permutations.S \
+  "
+
 for alg in $ALG_LIST; do
   for impl in $IMPL_LIST; do
     echo
@@ -120,6 +125,14 @@ for alg in $ALG_LIST; do
     if [[ $impl == *"arm"* ]]; then
       for i in $ARM_FILES; do
         a=$base/arm/$i
+        b=$alg/$impl/$i
+        echo "  cp $a $b"
+        cmp --silent $a $b || cp $a $b
+      done
+    fi
+    if [[ $impl == *"avr"* ]]; then
+      for i in $AVR_FILES; do
+        a=$base/avr/$i
         b=$alg/$impl/$i
         echo "  cp $a $b"
         cmp --silent $a $b || cp $a $b
@@ -162,6 +175,9 @@ rm -rf crypto_auth/*/*lowsize
 rm -rf crypto_*/*bi32*/arm*
 rm -rf crypto_*/*bi32*/bi8*
 rm -rf crypto_*/*bi32*/opt*
+rm -rf crypto_*/*bi32*/avr
+
+rm -rf crypto_*/*/avr/permutations.c
 
 sed -i 's/ASCON_EXTERN_BI 0/ASCON_EXTERN_BI 1/' crypto_*/*bi32*/*/config.h
 
