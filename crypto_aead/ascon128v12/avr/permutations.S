@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// ascon_avr.S: AVR Assembler implementation (GCC) of the permutations.      //
+// permutations.S: AVR Assembler implementation (GCC) of the permutations.   //
 // Version 1.0.4 (09-Sep-2022), see <http://github.com/ascon/> for updates.  //
 // Author: L. Cardoso and J. Groszschaedl, (DCS, University of Luxembourg).  //
 // License: CC0-1.0, see <http://creativecommons.org/publicdomain/zero/1.0/> //
