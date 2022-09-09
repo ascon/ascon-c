@@ -51,6 +51,7 @@ IMPL_LIST=" \
 COMMON_FILES=" \
   aead.c \
   ascon.h \
+  constants.h \
   endian.h \
   forceinline.h \
   goal-constbranch \
@@ -150,7 +151,9 @@ rm -f crypto_*/asconxof*v12/*/crypto_aead.c
 rm -f crypto_aead*/*/*/prf*.c
 rm -f crypto_hash*/*/*/prf*.c
 rm -f crypto_auth/asconmacv12/*/prfs.c
+rm -f crypto_auth/asconmacav12/*/prfs.c
 rm -f crypto_auth/asconprfv12/*/prfs.c
+rm -f crypto_auth/asconprfav12/*/prfs.c
 rm -f crypto_auth/asconprfsv12/*/prf.c
 rm -f crypto_auth/*/*/hash.c
 rm -f crypto_auth/*/*/aead.c
