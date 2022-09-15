@@ -65,10 +65,10 @@ For most algorithms, we provide the following pure C implementations:
 - `bi32_lowreg`: 32-bit speed-optimized bit-interleaved (low register usage)
 - `bi32_lowsize`: 32-bit size-optimized bit-interleaved
 - `esp32`: 32-bit ESP32 optimized
-- `opt8`: 8-bit optimized
+- `opt8`: 8-bit size- and speed-optimized
 - `bi8`: 8-bit optimized bit-interleaved
 
-the following C with inline ASM implementations:
+the following C with inline or partial ASM implementations:
 
 - `avx512`: 320-bit speed-optimized AVX512
 - `neon`: 64-bit speed-optimized ARM NEON
@@ -83,6 +83,7 @@ the following C with inline ASM implementations:
 - `bi32_armv6m`: 32-bit speed-optimized bit-interleaved ARMv6-M
 - `bi32_armv7m`: 32-bit speed-optimized bit-interleaved ARMv7-M
 - `bi32_armv7m_small`: 32-bit small bit-interleaved ARMv7-M
+- `avr`: 8-bit size- and speed-optimized AVR
 
 the following ASM implementations:
 
@@ -110,61 +111,68 @@ preliminary results can found at: https://github.com/ascon/simpleserial-ascon
 
 # Performance results on different CPUs in cycles per byte
 
-## Ascon-128 and Ascon-80pq
-
-| Message Length in Bytes  |    1 |    8 |   16 |   32 |   64 | 1536 | long |
-|:-------------------------|-----:|-----:|-----:|-----:|-----:|-----:|-----:|
-| AMD Ryzen 7 1700\*       |      |      |      |      | 14.5 |  8.8 |  8.6 |
-| Intel Xeon E5-2609 v4\*  |      |      |      |      | 17.3 | 10.8 | 10.5 |
-| Cortex-A53 (ARMv8)\*     |      |      |      |      | 18.3 | 11.3 | 11.0 |
-| Intel Core i5-6300U      |  367 |   58 |   35 |   23 | 17.6 | 11.9 | 11.4 |
-| Intel Core i5-4200U      |  521 |   81 |   49 |   32 | 23.9 | 16.2 | 15.8 |
-| Cortex-A15 (ARMv7)\*     |      |      |      |      | 69.8 | 36.2 | 34.6 |
-| Cortex-A7 (NEON)         | 2182 |  249 |  148 |   97 | 71.7 | 47.5 | 46.5 |
-| Cortex-A7 (ARMv7)        | 1871 |  292 |  175 |  115 | 86.6 | 58.3 | 57.2 |
-| ARM1176JZF-S (ARMv6)     | 1921 |  277 |  167 |  112 | 83.7 | 57.2 | 56.8 |
-
-
 ## Ascon-128a
 
 | Message Length in Bytes  |    1 |    8 |   16 |   32 |   64 | 1536 | long |
 |:-------------------------|-----:|-----:|-----:|-----:|-----:|-----:|-----:|
-| AMD Ryzen 7 1700\*       |      |      |      |      | 12.0 |  6.0 |  5.7 |
-| Intel Xeon E5-2609 v4\*  |      |      |      |      | 14.1 |  7.3 |  6.9 |
-| Cortex-A53 (ARMv8)\*     |      |      |      |      | 15.1 |  7.6 |  7.3 |
+| AMD EPYC 7742\*          |      |      |      |      |  7.4 |  4.4 |  4.2 |
+| AMD Ryzen 9 5950X\*      |      |      |      |      |  8.1 |  5.3 |  5.2 |
+| Apple M1 (ARMv8)\*       |      |      |      |      |  9.4 |  6.3 |  6.3 |
+| Cortex-A72 (ARMv8)\*     |      |      |      |      | 10.9 |  7.2 |  7.0 |
+| Intel Xeon E5-2609 v4\*  |      |      |      |      | 11.3 |  7.4 |  7.2 |
 | Intel Core i5-6300U      |  365 |   47 |   31 |   19 | 13.5 |  8.0 |  7.8 |
 | Intel Core i5-4200U      |  519 |   67 |   44 |   27 | 18.8 | 11.0 | 10.6 |
-| Cortex-A15 (ARMv7)\*     |      |      |      |      | 60.3 | 25.3 | 23.8 |
+| Cortex-A9 (ARMv7)\*      |      |      |      |      | 42.8 | 24.6 | 24.0 |
 | Cortex-A7 (NEON)         | 2204 |  226 |  132 |   82 | 55.9 | 31.7 | 30.7 |
 | Cortex-A7 (ARMv7)        | 1911 |  255 |  161 |  102 | 71.3 | 42.3 | 41.2 |
 | ARM1176JZF-S (ARMv6)     | 1908 |  235 |  156 |   99 | 70.4 | 43.0 | 42.9 |
 
 
-## Ascon-Hash and Ascon-Xof
+## Ascon-128 and Ascon-80pq
 
-| Message Length in Bytes  |    1 |    8 |   16 |   32 |    64 | 1536 | long |
-|:-------------------------|-----:|-----:|-----:|-----:|------:|-----:|-----:|
-| Intel Core i5-6300U      |  747 |  114 |   69 |   46 |  34.2 | 23.2 | 23.1 |
-| Intel Core i5-4200U      |  998 |  153 |   92 |   61 |  45.5 | 30.9 | 30.7 |
-| ARM1176JZF-S (ARMv6)     | 3051 |  462 |  277 |  184 | 137.3 | 92.6 | 92.2 |
+| Message Length in Bytes  |    1 |    8 |   16 |   32 |   64 | 1536 | long |
+|:-------------------------|-----:|-----:|-----:|-----:|-----:|-----:|-----:|
+| AMD EPYC 7742\*          |      |      |      |      |  8.1 |  6.6 |  6.5 |
+| AMD Ryzen 9 5950X\*      |      |      |      |      | 11.0 |  8.2 |  8.1 |
+| Apple M1 (ARMv8)\*       |      |      |      |      | 12.5 |  9.5 |  9.3 |
+| Cortex-A72 (ARMv8)\*     |      |      |      |      | 13.8 | 10.7 | 10.5 |
+| Intel Xeon E5-2609 v4\*  |      |      |      |      | 14.9 | 10.8 | 10.6 |
+| Intel Core i5-6300U      |  367 |   58 |   35 |   23 | 17.6 | 11.9 | 11.4 |
+| Intel Core i5-4200U      |  521 |   81 |   49 |   32 | 23.9 | 16.2 | 15.8 |
+| Cortex-A9 (ARMv7)\*      |      |      |      |      | 51.7 | 34.1 | 33.3 |
+| Cortex-A7 (NEON)         | 2182 |  249 |  148 |   97 | 71.7 | 47.5 | 46.5 |
+| Cortex-A7 (ARMv7)        | 1871 |  292 |  175 |  115 | 86.6 | 58.3 | 57.2 |
+| ARM1176JZF-S (ARMv6)     | 1921 |  277 |  167 |  112 | 83.7 | 57.2 | 56.8 |
 
 
 ## Ascon-Hasha and Ascon-Xofa
 
 | Message Length in Bytes  |    1 |    8 |   16 |   32 |    64 | 1536 | long |
 |:-------------------------|-----:|-----:|-----:|-----:|------:|-----:|-----:|
+| AMD EPYC 7742\*          |      |      |      |      |       |      |      |
+| AMD Ryzen 7 1700\*       |      |      |      |      |  22.0 | 12.1 | 11.7 |
+| Apple M1 (ARMv8)\*       |      |      |      |      |       |      |      |
+| Cortex-A72 (ARMv8)\*     |      |      |      |      |  22.2 | 14.5 | 14.2 |
+| Intel Xeon E5-2609 v4\*  |      |      |      |      |  23.3 | 14.4 | 14.0 |
 | Intel Core i5-6300U      |  550 |   83 |   49 |   33 |  23.7 | 15.6 | 15.5 |
 | Intel Core i5-4200U      |  749 |  112 |   67 |   44 |  31.8 | 20.8 | 20.7 |
+| Cortex-A9 (ARMv7)\*      |      |      |      |      |  87.5 | 45.6 | 44.0 |
 | ARM1176JZF-S (ARMv6)     | 2390 |  356 |  211 |  138 | 100.7 | 65.7 | 65.3 |
 
 
-## Ascon-Mac and Ascon-Prf
+## Ascon-Hash and Ascon-Xof
 
-| Message Length in Bytes  |    1 |    8 |   16 |   32 |   64 | 1536 | long |
-|:-------------------------|-----:|-----:|-----:|-----:|-----:|-----:|-----:|
-| Intel Core i5-6300U      |  369 |   46 |   24 |   18 | 11.7 |  6.4 |  6.3 |
-| Intel Core i5-4200U      |  506 |   63 |   32 |   24 | 16.2 |  8.8 |  8.7 |
-| ARM1176JZF-S (ARMv6)     | 1769 |  223 |  117 |   85 | 57.5 | 31.9 | 31.6 |
+| Message Length in Bytes  |    1 |    8 |   16 |   32 |    64 | 1536 | long |
+|:-------------------------|-----:|-----:|-----:|-----:|------:|-----:|-----:|
+| AMD EPYC 7742\*          |      |      |      |      |  21.1 | 13.3 | 12.4 |
+| AMD Ryzen 9 5950X\*      |      |      |      |      |  24.1 | 16.1 | 15.8 |
+| Apple M1 (ARMv8)\*       |      |      |      |      |  29.2 | 19.6 | 18.5 |
+| Cortex-A72 (ARMv8)\*     |      |      |      |      |  30.5 | 20.5 | 20.0 |
+| Intel Xeon E5-2609 v4\*  |      |      |      |      |  31.9 | 21.4 | 21.2 |
+| Intel Core i5-6300U      |  747 |  114 |   69 |   46 |  34.2 | 23.2 | 23.1 |
+| Intel Core i5-4200U      |  998 |  153 |   92 |   61 |  45.5 | 30.9 | 30.7 |
+| Cortex-A9 (ARMv7)\*      |      |      |      |      |  95.8 | 55.5 | 53.9 |
+| ARM1176JZF-S (ARMv6)     | 3051 |  462 |  277 |  184 | 137.3 | 92.6 | 92.2 |
 
 
 ## Ascon-Maca and Ascon-Prfa
@@ -174,6 +182,15 @@ preliminary results can found at: https://github.com/ascon/simpleserial-ascon
 | Intel Core i5-6300U      |  355 |   45 |   23 |   12 |  7.7 |  3.5 |  3.5 |
 | Intel Core i5-4200U      |  506 |   63 |   32 |   16 | 11.1 |  5.3 |  5.1 |
 | ARM1176JZF-S (ARMv6)     | 2028 |  252 |  128 |   65 | 43.5 | 19.0 | 18.8 |
+
+
+## Ascon-Mac and Ascon-Prf
+
+| Message Length in Bytes  |    1 |    8 |   16 |   32 |   64 | 1536 | long |
+|:-------------------------|-----:|-----:|-----:|-----:|-----:|-----:|-----:|
+| Intel Core i5-6300U      |  369 |   46 |   24 |   18 | 11.7 |  6.4 |  6.3 |
+| Intel Core i5-4200U      |  506 |   63 |   32 |   24 | 16.2 |  8.8 |  8.7 |
+| ARM1176JZF-S (ARMv6)     | 1769 |  223 |  117 |   85 | 57.5 | 31.9 | 31.6 |
 
 
 ## Ascon-PrfShort
