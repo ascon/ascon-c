@@ -1,83 +1,96 @@
 ///////////////////////////////////////////////////////////////////////////////
-// permutations.S: AVR Assembler implementation (GCC) of the permutations.   //
-// Version 1.0.4 (09-Sep-2022), see <http://github.com/ascon/> for updates.  //
+// ascon_avr.S: AVR Assembler implementation (for GCC) of the permutation.   //
+// Version 1.0.5 (20-Sep-2022), see <http://github.com/ascon/> for updates.  //
 // Author: L. Cardoso and J. Groszschaedl, (DCS, University of Luxembourg).  //
 // License: CC0-1.0, see <http://creativecommons.org/publicdomain/zero/1.0/> //
+// ------------------------------------------------------------------------- //
+// This source code is an improved version of the Assembler implementation   //
+// described in the paper "An Evaluation of the Multi-Platform Efficiency of //
+// Lightweight Cryptographic Permutations" (Proceedings of SecITC 2021,      //
+// Lecture Notes in Computer Science volume 13195, Springer Verlag, 2022).   //
 ///////////////////////////////////////////////////////////////////////////////
+
 
 // Function prototype:
 // -------------------
-// void P(State *s, int nr)
+// void P(state *s, unsigned char r)
 //
 // Parameters:
 // -----------
-// `s`:  pointer to a struct containing five 64-bit state-words
-// `nr`: number of rounds
+// `s`: pointer to a struct containing five 64-bit state-words in little
+//      endian representation
+// `r`: number of rounds
 //
 // Return value:
 // -------------
 // None
 
+
 #include "avr/io.h"
 .section .text
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //////////////////////// REGISTER NAMES AND CONSTANTS /////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
+
 
 // Two AVR registers form a Dual-byte Register (DR) that can store a 16-bit
 // operand, whereby little-endian format is used, i.e. the least-significant
 // byte of the 16-bit operand is in the lower register.
 
 // Twelve dual-byte registers for sbox layer
-#define DR0 r2, r3
-#define DR1 r4, r5
-#define DR2 r6, r7
-#define DR3 r8, r9
-#define DR4 r10, r11
-#define DR5 r12, r13
-#define DR6 r14, r15
-#define DR7 r16, r17
-#define DR8 r18, r19
-#define DR9 r20, r21
-#define DR10 r22, r23
-#define DR11 r24, r25
+#define DR0 r2,r3
+#define DR1 r4,r5
+#define DR2 r6,r7
+#define DR3 r8,r9
+#define DR4 r10,r11
+#define DR5 r12,r13
+#define DR6 r14,r15
+#define DR7 r16,r17
+#define DR8 r18,r19
+#define DR9 r20,r21
+#define DR10 r22,r23
+#define DR11 r24,r25
+
 
 // Eight AVR registers form an Octa-byte Register (OR) that can store a 64-bit
 // operand, whereby little-endian format is used, i.e. the least-significant
 // byte of the 64-bit operand is in the lowest register.
 
 // Three octa-byte registers for linear layer
-#define OR0 r2, r3, r4, r5, r6, r7, r8, r9
-#define OR1 r10, r11, r12, r13, r14, r15, r16, r17
-#define OR2 r18, r19, r20, r21, r22, r23, r24, r25
+#define OR0 r2,r3,r4,r5,r6,r7,r8,r9
+#define OR1 r10,r11,r12,r13,r14,r15,r16,r17
+#define OR2 r18,r19,r20,r21,r22,r23,r24,r25
 
 // Octa-byte registers rotated 1 byte right
-#define OR0R8 r3, r4, r5, r6, r7, r8, r9, r2
-#define OR1R8 r11, r12, r13, r14, r15, r16, r17, r10
-#define OR2R8 r19, r20, r21, r22, r23, r24, r25, r18
+#define OR0R8 r3,r4,r5,r6,r7,r8,r9,r2
+#define OR1R8 r11,r12,r13,r14,r15,r16,r17,r10
+#define OR2R8 r19,r20,r21,r22,r23,r24,r25,r18
 
 // Octa-byte registers rotated 2 bytes right
-#define OR0R16 r4, r5, r6, r7, r8, r9, r2, r3
-#define OR1R16 r12, r13, r14, r15, r16, r17, r10, r11
-#define OR2R16 r20, r21, r22, r23, r24, r25, r18, r19
+#define OR0R16 r4,r5,r6,r7,r8,r9,r2,r3
+#define OR1R16 r12,r13,r14,r15,r16,r17,r10,r11
+#define OR2R16 r20,r21,r22,r23,r24,r25,r18,r19
 
 // Octa-byte registers rotated 3 bytes right
-#define OR0R24 r5, r6, r7, r8, r9, r2, r3, r4
-#define OR1R24 r13, r14, r15, r16, r17, r10, r11, r12
-#define OR2R24 r21, r22, r23, r24, r25, r18, r19, r20
+#define OR0R24 r5,r6,r7,r8,r9,r2,r3,r4
+#define OR1R24 r13,r14,r15,r16,r17,r10,r11,r12
+#define OR2R24 r21,r22,r23,r24,r25,r18,r19,r20
 
 // Octa-byte registers rotated 3 bytes left
-#define OR0L24 r7, r8, r9, r2, r3, r4, r5, r6
-#define OR1L24 r15, r16, r17, r10, r11, r12, r13, r14
-#define OR2L24 r23, r24, r25, r18, r19, r20, r21, r22
+#define OR0L24 r7,r8,r9,r2,r3,r4,r5,r6
+#define OR1L24 r15,r16,r17,r10,r11,r12,r13,r14
+#define OR2L24 r23,r24,r25,r18,r19,r20,r21,r22
+
 
 // Offset values for octa-byte registers
-#define OF0 0, 1, 2, 3, 4, 5, 6, 7
-#define OF8 8, 9, 10, 11, 12, 13, 14, 15
-#define OF16 16, 17, 18, 19, 20, 21, 22, 23
-#define OF24 24, 25, 26, 27, 28, 29, 30, 31
-#define OF32 32, 33, 34, 35, 36, 37, 38, 39
+#define OF0  0,1,2,3,4,5,6,7
+#define OF8  8,9,10,11,12,13,14,15
+#define OF16 16,17,18,19,20,21,22,23
+#define OF24 24,25,26,27,28,29,30,31
+#define OF32 32,33,34,35,36,37,38,39
+
 
 // Register to determine loop termination
 #define rstop r0
@@ -482,7 +495,7 @@
 .endm
 
 
-// The macro `ADDRCON` XORs a round-constant to state-word X2.
+// The macro `ADDRCON` XORs an 8-bit round-constant to the state-word X2.
 
 .macro ADDRCON
     eor     x2lsb, rcon
@@ -494,10 +507,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-// The macro `LDSLICE` loads a 16-bit slice of each of the four 64-bit
-// state-words X0, X1, X3, and X4. The 16-bit slice of state-word X2 does
-// not need to be loaded because X2 is kept in OR2 during the computation
-// of the permutation.
+// The macro `LDSLICE` loads a 16-bit slice of each of the four 64-bit state-
+// words X0, X1, X3, and X4. The 16-bit slice of state-word X2 does not need to
+// be loaded because X2 is always kept in OR2 during the computation of the
+// permutation.
 
 .macro LDSLICE
     DLDZO   DR0, 0,1
@@ -537,12 +550,11 @@
 .endm
 
 
-// The macro `STSLICE` stores a 16-bit slice of each of the four 64-bit
-// state-words X0, X1, X3, and X4. The 16-bit slice of state-word X2 does
-// not need to be stored because X2 is kept in OR2 during the computation
-// of the permutation. However, OR2 is rotated by 16 bits so that DR8
-// contains the right 16-bit slice for the subsequent iteration of the
-// round-loop.
+// The macro `STSLICE` stores a 16-bit slice of each of the four 64-bit state-
+// words X0, X1, X3, and X4. The 16-bit slice of state-word X2 does not need to
+// be stored because X2 is always kept in OR2 during the computation of the
+// permutation. However, OR2 is rotated by 16 bits so that DR8 contains the
+// correct 16-bit slice for the subsequent iteration of the round-loop.
 
 .macro STSLICE
     DSTZI   DR8
@@ -608,7 +620,7 @@
 
 // The macro `LINSWX2` computes the linear diffusion operation on state-word
 // X2: X2 = X2 ^ (X2 >>> 1) ^ (X2 >>> 6). Note that X2 is not loaded from RAM
-// since it is kept in OR2 during the computation of the permutation.
+// because it is always kept in OR2 during the computation of the permutation.
 
 .macro LINSWX2
     OMOV    OR1, OR2
@@ -670,7 +682,7 @@
 P:
     PROLOGUE                // push callee-saved registers
     INITVARS                // initialize local variables
-    OLDZO OR2, OF16         // load state-word X2 to octa-register OR2
+    OLDZO OR2, OF16         // load state-word X2 to octa-byte register OR2
 .LROUNDLOOP:                // start of round-loop
     ADDRCON                 // macro for addition of round-constant
     SBOXLAYER               // macro for nonlinear substitution layer
@@ -678,7 +690,7 @@ P:
     subi rcon, 15           // subtract 15 from round-constant
     cpse rcon, rstop        // check whether round-constant is below 0x4B
     rjmp .LROUNDLOOP        // if not then jump back to start of loop
-    OSTZO OR2, OF16         // store octa-register OR2 in state-word X2
+    OSTZO OR2, OF16         // store octa-byte register OR2 to state-word X2
     EPILOGUE                // pop callee-saved registers and return
 .endfunc
 
