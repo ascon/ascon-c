@@ -28,6 +28,7 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   while (inlen >= 8) {
     ((uint64_t*)(&s.x[0]))[i] ^= LOADBYTES(in, 8);
     if (++i == 4) i = 0;
+    if (i == 0) printstate("absorb plaintext", &s);
     if (i == 0) P12(&s);
     in += 8;
     inlen -= 8;
@@ -35,18 +36,19 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   /* absorb final plaintext word */
   ((uint64_t*)(&s.x[0]))[i] ^= LOADBYTES(in, inlen);
   ((uint64_t*)(&s.x[0]))[i] ^= PAD(inlen);
+  printstate("pad plaintext", &s);
   /* domain separation */
   s.x[4] ^= 1;
   printstate("domain separation", &s);
 
   /* squeeze */
   P12(&s);
-  printstate("absorb plaintext", &s);
   /* squeeze output words */
   i = 0;
   while (outlen > 8) {
     STOREBYTES(out, ((uint64_t*)(&s.x[0]))[i], 8);
     if (++i == 2) i = 0;
+    if (i == 0) printstate("squeeze output", &s);
     if (i == 0) P12(&s);
     out += 8;
     outlen -= 8;

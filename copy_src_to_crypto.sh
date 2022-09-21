@@ -11,7 +11,9 @@ ALG_LIST=" \
   crypto_hash/asconxofv12 \
   crypto_hash/asconxofav12 \
   crypto_auth/asconmacv12 \
+  crypto_auth/asconmacav12 \
   crypto_auth/asconprfv12 \
+  crypto_auth/asconprfav12 \
   crypto_auth/asconprfsv12 \
   crypto_aead_hash/asconv12 \
   crypto_aead_hash/asconav12 \

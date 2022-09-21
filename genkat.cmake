@@ -21,8 +21,9 @@ elseif((${ALG} STREQUAL asconv12 OR ${ALG} STREQUAL asconav12 OR
     ${CRYPTO} STREQUAL hash)
   set(KAT_PATH crypto_aead_hash/${ALG})
   set(KAT_FILE LWC_HASH_KAT_256.txt)
-elseif(${ALG} STREQUAL asconprfv12 OR ${ALG} STREQUAL asconmacv12 OR
-    ${ALG} STREQUAL asconprfsv12)
+elseif(${ALG} STREQUAL asconmacv12 OR ${ALG} STREQUAL asconmacav12 OR
+       ${ALG} STREQUAL asconprfv12 OR ${ALG} STREQUAL asconprfav12 OR
+       ${ALG} STREQUAL asconprfsv12)
   set(KAT_PATH crypto_auth/${ALG})
   set(KAT_FILE LWC_AUTH_KAT_128_128.txt)
 else()

@@ -6,8 +6,9 @@ void P12(state_t* s) { P12ROUNDS(s); }
 
 #endif
 
-#if ((defined(ASCON_AEAD_RATE) && ASCON_AEAD_RATE == 16) ||     \
-     (defined(ASCON_HASH_ROUNDS) && ASCON_HASH_ROUNDS == 8)) && \
+#if ((defined(ASCON_AEAD_RATE) && ASCON_AEAD_RATE == 16) ||    \
+     (defined(ASCON_HASH_ROUNDS) && ASCON_HASH_ROUNDS == 8) || \
+     (defined(ASCON_PRF_ROUNDS) && ASCON_PRF_ROUNDS == 8)) &&  \
     !ASCON_INLINE_PERM && ASCON_UNROLL_LOOPS
 
 void P8(state_t* s) { P8ROUNDS(s); }

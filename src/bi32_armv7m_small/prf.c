@@ -11,15 +11,21 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
                const unsigned char* in, unsigned long long inlen,
                const unsigned char* k) {
   if (CRYPTO_BYTES && outlen > CRYPTO_BYTES) return -1;
+  int ir = (ASCON_PRF_ROUNDS == 12) ? ASCON_PRF_IN_RATE : ASCON_PRFA_IN_RATE;
+  int or = ASCON_PRF_OUT_RATE;
+  int nr = ASCON_PRF_ROUNDS;
   /* load key */
   const uint64_t K0 = LOAD(k, 8);
   const uint64_t K1 = LOAD(k + 8, 8);
   /* initialize */
   state_t s;
-  if (ASCON_PRF_BYTES == 0) s.x[0] = ASCON_PRF_IV;
-  if (ASCON_PRF_BYTES == 16) s.x[0] = ASCON_MAC_IV;
-  if (ASCON_PRF_BYTES != 16)
-    s.x[0] = ASCON_PRF_IV ^ U64TOWORD(ASCON_PRF_BYTES * 8);
+  if (ASCON_PRF_BYTES == 0 && ASCON_PRF_ROUNDS == 12) s.x[0] = ASCON_PRF_IV;
+  if (ASCON_PRF_BYTES == 0 && ASCON_PRF_ROUNDS == 8) s.x[0] = ASCON_PRFA_IV;
+  if (ASCON_PRF_BYTES == 16 && ASCON_PRF_ROUNDS == 12) s.x[0] = ASCON_MAC_IV;
+  if (ASCON_PRF_BYTES == 16 && ASCON_PRF_ROUNDS == 8) s.x[0] = ASCON_MACA_IV;
+  if (ASCON_PRF_BYTES != 16 && ASCON_PRF_BYTES != 0)
+    s.x[0] ^= U64TOWORD(((uint64_t)(12 - ASCON_PRF_ROUNDS) << 32) |
+                        ASCON_PRF_BYTES * 8);
   s.x[1] = K0;
   s.x[2] = K1;
   s.x[3] = 0;
@@ -32,27 +38,29 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   int i = 0;
   while (inlen >= 8) {
     s.x[i] ^= LOAD(in, 8);
-    if (++i == 4) i = 0;
-    if (i == 0) P(&s, 12);
+    if (++i == (ir / 8)) i = 0;
+    if (i == 0) printstate("absorb plaintext", &s);
+    if (i == 0) P(&s, nr);
     in += 8;
     inlen -= 8;
   }
   /* absorb final plaintext word */
   if (inlen) s.x[i] ^= LOAD(in, inlen);
   s.x[i] ^= PAD(inlen);
+  printstate("pad plaintext", &s);
   /* domain separation */
   s.x[4] ^= 1;
-  printstate("domain separation", &s);
 
   /* squeeze */
+  printstate("domain separation", &s);
   P(&s, 12);
-  printstate("absorb plaintext", &s);
   /* squeeze output words */
   i = 0;
   while (outlen > 8) {
     STORE(out, s.x[i], 8);
-    if (++i == 2) i = 0;
-    if (i == 0) P(&s, 12);
+    if (++i == or / 8) i = 0;
+    if (i == 0) printstate("squeeze output", &s);
+    if (i == 0) P(&s, nr);
     out += 8;
     outlen -= 8;
   }
