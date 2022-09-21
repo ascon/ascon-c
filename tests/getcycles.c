@@ -1,8 +1,14 @@
+#include <inttypes.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "api.h"
 #include "cpucycles.h"
+
+#if defined(AVR_UART)
+#include "avr_uart.h"
+#endif
 
 #if defined(CRYPTO_AEAD_SHARED)
 #include "crypto_aead_shared.h"
@@ -16,7 +22,11 @@
 
 #define NUM_RUNS 16
 #define NUM_MLENS 7
+#if !defined(__AVR__)
 #define MAX_LEN (1 << 11)
+#else
+#define MAX_LEN (1 << 8)
+#endif
 
 #if defined(CRYPTO_AEAD_SHARED)
 unsigned long long alen = 0;
@@ -43,25 +53,24 @@ unsigned char ALIGN(16) m[MAX_LEN];
 unsigned char ALIGN(16) t[CRYPTO_BYTES];
 #endif
 
+#if !defined(__AVR__)
 unsigned long long mlens[] = {1, 8, 16, 32, 64, 1536, MAX_LEN};
+#else
+unsigned long long mlens[] = {1, 8, 16, 32, 64, 128, 256};
+#endif
 unsigned long long cycles[NUM_MLENS][NUM_RUNS * 2];
-unsigned int tmp;
 
 void init_input() {
   int i, j;
 #if defined(CRYPTO_AEAD_SHARED)
   for (i = 0; i < NUM_WORDS(MAX_LEN); ++i)
-    for (j = 0; j < NUM_SHARES_AD; ++j)
-      a[i].shares[j] = rand();
+    for (j = 0; j < NUM_SHARES_AD; ++j) a[i].shares[j] = rand();
   for (i = 0; i < NUM_WORDS(MAX_LEN); ++i)
-    for (j = 0; j < NUM_SHARES_M; ++j)
-      m[i].shares[j] = rand();
+    for (j = 0; j < NUM_SHARES_M; ++j) m[i].shares[j] = rand();
   for (i = 0; i < NUM_WORDS(CRYPTO_KEYBYTES); ++i)
-    for (j = 0; j < NUM_SHARES_KEY; ++j)
-      k[i].shares[j] = rand();
+    for (j = 0; j < NUM_SHARES_KEY; ++j) k[i].shares[j] = rand();
   for (i = 0; i < NUM_WORDS(CRYPTO_NPUBBYTES); ++i)
-    for (j = 0; j < NUM_SHARES_NPUB; ++j)
-      n[i].shares[j] = rand();
+    for (j = 0; j < NUM_SHARES_NPUB; ++j) n[i].shares[j] = rand();
 #elif defined(CRYPTO_AEAD)
   for (i = 0; i < MAX_LEN; ++i) a[i] = rand();
   for (i = 0; i < MAX_LEN; ++i) m[i] = rand();
@@ -110,6 +119,11 @@ int main(int argc, char* argv[]) {
   double factor = 1.0;
   if (argc == 2) factor = atof(argv[1]);
 
+#if defined(AVR_UART)
+  avr_uart_init();
+  stdout = &avr_uart_output;
+  stdin = &avr_uart_input_echo;
+#endif
   cpucycles_init();
 
   for (i = 0; i < NUM_MLENS; ++i) {
@@ -120,12 +134,12 @@ int main(int argc, char* argv[]) {
   printf("\nsorted cycles:\n");
   for (i = 0; i < NUM_MLENS; ++i) {
     unsigned long long NREPS = MAX_LEN / mlens[i];
-    printf("%5d: ", (int)mlens[i]);
+    printf("%5" PRIu32 ": ", (uint32_t)mlens[i]);
     for (j = 0; j < NUM_RUNS; ++j)
       if (cycles[i][j] == -1)
         printf(" - ");
       else
-        printf("%d ", (int)(cycles[i][j] / NREPS));
+        printf("%" PRIu32 " ", (uint32_t)(cycles[i][j] / NREPS));
     printf("\n");
   }
 
@@ -133,16 +147,22 @@ int main(int argc, char* argv[]) {
   for (i = 0; i < NUM_MLENS; ++i) {
     unsigned long long NREPS = MAX_LEN / mlens[i];
     unsigned long long bytes = mlens[i] * NREPS;
-    printf("%5d: ", (int)mlens[i]);
+    printf("%5" PRIu32 ": ", (uint32_t)mlens[i]);
     if (cycles[i][0] == -1)
       printf("   -      -   \n");
     else
+#if !defined(__AVR__)
       printf("%6.1f %6.1f\n", factor * cycles[i][0] / bytes + 0.05,
              factor * cycles[i][NUM_RUNS / 2] / bytes + 0.05);
+#else
+      printf("%6" PRIu32 " %6" PRIu32 "\n",
+             (uint32_t)(factor * cycles[i][0] / bytes + 0.05),
+             (uint32_t)(factor * cycles[i][NUM_RUNS / 2] / bytes + 0.05));
+#endif
   }
   printf("\n");
 
-  for (i = 0; i < NUM_MLENS; ++i) printf("| %5d ", (int)mlens[i]);
+  for (i = 0; i < NUM_MLENS; ++i) printf("| %5" PRIu32 " ", (uint32_t)mlens[i]);
   printf("|\n");
   for (i = 0; i < NUM_MLENS; ++i) printf("|------:");
   printf("|\n");
@@ -152,9 +172,15 @@ int main(int argc, char* argv[]) {
     if (cycles[i][0] == -1)
       printf("|   -   ");
     else if ((mlens[i] <= 32) || (factor * cycles[i][0] / bytes + 0.5 >= 1000))
-      printf("| %5.0f ", factor * cycles[i][0] / bytes + 0.5);
+      printf("| %5" PRIu32 " ",
+             (uint32_t)(factor * cycles[i][0] / bytes + 0.5));
     else
+#if !defined(__AVR__)
       printf("| %5.1f ", factor * cycles[i][0] / bytes + 0.05);
+#else
+      printf("| %5" PRIu32 " ",
+             (uint32_t)(factor * cycles[i][0] / bytes + 0.05));
+#endif
   }
   printf("|\n");
 

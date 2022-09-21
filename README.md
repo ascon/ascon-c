@@ -326,6 +326,58 @@ Generate KATs and get CPU cycles:
 ```
 
 
+## Manually build and run an RV32 target:
+
+Example to build, run and test an AEAD algorithm using `gcc`, `picolibc` and `qemu`:
+
+```
+sudo apt install gcc-riscv64-unknown-elf picolibc-riscv64-unknown-elf qemu-system-misc
+riscv64-unknown-elf-gcc -O2 -march=rv32i -mabi=ilp32 --specs=picolibc.specs --oslib=semihost --crt0=hosted -Ttests/rv32.ld \
+    -Icrypto_aead/ascon128v12/asm_rv32i crypto_aead/ascon128v12/asm_rv32i/*.[cS] -Itests tests/genkat_aead.c -o genkat
+qemu-system-riscv32 -semihosting-config enable=on -monitor none -serial none -nographic -machine virt,accel=tcg -cpu rv32 -bios none -kernel genkat
+diff LWC_AEAD_KAT_128_128.txt crypto_aead/ascon128v12/LWC_AEAD_KAT_128_128.txt
+```
+
+
+## Manually build and run an AVR target:
+
+Example to build, run and test an AEAD algorithm using `avr-gcc`, `avr-libc` and `simavr`.
+
+Setup:
+
+```
+sudo apt install gcc-avr avr-libc simavr
+git clone https://github.com/JohannCahier/avr_uart.git
+```
+
+Single test vector using `demo` and performance measurement using `getcycles`:
+
+```
+avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/ascon128v12/opt8 crypto_aead/ascon128v12/opt8/*.[cS] \
+    -DAVR_UART -Iavr_uart avr_uart/avr_uart.c -Wno-incompatible-pointer-types -Wno-cpp \
+    -DCRYPTO_AEAD -Itests tests/demo.c -o demo
+simavr -m atmega128 ./demo
+```
+```
+avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/ascon128v12/opt8 crypto_aead/ascon128v12/opt8/*.[cS] \
+    -DAVR_UART -Iavr_uart avr_uart/avr_uart.c -Wno-incompatible-pointer-types -Wno-cpp \
+    -DCRYPTO_AEAD -Itests tests/getcycles.c -o getcycles
+simavr -t -m atmega128 ./getcycles
+```
+
+Generate all test vectors and write result to file. Press Ctrl-C to quit `simavr` after about a minute:
+
+```
+avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/ascon128v12/opt8 crypto_aead/ascon128v12/opt8/*.[cS] \
+    -DAVR_UART -Iavr_uart avr_uart/avr_uart.c -Wno-incompatible-pointer-types -Wno-cpp \
+    -Itests tests/genkat_aead.c -o genkat_aead
+echo "Press Ctrl-C to quit simavr after about a minute"
+simavr -t -m atmega128 ./genkat_aead 2> LWC_AEAD_KAT_128_128.txt
+sed -i -e 's/\x1b\[[0-9;]*m//g' -e 's/\.\.$//' LWC_AEAD_KAT_128_128.txt
+diff LWC_AEAD_KAT_128_128.txt crypto_aead/ascon128v12/LWC_AEAD_KAT_128_128.txt
+```
+
+
 # Benchmarking
 
 ## Hints to get more reliable getcycles results on Intel/AMD CPUs:

@@ -43,6 +43,10 @@
 #include "api.h"
 #include "crypto_auth.h"
 
+#if defined(AVR_UART)
+#include "avr_uart.h"
+#endif
+
 #define KAT_SUCCESS 0
 #define KAT_FILE_OPEN_ERROR -1
 #define KAT_DATA_ERROR -3
@@ -54,38 +58,43 @@
 #define MAX_DATA_LENGTH 1024
 #endif
 
-void init_buffer(unsigned char *buffer, unsigned long long numbytes);
-
 void fprint_bstr(FILE *fp, const char *label, const unsigned char *data,
-                 unsigned long long length);
+                 unsigned long long length) {
+  fprintf(fp, "%s", label);
+  for (unsigned long long i = 0; i < length; i++) fprintf(fp, "%02X", data[i]);
+  fprintf(fp, "\n");
+}
 
-int generate_test_vectors();
-
-int main() {
-  int ret = generate_test_vectors();
-  if (ret != KAT_SUCCESS) {
-    fprintf(stderr, "test vector generation failed with code %d\n", ret);
-  }
-  return ret;
+void init_buffer(unsigned char *buffer, unsigned long long numbytes) {
+  for (unsigned long long i = 0; i < numbytes; i++)
+    buffer[i] = (unsigned char)i;
 }
 
 int generate_test_vectors() {
-  FILE *fp;
-  char fileName[MAX_FILE_NAME];
   unsigned char key[CRYPTO_KEYBYTES];
   unsigned char d[MAX_DATA_LENGTH];
   unsigned char t[CRYPTO_BYTES];
   int count = 1;
   int func_ret, ret_val = KAT_SUCCESS;
 
-  init_buffer(key, sizeof(key));
-  init_buffer(d, sizeof(d));
+#if !defined(AVR_UART)
+  FILE *fp;
+  char fileName[MAX_FILE_NAME];
   sprintf(fileName, "LWC_AUTH_KAT_%d_%d.txt", (CRYPTO_KEYBYTES * 8),
           (CRYPTO_BYTES * 8));
   if ((fp = fopen(fileName, "w")) == NULL) {
     fprintf(stderr, "Couldn't open <%s> for write\n", fileName);
     return KAT_FILE_OPEN_ERROR;
   }
+#else
+#define fp stdout
+  avr_uart_init();
+  stdout = &avr_uart_output;
+  stdin = &avr_uart_input_echo;
+#endif
+
+  init_buffer(key, sizeof(key));
+  init_buffer(d, sizeof(d));
 
   for (unsigned long long dlen = 0; dlen <= MAX_DATA_LENGTH; dlen++) {
     fprintf(fp, "Count = %d\n", count++);
@@ -104,18 +113,18 @@ int generate_test_vectors() {
       break;
     }
   }
+#if !defined(AVR_UART)
   fclose(fp);
+#else
+  fprintf(stderr, "Press Ctrl-C to quit\n");
+#endif
   return ret_val;
 }
 
-void fprint_bstr(FILE *fp, const char *label, const unsigned char *data,
-                 unsigned long long length) {
-  fprintf(fp, "%s", label);
-  for (unsigned long long i = 0; i < length; i++) fprintf(fp, "%02X", data[i]);
-  fprintf(fp, "\n");
-}
-
-void init_buffer(unsigned char *buffer, unsigned long long numbytes) {
-  for (unsigned long long i = 0; i < numbytes; i++)
-    buffer[i] = (unsigned char)i;
+int main() {
+  int ret = generate_test_vectors();
+  if (ret != KAT_SUCCESS) {
+    fprintf(stderr, "test vector generation failed with code %d\n", ret);
+  }
+  return ret;
 }
