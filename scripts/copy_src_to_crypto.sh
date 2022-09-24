@@ -78,6 +78,10 @@ LOWSIZE_FILES=" \
   update.c \
   "
 
+COMBINED_LOWSIZE_FILES=" \
+  hash.c \
+  "
+
 BI32_FILES=" \
   constants.c \
   constants.h \
@@ -112,6 +116,14 @@ for alg in $ALG_LIST; do
         echo "  cp $a $b"
         cmp --silent $a $b || cp $a $b
       done
+      if [[ $alg == *"crypto_aead_hash"* ]]; then
+        for i in $COMBINED_LOWSIZE_FILES; do
+          a=$base/combined/$i
+          b=$alg/$impl/$i
+          echo "  cp $a $b"
+          cmp --silent $a $b || cp $a $b
+        done
+      fi
     fi
     if [[ $impl == *"bi32"* ]]; then
       for i in $BI32_FILES; do
