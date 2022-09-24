@@ -73,7 +73,6 @@ LOWSIZE_FILES=" \
   ascon.h \
   config.h \
   crypto_aead.c \
-  hash.c \
   prf.c \
   prfs.c \
   update.c \

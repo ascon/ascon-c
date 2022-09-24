@@ -55,7 +55,7 @@ forceinline void ascon_absorb(ascon_state_t* s, const uint8_t* in,
     inlen -= ASCON_HASH_RATE;
   }
   /* absorb final plaintext block */
-  if (inlen) s->x[0] ^= LOADBYTES(in, inlen);
+  s->x[0] ^= LOADBYTES(in, inlen);
   s->x[0] ^= PAD(inlen);
   printstate("pad plaintext", s);
 }
