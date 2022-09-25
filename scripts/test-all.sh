@@ -48,14 +48,6 @@ cmake .. -UALG_LIST -DEMULATOR="qemu-arm;-L;/usr/arm-linux-gnueabi" \
 cmake --build . --clean-first -- -k | tee -a ../test-all.log | grep "Built target genkat" >&3
 ctest | tee -a ../test-all.log | grep Test >&3
 
-echo "Test armv6m $OPT builds:" | tee -a ../test-all.log | grep Test >&3
-cmake .. -DCMAKE_C_COMPILER=arm-linux-gnueabi-gcc -DALG_LIST="" -DIMPL_LIST=""
-cmake .. -UALG_LIST -DEMULATOR="qemu-arm;-L;/usr/arm-linux-gnueabi" \
-         -DREL_FLAGS="$OPT;-fomit-frame-pointer;-march=armv6" \
-         -DIMPL_LIST="armv6m;armv6m_lowsize;bi32_armv6m"
-cmake --build . --clean-first -- -k | tee -a ../test-all.log | grep "Built target genkat" >&3
-ctest | tee -a ../test-all.log | grep Test >&3
-
 echo
 echo "Test armv7m $OPT builds:" | tee -a ../test-all.log | grep Test >&3
 cmake .. -DCMAKE_C_COMPILER=arm-linux-gnueabi-gcc -DALG_LIST="" -DIMPL_LIST=""

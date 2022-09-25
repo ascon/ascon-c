@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMPL="armv6 armv6_lowsize armv6m armv6m_lowsize armv7m armv7m_lowsize armv7m_small bi32 bi32_armv6 bi32_armv6m bi32_armv7m bi32_armv7m_small bi32_lowreg bi32_lowsize bi8 opt32 opt32_lowsize opt64 opt64_lowsize opt8"
+IMPL="armv6 armv6_lowsize armv7m armv7m_lowsize armv7m_small bi32 bi32_armv6 bi32_armv7m bi32_armv7m_small bi32_lowreg bi32_lowsize bi8 opt32 opt32_lowsize opt64 opt64_lowsize opt8"
 
 exec 3>&1 4>&2
 exec 1>test-config.log 2>&1
@@ -16,11 +16,7 @@ for I in $IMPL; do
   echo $I | grep -vq bi
   BI=$?
   echo BI=$BI
-  if echo $I | grep -q armv6m; then
-    FLAGS="-O2;-fomit-frame-pointer;-march=armv6"
-  else
-    FLAGS="-O2;-fomit-frame-pointer;-march=armv7"
-  fi
+  FLAGS="-O2;-fomit-frame-pointer;-march=armv7"
   for IM in 0 1; do
     for IP in 0 1; do
       for UL in 0 1; do
