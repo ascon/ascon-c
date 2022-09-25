@@ -34,6 +34,7 @@ IMPL_LIST=" \
   armv7m_lowsize \
   armv7m_small \
   avr \
+  avr_lowsize \
   bi32 \
   bi32_armv6 \
   bi32_armv6m \
@@ -47,6 +48,7 @@ IMPL_LIST=" \
   opt64 \
   opt64_lowsize \
   opt8 \
+  opt8_lowsize \
   "
 
 COMMON_FILES=" \
@@ -73,7 +75,6 @@ LOWSIZE_FILES=" \
   ascon.h \
   config.h \
   crypto_aead.c \
-  update.c \
   "
 
 COMBINED_LOWSIZE_FILES=" \
@@ -92,7 +93,25 @@ ARM_FILES=" \
   architectures \
   "
 
+OPT8_FILES=" \
+  aead.c \
+  config.h \
+  hash.c \
+  prf.c \
+  prfs.c \
+  round.h \
+  word.h \
+  "
+
+OPT8_LOWSIZE_FILES=" \
+  aead.c \
+  ascon.h \
+  hash.c \
+  update.c \
+  "
+
 AVR_FILES=" \
+  implementors \
   permutations.S \
   "
 
@@ -114,14 +133,12 @@ for alg in $ALG_LIST; do
         echo "  cp $a $b"
         cmp --silent $a $b || cp $a $b
       done
-      if [[ $alg == *"crypto_aead_hash"* ]]; then
-        for i in $COMBINED_LOWSIZE_FILES; do
-          a=$base/combined/$i
-          b=$alg/$impl/$i
-          echo "  cp $a $b"
-          cmp --silent $a $b || cp $a $b
-        done
-      fi
+    fi
+    if [[ $impl == *"lowsize"* && $alg != *"hash"* ]]; then
+      a=$base/lowsize/update.c
+      b=$alg/$impl/update.c
+      echo "  cp $a $b"
+      cmp --silent $a $b || cp $a $b
     fi
     if [[ $impl == *"bi32"* ]]; then
       for i in $BI32_FILES; do
@@ -147,7 +164,31 @@ for alg in $ALG_LIST; do
         cmp --silent $a $b || cp $a $b
       done
     fi
-    for i in $(ls $base/$impl); do
+    if [[ $impl == *"opt8"* || $impl == *"avr"* ]]; then
+      for i in $OPT8_FILES; do
+        a=$base/opt8/$i
+        b=$alg/$impl/$i
+        echo "  cp $a $b"
+        cmp --silent $a $b || cp $a $b
+      done
+    fi
+    if [[ $impl == *"opt8_lowsize"* || $impl == *"avr_lowsize"* ]]; then
+      for i in $OPT8_LOWSIZE_FILES; do
+        a=$base/opt8_lowsize/$i
+        b=$alg/$impl/$i
+        echo "  cp $a $b"
+        cmp --silent $a $b || cp $a $b
+      done
+    fi
+    if [[ $impl == *"lowsize"* && $alg == *"crypto_aead_hash"* ]]; then
+      for i in $COMBINED_LOWSIZE_FILES; do
+        a=$base/combined/$i
+        b=$alg/$impl/$i
+        echo "  cp $a $b"
+        cmp --silent $a $b || cp $a $b
+      done
+    fi
+    for i in $(ls $base/$impl 2>/dev/null); do
       a=$base/$impl/$i
       b=$alg/$impl/$i
       echo "  cp $a $b"
@@ -165,8 +206,6 @@ rm -f crypto_*/ascon128*v12/*/hash.c
 rm -f crypto_*/ascon80pqv12/*/hash.c
 rm -f crypto_*/asconhash*v12/*/aead.c
 rm -f crypto_*/asconxof*v12/*/aead.c
-rm -f crypto_*/asconhash*v12/*/update*.c
-rm -f crypto_*/asconxof*v12/*/update*.c
 rm -f crypto_*/asconhash*v12/*/crypto_aead.c
 rm -f crypto_*/asconxof*v12/*/crypto_aead.c
 
@@ -179,12 +218,15 @@ rm -f crypto_auth/asconprfav12/*/prfs.c
 rm -f crypto_auth/asconprfsv12/*/prf.c
 rm -f crypto_auth/*/*/hash.c
 rm -f crypto_auth/*/*/aead.c
+rm -f crypto_*/*/opt8_lowsize/crypto_aead.c
+rm -f crypto_*/*/avr_lowsize/crypto_aead.c
+rm -f crypto_*/*/avr*/permutations.c
 rm -rf crypto_auth/*/*lowsize
 
 rm -rf crypto_*/*bi32*/arm*
 rm -rf crypto_*/*bi32*/bi8*
 rm -rf crypto_*/*bi32*/opt*
-rm -rf crypto_*/*bi32*/avr
+rm -rf crypto_*/*bi32*/avr*
 
 rm -rf crypto_*/*/avr/permutations.c
 

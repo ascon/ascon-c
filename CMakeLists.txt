@@ -13,7 +13,7 @@ set(DEFAULT_ALGS ascon128 ascon128a ascon80pq
   ascon ascona asconabi32 asconbi32)
 
 # default to all C implementations:
-set(DEFAULT_IMPLS ref opt64 opt64_lowsize opt32 opt32_lowsize bi32 bi32_lowsize bi32_lowreg esp32 opt8 bi8)
+set(DEFAULT_IMPLS ref opt64 opt64_lowsize opt32 opt32_lowsize bi32 bi32_lowsize bi32_lowreg esp32 opt8 opt8_lowsize bi8)
 
 # default flags, tests {genkat, getcycles}, emulator {"qemu-arm;-L;/usr/arm-linux-gnueabi", "sde;--"}
 set(DEFAULT_COMPILE_DEFS)
