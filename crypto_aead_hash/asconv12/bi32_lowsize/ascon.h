@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "word.h"
+#include "api.h"
 
 typedef union {
   uint64_t x[5];
@@ -11,13 +11,17 @@ typedef union {
   uint8_t b[5][8];
 } ascon_state_t;
 
-typedef struct {
-#if (CRYPTO_KEYBYTES == 20)
-  uint64_t k0;
-#endif
-  uint64_t k1;
-  uint64_t k2;
+#ifdef ASCON_AEAD_RATE
+
+#define ASCON_KEYWORDS (CRYPTO_KEYBYTES + 7) / 8
+
+typedef union {
+  uint64_t x[ASCON_KEYWORDS];
+  uint32_t w[ASCON_KEYWORDS][2];
+  uint8_t b[ASCON_KEYWORDS][8];
 } ascon_key_t;
+
+#endif
 
 #define ASCON_ABSORB 0x1
 #define ASCON_SQUEEZE 0x2
