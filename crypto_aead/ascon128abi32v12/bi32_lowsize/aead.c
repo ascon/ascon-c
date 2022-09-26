@@ -75,7 +75,7 @@ void ascon_aead(uint8_t* t, uint8_t* out, const uint8_t* in, uint64_t tlen,
   ascon_initaead(&s, &key, npub);
   /* process associated data */
   if (adlen) {
-    ascon_update(&s, (void*)0, ad, adlen, ASCON_ABSORB);
+    ascon_update(ASCON_ABSORB, &s, (void*)0, ad, adlen);
     printstate("pad adata", &s);
     P(&s, nr);
   }
@@ -83,7 +83,7 @@ void ascon_aead(uint8_t* t, uint8_t* out, const uint8_t* in, uint64_t tlen,
   s.x[4] ^= 1;
   printstate("domain separation", &s);
   /* process plaintext/ciphertext */
-  ascon_update(&s, out, in, tlen, mode);
+  ascon_update(mode, &s, out, in, tlen);
   if (mode == ASCON_ENCRYPT) printstate("pad plaintext", &s);
   if (mode == ASCON_DECRYPT) printstate("pad ciphertext", &s);
   /* finalize */

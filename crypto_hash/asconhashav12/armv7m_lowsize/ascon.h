@@ -26,8 +26,8 @@ typedef struct {
 #define ASCON_ENCRYPT (ASCON_ABSORB | ASCON_SQUEEZE)
 #define ASCON_DECRYPT (ASCON_ABSORB | ASCON_SQUEEZE | ASCON_INSERT)
 
-void ascon_update(ascon_state_t* s, uint8_t* out, const uint8_t* in,
-                  uint64_t len, uint8_t mode);
+void ascon_update(uint8_t mode, ascon_state_t* s, uint8_t* out,
+                  const uint8_t* in, uint64_t len);
 
 void ascon_aead(uint8_t* t, uint8_t* out, const uint8_t* in, uint64_t len,
                 const uint8_t* ad, uint64_t adlen, const uint8_t* npub,
