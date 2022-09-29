@@ -420,7 +420,8 @@ ascon_core:
     l32i iptr, a1, S_iptr
     l32i ilen, a1, S_ilen
     l8ui mode, a1, S_mode_arg
-    sext mode, mode, 7
+    slli mode, mode, 24
+    srai mode, mode, 24
     s32i mode, a1, S_mode_cur
     call0 ascon_duplex
     s32i optr, a1, S_optr_cur
