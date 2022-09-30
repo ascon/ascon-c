@@ -1,4 +1,4 @@
-#define CRYPTO_VERSION "1.2.6"
+#define CRYPTO_VERSION "1.2.7"
 
 // AEAD defines
 #define CRYPTO_KEYBYTES 16
