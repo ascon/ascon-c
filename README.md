@@ -26,9 +26,7 @@ This repository contains implementations of the following 12 Ascon v1.2 algorith
 - `crypto_hash/asconxofv12`: Ascon-Xof
 - `crypto_hash/asconxofav12`: Ascon-Xofa
 - `crypto_auth/asconmacv12`: Ascon-Mac
-- `crypto_auth/asconmacav12`: Ascon-Maca
 - `crypto_auth/asconprfv12`: Ascon-Prf
-- `crypto_auth/asconprfav12`: Ascon-Prfa
 - `crypto_auth/asconprfsv12`: Ascon-PrfShort
 
 We also provide two combined algorithm implementations supporting both AEAD and
@@ -173,15 +171,6 @@ preliminary results can found at: https://github.com/ascon/simpleserial-ascon
 | Intel Core i5-4200U      |  998 |  153 |   92 |   61 |  45.5 | 30.9 | 30.7 |
 | Cortex-A9 (ARMv7)\*      |      |      |      |      |  95.8 | 55.5 | 53.9 |
 | ARM1176JZF-S (ARMv6)     | 3051 |  462 |  277 |  184 | 137.3 | 92.6 | 92.2 |
-
-
-## Ascon-Maca and Ascon-Prfa
-
-| Message Length in Bytes  |    1 |    8 |   16 |   32 |   64 | 1536 | long |
-|:-------------------------|-----:|-----:|-----:|-----:|-----:|-----:|-----:|
-| Intel Core i5-6300U      |  355 |   45 |   23 |   12 |  7.7 |  3.5 |  3.5 |
-| Intel Core i5-4200U      |  506 |   63 |   32 |   16 | 11.1 |  5.3 |  5.1 |
-| ARM1176JZF-S (ARMv6)     | 2028 |  252 |  128 |   65 | 43.5 | 19.0 | 18.8 |
 
 
 ## Ascon-Mac and Ascon-Prf
