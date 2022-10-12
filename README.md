@@ -82,14 +82,15 @@ the following C with inline or partial ASM implementations:
 - `bi32_armv7m`: 32-bit speed-optimized bit-interleaved ARMv7-M
 - `bi32_armv7m_small`: 32-bit small bit-interleaved ARMv7-M
 - `avr`: 8-bit size- and speed-optimized AVR
+- `avr_lowsize`: 8-bit size-optimized AVR
 
 the following ASM implementations:
 
-- `asm_esp32`: 32-bit optimized funnel-shift ESP32
-- `asm_rv32i`: 32-bit optimized RV32I (base instructions)
-- `asm_rv32b`: 32-bit optimized RV32B (bitmanip Zbb)
-- `asm_fsr_rv32b`: 32-bit optimized funnel-shift RV32B (bitmanip ZbbZbt)
-- `asm_bi32_rv32b`: 32-bit optimized bit-interleaved RV32B (bitmanip ZbbZbp)
+- `asm_esp32`: 32-bit optimized ESP32 using funnel-shift instructions
+- `asm_rv32i`: 32-bit optimized RV32I using the base instruction set
+- `asm_rv32b`: 32-bit optimized RV32B using bitmanip base (Zbb)
+- `asm_fsr_rv32b`: 32-bit optimized funnel-shift RV32B using bitmanip base and bitmanip terniary (ZbbZbt)
+- `asm_bi32_rv32b`: 32-bit optimized bit-interleaved RV32B using bitmanip base and bitmanip permutations (ZbbZbp)
 
 and the following high-level masked (shared) C with inline ASM implementations:
 
