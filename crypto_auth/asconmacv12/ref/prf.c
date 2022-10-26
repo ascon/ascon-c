@@ -12,6 +12,7 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   /* load key */
   const uint64_t K0 = LOADBYTES(k, 8);
   const uint64_t K1 = LOADBYTES(k + 8, 8);
+  int i;
   /* initialize */
   ascon_state_t s;
   s.x[0] = ASCON_MAC_IV;
@@ -24,7 +25,7 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   printstate("initialization", &s);
 
   /* absorb full plaintext words */
-  int i = 0;
+  i = 0;
   while (inlen >= 8) {
     ((uint64_t*)(&s.x[0]))[i] ^= LOADBYTES(in, 8);
     if (++i == 4) i = 0;
@@ -66,9 +67,10 @@ int crypto_auth(unsigned char* out, const unsigned char* in,
 
 int crypto_auth_verify(const unsigned char* h, const unsigned char* in,
                        unsigned long long len, const unsigned char* k) {
+  int i;
+  uint8_t diff = 0;
   uint8_t tag[CRYPTO_BYTES];
   crypto_prf(tag, CRYPTO_BYTES, in, len, k);
-  uint8_t diff = 0;
-  for (int i = 0; i < CRYPTO_BYTES; ++i) diff |= h[i] ^ tag[i];
+  for (i = 0; i < CRYPTO_BYTES; ++i) diff |= h[i] ^ tag[i];
   return (1 & ((diff - 1) >> 8)) - 1;
 }

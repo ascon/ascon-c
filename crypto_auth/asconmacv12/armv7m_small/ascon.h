@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "api.h"
+#include "config.h"
 
 typedef union {
   uint64_t x[5];
@@ -21,6 +22,8 @@ typedef union {
   uint8_t b[ASCON_KEYWORDS][8];
 } ascon_key_t;
 
+#if !ASCON_INLINE_MODE
+
 void ascon_loadkey(ascon_key_t* key, const uint8_t* k);
 void ascon_initaead(ascon_state_t* s, const ascon_key_t* key,
                     const uint8_t* npub);
@@ -33,11 +36,17 @@ void ascon_final(ascon_state_t* s, const ascon_key_t* k);
 
 #endif
 
+#endif
+
 #ifdef ASCON_HASH_BYTES
+
+#if !ASCON_INLINE_MODE
 
 void ascon_inithash(ascon_state_t* s);
 void ascon_absorb(ascon_state_t* s, const uint8_t* in, uint64_t inlen);
 void ascon_squeeze(ascon_state_t* s, uint8_t* out, uint64_t outlen);
+
+#endif
 
 #endif
 

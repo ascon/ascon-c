@@ -32,8 +32,9 @@ void printword(const char* text, const word_t x, int ns) {
 }
 
 void printstate(const char* text, const ascon_state_t* s, int ns) {
+  int i;
   printf("%s:", text);
-  for (int i = strlen(text); i < 17; ++i) printf(" ");
+  for (i = strlen(text); i < 17; ++i) printf(" ");
   printword(" x0", s->x[0], ns);
   printword(" x1", s->x[1], ns);
   printword(" x2", s->x[2], ns);

@@ -19,8 +19,9 @@ void printword(const char* text, const uint64_t x) {
 }
 
 void printstate(const char* text, const ascon_state_t* s) {
+  int i;
   printf("%s:", text);
-  for (int i = strlen(text); i < 17; ++i) printf(" ");
+  for (i = strlen(text); i < 17; ++i) printf(" ");
   printword(" x0", s->x[0]);
   printword(" x1", s->x[1]);
   printword(" x2", s->x[2]);

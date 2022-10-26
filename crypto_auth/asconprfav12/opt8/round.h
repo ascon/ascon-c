@@ -46,11 +46,12 @@ forceinline void NONLINEAR_LAYER(ascon_state_t* s, word_t* xtemp, uint8_t pos) {
 }
 
 forceinline void ROUND(ascon_state_t* s, uint8_t C) {
+  int i;
   word_t xtemp;
   /* round constant */
   s->b[2][0] = XOR8(s->b[2][0], C);
   /* s-box layer */
-  for (uint8_t i = 0; i < 8; i++) NONLINEAR_LAYER(s, &xtemp, i);
+  for (i = 0; i < 8; i++) NONLINEAR_LAYER(s, &xtemp, i);
   /* linear layer */
   LINEAR_LAYER(s, xtemp.x);
   printstate(" round output", s);

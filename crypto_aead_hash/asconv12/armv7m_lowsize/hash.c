@@ -5,6 +5,7 @@
 #include "printstate.h"
 
 forceinline void ascon_inithash(ascon_state_t* s) {
+  int i;
   /* initialize */
 #ifdef ASCON_PRINT_STATE
 #if ASCON_HASH_BYTES == 32 && ASCON_HASH_ROUNDS == 12
@@ -16,7 +17,7 @@ forceinline void ascon_inithash(ascon_state_t* s) {
 #elif ASCON_HASH_BYTES == 0 && ASCON_HASH_ROUNDS == 8
   s->x[0] = ASCON_XOFA_IV;
 #endif
-  for (int i = 1; i < 5; ++i) s->x[i] = 0;
+  for (i = 1; i < 5; ++i) s->x[i] = 0;
   printstate("initial value", s);
   P(s, 12);
 #endif
@@ -33,7 +34,7 @@ forceinline void ascon_inithash(ascon_state_t* s) {
   const uint64_t iv[5] = {ASCON_XOFA_IV0, ASCON_XOFA_IV1, ASCON_XOFA_IV2,
                           ASCON_XOFA_IV3, ASCON_XOFA_IV4};
 #endif
-  for (int i = 0; i < 5; ++i) s->x[i] = (iv[i]);
+  for (i = 0; i < 5; ++i) s->x[i] = (iv[i]);
   printstate("initialization", s);
 }
 

@@ -56,14 +56,15 @@
 
 void fprint_bstr(FILE *fp, const char *label, const unsigned char *data,
                  unsigned long long length) {
+  unsigned long long i;
   fprintf(fp, "%s", label);
-  for (unsigned long long i = 0; i < length; i++) fprintf(fp, "%02X", data[i]);
+  for (i = 0; i < length; i++) fprintf(fp, "%02X", data[i]);
   fprintf(fp, "\n");
 }
 
 void init_buffer(unsigned char *buffer, unsigned long long numbytes) {
-  for (unsigned long long i = 0; i < numbytes; i++)
-    buffer[i] = (unsigned char)i;
+  unsigned long long i;
+  for (i = 0; i < numbytes; i++) buffer[i] = (unsigned char)i;
 }
 
 int generate_test_vectors() {
@@ -73,6 +74,7 @@ int generate_test_vectors() {
   unsigned char msg2[MAX_MESSAGE_LENGTH];
   unsigned char ad[MAX_ASSOCIATED_DATA_LENGTH];
   unsigned char ct[MAX_MESSAGE_LENGTH + CRYPTO_ABYTES];
+  unsigned long long mlen, adlen;
   unsigned long long clen, mlen2;
   int count = 1;
   int func_ret, ret_val = KAT_SUCCESS;
@@ -98,10 +100,9 @@ int generate_test_vectors() {
   init_buffer(msg, sizeof(msg));
   init_buffer(ad, sizeof(ad));
 
-  for (unsigned long long mlen = 0;
-       (mlen <= MAX_MESSAGE_LENGTH) && (ret_val == KAT_SUCCESS); mlen++) {
-    for (unsigned long long adlen = 0; adlen <= MAX_ASSOCIATED_DATA_LENGTH;
-         adlen++) {
+  for (mlen = 0; (mlen <= MAX_MESSAGE_LENGTH) && (ret_val == KAT_SUCCESS);
+       mlen++) {
+    for (adlen = 0; adlen <= MAX_ASSOCIATED_DATA_LENGTH; adlen++) {
       fprintf(fp, "Count = %d\n", count++);
       fprint_bstr(fp, "Key = ", key, CRYPTO_KEYBYTES);
       fprint_bstr(fp, "Nonce = ", nonce, CRYPTO_NPUBBYTES);

@@ -206,8 +206,9 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   STOREBYTES(t + 8, s.x[4], 8);
 
   /* verify tag (should be constant time, check compiler output) */
+  int i;
   int result = 0;
-  for (int i = 0; i < CRYPTO_ABYTES; ++i) result |= c[i] ^ t[i];
+  for (i = 0; i < CRYPTO_ABYTES; ++i) result |= c[i] ^ t[i];
   result = (((result - 1) >> 8) & 1) - 1;
 
   return result;

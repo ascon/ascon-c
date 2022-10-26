@@ -54,10 +54,11 @@ int crypto_auth(unsigned char* out, const unsigned char* in,
 int crypto_auth_verify(const unsigned char* h, const unsigned char* in,
                        unsigned long long len, const unsigned char* k) {
   if (len > 16) return -1;
+  int i;
+  uint8_t diff = 0;
   uint8_t tag[CRYPTO_BYTES];
   crypto_prf(tag, CRYPTO_BYTES, in, len, k);
-  uint8_t diff = 0;
-  for (int i = 0; i < CRYPTO_BYTES; ++i) diff |= h[i] ^ tag[i];
+  for (i = 0; i < CRYPTO_BYTES; ++i) diff |= h[i] ^ tag[i];
   return (1 & ((diff - 1) >> 8)) - 1;
 }
 
