@@ -67,6 +67,17 @@ ctest | tee -a ../test-all.log | grep Test >&3
 echo
 ../scripts/benchmark-size.sh
 
+echo
+echo "Test mipsel $OPT builds:" | tee -a ../test-all.log | grep Test >&3
+cmake .. -DCMAKE_C_COMPILER=mipsel-linux-gnu-gcc -DALG_LIST="" -DIMPL_LIST=""
+cmake .. -UALG_LIST -DEMULATOR="qemu-mipsel;-L;/usr/mipsel-linux-gnu" \
+         -DREL_FLAGS="$OPT;-fomit-frame-pointer" \
+         -DIMPL_LIST="bi32;bi32_lowreg;bi32_lowsize;bi8;esp32;opt32;opt32_lowsize;opt64;opt64_lowsize;opt8;opt8_lowsize;ref"
+cmake --build . --clean-first -- -k | tee -a ../test-all.log | grep "Built target genkat" >&3
+ctest | tee -a ../test-all.log | grep Test >&3
+echo
+../scripts/benchmark-size.sh
+
 cd ..
 rm -rf test-all
 

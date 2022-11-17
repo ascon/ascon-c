@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
+#include "bendian.h"
 #include "config.h"
-#include "endian.h"
 #include "forceinline.h"
 
 #if ASCON_INLINE_BI

@@ -2,7 +2,7 @@
 #define CORE_H_
 
 #include "api.h"
-#include "endian.h"
+#include "bendian.h"
 #include "permutations.h"
 
 #define ASCON_AD 0

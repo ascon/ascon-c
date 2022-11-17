@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "bendian.h"
 #include "config.h"
-#include "endian.h"
 #include "forceinline.h"
 #include "interleave.h"
 

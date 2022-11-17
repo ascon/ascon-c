@@ -5,8 +5,8 @@
 #include <string.h>
 
 #include "asm.h"
+#include "bendian.h"
 #include "config.h"
-#include "endian.h"
 #include "forceinline.h"
 #include "interleave.h"
 #include "shares.h"

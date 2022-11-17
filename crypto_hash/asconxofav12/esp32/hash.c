@@ -1,7 +1,7 @@
 #include <string.h>
 
 #include "api.h"
-#include "endian.h"
+#include "bendian.h"
 #include "permutations.h"
 
 #define RATE (64 / 8)

@@ -55,7 +55,7 @@ COMMON_FILES=" \
   aead.c \
   ascon.h \
   constants.h \
-  endian.h \
+  bendian.h \
   forceinline.h \
   goal-constbranch \
   goal-constindex \

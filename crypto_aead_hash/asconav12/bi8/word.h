@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "endian.h"
+#include "bendian.h"
 #include "forceinline.h"
 #include "interleave.h"
 
