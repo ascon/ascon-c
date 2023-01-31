@@ -123,7 +123,7 @@ preliminary results can found at: https://github.com/ascon/simpleserial-ascon
 | Intel Core i5-4200U      |  519 |   67 |   44 |   27 | 18.8 | 11.0 | 10.6 |
 | Cortex-A9 (ARMv7)\*      |      |      |      |      | 42.8 | 24.6 | 24.0 |
 | Cortex-A7 (NEON)         | 2204 |  226 |  132 |   82 | 55.9 | 31.7 | 30.7 |
-| Cortex-A7 (ARMv7)        | 1911 |  255 |  161 |  102 | 71.3 | 42.3 | 41.2 |
+| Cortex-A7 (ARMv7)\*      |      |      |      |      | 55.5 | 38.2 | 37.5 |
 | ARM1176JZF-S (ARMv6)     | 1908 |  235 |  156 |   99 | 70.4 | 43.0 | 42.9 |
 
 
@@ -140,7 +140,7 @@ preliminary results can found at: https://github.com/ascon/simpleserial-ascon
 | Intel Core i5-4200U      |  521 |   81 |   49 |   32 | 23.9 | 16.2 | 15.8 |
 | Cortex-A9 (ARMv7)\*      |      |      |      |      | 51.7 | 34.1 | 33.3 |
 | Cortex-A7 (NEON)         | 2182 |  249 |  148 |   97 | 71.7 | 47.5 | 46.5 |
-| Cortex-A7 (ARMv7)        | 1871 |  292 |  175 |  115 | 86.6 | 58.3 | 57.2 |
+| Cortex-A7 (ARMv7)\*      |      |      |      |      | 69.6 | 52.0 | 51.6 |
 | ARM1176JZF-S (ARMv6)     | 1921 |  277 |  167 |  112 | 83.7 | 57.2 | 56.8 |
 
 
@@ -156,6 +156,7 @@ preliminary results can found at: https://github.com/ascon/simpleserial-ascon
 | Intel Core i5-6300U      |  550 |   83 |   49 |   33 |  23.7 | 15.6 | 15.5 |
 | Intel Core i5-4200U      |  749 |  112 |   67 |   44 |  31.8 | 20.8 | 20.7 |
 | Cortex-A9 (ARMv7)\*      |      |      |      |      |  87.5 | 45.6 | 44.0 |
+| Cortex-A7 (ARMv7)\*      |      |      |      |      | 102.3 | 63.5 | 61.8 |
 | ARM1176JZF-S (ARMv6)     | 2390 |  356 |  211 |  138 | 100.7 | 65.7 | 65.3 |
 
 
@@ -171,6 +172,7 @@ preliminary results can found at: https://github.com/ascon/simpleserial-ascon
 | Intel Core i5-6300U      |  747 |  114 |   69 |   46 |  34.2 | 23.2 | 23.1 |
 | Intel Core i5-4200U      |  998 |  153 |   92 |   61 |  45.5 | 30.9 | 30.7 |
 | Cortex-A9 (ARMv7)\*      |      |      |      |      |  95.8 | 55.5 | 53.9 |
+| Cortex-A7 (ARMv7)\*      |      |      |      |      | 138.1 | 89.9 | 88.8 |
 | ARM1176JZF-S (ARMv6)     | 3051 |  462 |  277 |  184 | 137.3 | 92.6 | 92.2 |
 
 
