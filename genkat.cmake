@@ -48,7 +48,7 @@ execute_process(COMMAND ${CMD} ${CMDLIST})
 configure_file(${BIN_DIR}/${KAT_FILE} ${BIN_DIR}/${KAT_FILE} NEWLINE_STYLE LF)
 
 # compare KAT files
-execute_process(COMMAND ${CMAKE_COMMAND} -E compare_files
+execute_process(COMMAND ${CMAKE_COMMAND} -E compare_files --ignore-eol
   ${BIN_DIR}/${KAT_FILE} ${SRC_DIR}/${KAT_PATH}/${KAT_FILE}
   RESULT_VARIABLE COMPARE_RESULT)
 if(${COMPARE_RESULT})
