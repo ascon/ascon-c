@@ -81,7 +81,7 @@ forceinline void ascon_adata(ascon_state_t* s, const uint8_t* ad,
       adlen -= 8;
     }
     *px ^= PAD(adlen);
-    if (adlen) *px ^= LOAD(ad, adlen);
+    if (adlen) *px ^= LOADBYTES(ad, adlen);
     printstate("pad adata", s);
     P(s, nr);
   }
@@ -122,8 +122,8 @@ forceinline void ascon_encrypt(ascon_state_t* s, uint8_t* c, const uint8_t* m,
   }
   *px ^= PAD(mlen);
   if (mlen) {
-    *px ^= LOAD(m, mlen);
-    STORE(c, *px, mlen);
+    *px ^= LOADBYTES(m, mlen);
+    STOREBYTES(c, *px, mlen);
   }
   printstate("pad plaintext", s);
 }
@@ -163,9 +163,9 @@ forceinline void ascon_decrypt(ascon_state_t* s, uint8_t* m, const uint8_t* c,
   }
   *px ^= PAD(clen);
   if (clen) {
-    uint64_t cx = LOAD(c, clen);
+    uint64_t cx = LOADBYTES(c, clen);
     *px ^= cx;
-    STORE(m, *px, clen);
+    STOREBYTES(m, *px, clen);
     *px = CLEAR(*px, clen);
     *px ^= cx;
   }

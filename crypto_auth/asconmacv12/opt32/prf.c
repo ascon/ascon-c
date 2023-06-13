@@ -46,7 +46,7 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
     inlen -= 8;
   }
   /* absorb final plaintext word */
-  if (inlen) s.x[i] ^= LOAD(in, inlen);
+  if (inlen) s.x[i] ^= LOADBYTES(in, inlen);
   s.x[i] ^= PAD(inlen);
   printstate("pad plaintext", &s);
   /* domain separation */
@@ -66,7 +66,7 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
     outlen -= 8;
   }
   /* squeeze final output word */
-  STORE(out, s.x[i], outlen);
+  STOREBYTES(out, s.x[i], outlen);
   printstate("squeeze output", &s);
   return 0;
 }

@@ -26,9 +26,9 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   /* absorb plaintext words */
   if (inlen > 8) {
     s.x[3] = LOAD(in, 8);
-    s.x[4] = LOAD(in + 8, inlen - 8);
+    s.x[4] = LOADBYTES(in + 8, inlen - 8);
   } else if (inlen) {
-    s.x[3] = LOAD(in, inlen);
+    s.x[3] = LOADBYTES(in, inlen);
   }
   printstate("absorb data", &s);
 
@@ -39,9 +39,9 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   printstate("squeeze", &s);
   if (outlen > 8) {
     STORE(out, s.x[3], 8);
-    STORE(out + 8, s.x[4], outlen - 8);
+    STOREBYTES(out + 8, s.x[4], outlen - 8);
   } else if (outlen) {
-    STORE(out, s.x[3], outlen);
+    STOREBYTES(out, s.x[3], outlen);
   }
   return 0;
 }
