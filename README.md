@@ -1,4 +1,4 @@
-# Reference, optimized, masked C and ASM implementations of Ascon
+# Reference, highly optimized, masked C and ASM implementations of Ascon
 
 Ascon is a family of lightweight cryptographic algorithms and consists of:
 - Authenticated encryption schemes with associated data (AEAD)
@@ -14,9 +14,19 @@ All implementations use the "ECRYPT Benchmarking of Cryptographic Systems (eBACS
 For more information on Ascon visit: https://ascon.iaik.tugraz.at/
 
 
+## TL;DR
+
+If you do not know where to start, use the reference implementations (self-contained, portable, very fast):
+
+- `crypto_aead/ascon128v12/ref`
+- `crypto_aead/ascon128av12/ref`
+- `crypto_aead/asconxofv12/ref`
+- `crypto_aead/asconxofav12/ref`
+
+
 ## Algorithms
 
-This repository contains implementations of the following 12 Ascon v1.2 algorithms:
+This repository contains implementations of the following 10 Ascon v1.2 algorithms:
 
 - `crypto_aead/ascon128v12`: Ascon-128
 - `crypto_aead/ascon128av12`: Ascon-128a
@@ -198,7 +208,7 @@ preliminary results can found at: https://github.com/ascon/simpleserial-ascon
 
 # Build and test
 
-Build and test all Ascon C targets using performance flags:
+Build and test all Ascon C targets using release flags (-O2 -fomit-frame-pointer -march=native -mtune=native):
 
 ```
 mkdir build && cd build
@@ -218,7 +228,7 @@ ctest -C Release
 ```
 
 
-Build and test all Ascon C targets using NIST flags and sanitizers:
+Build and test all Ascon C targets using debug flags (with NIST defined flags and sanitizers):
 
 ```
 mkdir build && cd build
@@ -227,11 +237,11 @@ cmake --build .
 ctest
 ```
 
-Manually set the compiler and compiler flags.
+Manually set the compiler and/or release flags (e.g. to disable -march=native -mtune=native).
 
 ```
 mkdir build && cd build
-cmake .. -DCMAKE_C_COMPILER=clang -DREL_FLAGS="-O2;-fomit-frame-pointer;-march=native;-mtune=native"
+cmake .. -DCMAKE_C_COMPILER=clang -DREL_FLAGS="-O2;-fomit-frame-pointer"
 cmake --build .
 ctest
 ```
