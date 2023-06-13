@@ -35,6 +35,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "api.h"
@@ -52,7 +53,7 @@
 #define MAX_FILE_NAME 256
 #define MAX_MESSAGE_LENGTH 1024
 
-void fprint_bstr(FILE *fp, const char *label, const unsigned char *data,
+void fprint_bstr(FILE* fp, const char* label, const unsigned char* data,
                  unsigned long long length) {
   fprintf(fp, "%s", label);
 
@@ -61,19 +62,19 @@ void fprint_bstr(FILE *fp, const char *label, const unsigned char *data,
   fprintf(fp, "\n");
 }
 
-void init_buffer(unsigned char *buffer, unsigned long long numbytes) {
+void init_buffer(unsigned char* buffer, unsigned long long numbytes) {
   for (unsigned long long i = 0; i < numbytes; i++)
     buffer[i] = (unsigned char)i;
 }
 
 int generate_test_vectors() {
-  unsigned char msg[MAX_MESSAGE_LENGTH];
+  unsigned char* msg;
   unsigned char digest[CRYPTO_BYTES];
   int ret_val = KAT_SUCCESS;
   int count = 1;
 
 #if !defined(AVR_UART)
-  FILE *fp;
+  FILE* fp;
   char fileName[MAX_FILE_NAME];
   sprintf(fileName, "LWC_HASH_KAT_%d.txt", (CRYPTO_BYTES * 8));
   if ((fp = fopen(fileName, "w")) == NULL) {
@@ -87,10 +88,11 @@ int generate_test_vectors() {
   stdin = &avr_uart_input_echo;
 #endif
 
-  init_buffer(msg, sizeof(msg));
-
   for (unsigned long long mlen = 0; mlen <= MAX_MESSAGE_LENGTH; mlen++) {
     fprintf(fp, "Count = %d\n", count++);
+
+    msg = malloc(mlen);
+    init_buffer(msg, mlen);
 
     fprint_bstr(fp, "Msg = ", msg, mlen);
 
@@ -99,12 +101,14 @@ int generate_test_vectors() {
     if (ret_val != 0) {
       fprintf(fp, "crypto_hash returned <%d>\n", ret_val);
       ret_val = KAT_CRYPTO_FAILURE;
+      free(msg);
       break;
     }
 
     fprint_bstr(fp, "MD = ", digest, CRYPTO_BYTES);
 
     fprintf(fp, "\n");
+    free(msg);
   }
 
 #if !defined(AVR_UART)

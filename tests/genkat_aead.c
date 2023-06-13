@@ -36,6 +36,7 @@
 
 #include <inttypes.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "api.h"
@@ -54,7 +55,7 @@
 #define MAX_MESSAGE_LENGTH 32
 #define MAX_ASSOCIATED_DATA_LENGTH 32
 
-void fprint_bstr(FILE *fp, const char *label, const unsigned char *data,
+void fprint_bstr(FILE* fp, const char* label, const unsigned char* data,
                  unsigned long long length) {
   unsigned long long i;
   fprintf(fp, "%s", label);
@@ -62,7 +63,7 @@ void fprint_bstr(FILE *fp, const char *label, const unsigned char *data,
   fprintf(fp, "\n");
 }
 
-void init_buffer(unsigned char *buffer, unsigned long long numbytes) {
+void init_buffer(unsigned char* buffer, unsigned long long numbytes) {
   unsigned long long i;
   for (i = 0; i < numbytes; i++) buffer[i] = (unsigned char)i;
 }
@@ -70,17 +71,17 @@ void init_buffer(unsigned char *buffer, unsigned long long numbytes) {
 int generate_test_vectors() {
   unsigned char key[CRYPTO_KEYBYTES];
   unsigned char nonce[CRYPTO_NPUBBYTES];
-  unsigned char msg[MAX_MESSAGE_LENGTH];
-  unsigned char msg2[MAX_MESSAGE_LENGTH];
-  unsigned char ad[MAX_ASSOCIATED_DATA_LENGTH];
-  unsigned char ct[MAX_MESSAGE_LENGTH + CRYPTO_ABYTES];
+  unsigned char* msg;
+  unsigned char* msg2;
+  unsigned char* ad;
+  unsigned char* ct;
   unsigned long long mlen, adlen;
   unsigned long long clen, mlen2;
   int count = 1;
   int func_ret, ret_val = KAT_SUCCESS;
 
 #if !defined(AVR_UART)
-  FILE *fp;
+  FILE* fp;
   char fileName[MAX_FILE_NAME];
   sprintf(fileName, "LWC_AEAD_KAT_%d_%d.txt", (CRYPTO_KEYBYTES * 8),
           (CRYPTO_NPUBBYTES * 8));
@@ -97,12 +98,16 @@ int generate_test_vectors() {
 
   init_buffer(key, sizeof(key));
   init_buffer(nonce, sizeof(nonce));
-  init_buffer(msg, sizeof(msg));
-  init_buffer(ad, sizeof(ad));
 
   for (mlen = 0; (mlen <= MAX_MESSAGE_LENGTH) && (ret_val == KAT_SUCCESS);
        mlen++) {
+    msg = malloc(mlen);
+    msg2 = malloc(mlen);
+    ct = malloc(mlen + CRYPTO_ABYTES);
+    init_buffer(msg, mlen);
     for (adlen = 0; adlen <= MAX_ASSOCIATED_DATA_LENGTH; adlen++) {
+      ad = malloc(adlen);
+      init_buffer(ad, adlen);
       fprintf(fp, "Count = %d\n", count++);
       fprint_bstr(fp, "Key = ", key, CRYPTO_KEYBYTES);
       fprint_bstr(fp, "Nonce = ", nonce, CRYPTO_NPUBBYTES);
@@ -112,6 +117,7 @@ int generate_test_vectors() {
                                           nonce, key)) != 0) {
         fprintf(fp, "crypto_aead_encrypt returned <%d>\n", func_ret);
         ret_val = KAT_CRYPTO_FAILURE;
+        free(ad);
         break;
       }
       fprint_bstr(fp, "CT = ", ct, clen);
@@ -120,6 +126,7 @@ int generate_test_vectors() {
                                           adlen, nonce, key)) != 0) {
         fprintf(fp, "crypto_aead_decrypt returned <%d>\n", func_ret);
         ret_val = KAT_CRYPTO_FAILURE;
+        free(ad);
         break;
       }
       if (mlen != mlen2) {
@@ -128,11 +135,13 @@ int generate_test_vectors() {
                 ">, expected <%" PRIu32 ">\n",
                 (uint32_t)mlen2, (uint32_t)mlen);
         ret_val = KAT_CRYPTO_FAILURE;
+        free(ad);
         break;
       }
       if (memcmp(msg, msg2, mlen)) {
         fprintf(fp, "crypto_aead_decrypt did not recover the plaintext\n");
         ret_val = KAT_CRYPTO_FAILURE;
+        free(ad);
         break;
       }
       // test failed verification
@@ -141,9 +150,14 @@ int generate_test_vectors() {
                                           adlen, nonce, key)) == 0) {
         fprintf(fp, "crypto_aead_decrypt should have failed\n");
         ret_val = KAT_CRYPTO_FAILURE;
+        free(ad);
         break;
       }
+      free(ad);
     }
+    free(msg);
+    free(msg2);
+    free(ct);
   }
 #if !defined(AVR_UART)
   fclose(fp);

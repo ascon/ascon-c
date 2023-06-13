@@ -38,6 +38,7 @@
 
 #include <inttypes.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "api.h"
@@ -58,27 +59,27 @@
 #define MAX_DATA_LENGTH 1024
 #endif
 
-void fprint_bstr(FILE *fp, const char *label, const unsigned char *data,
+void fprint_bstr(FILE* fp, const char* label, const unsigned char* data,
                  unsigned long long length) {
   fprintf(fp, "%s", label);
   for (unsigned long long i = 0; i < length; i++) fprintf(fp, "%02X", data[i]);
   fprintf(fp, "\n");
 }
 
-void init_buffer(unsigned char *buffer, unsigned long long numbytes) {
+void init_buffer(unsigned char* buffer, unsigned long long numbytes) {
   for (unsigned long long i = 0; i < numbytes; i++)
     buffer[i] = (unsigned char)i;
 }
 
 int generate_test_vectors() {
   unsigned char key[CRYPTO_KEYBYTES];
-  unsigned char d[MAX_DATA_LENGTH];
+  unsigned char* d;
   unsigned char t[CRYPTO_BYTES];
   int count = 1;
   int func_ret, ret_val = KAT_SUCCESS;
 
 #if !defined(AVR_UART)
-  FILE *fp;
+  FILE* fp;
   char fileName[MAX_FILE_NAME];
   sprintf(fileName, "LWC_AUTH_KAT_%d_%d.txt", (CRYPTO_KEYBYTES * 8),
           (CRYPTO_BYTES * 8));
@@ -94,15 +95,17 @@ int generate_test_vectors() {
 #endif
 
   init_buffer(key, sizeof(key));
-  init_buffer(d, sizeof(d));
 
   for (unsigned long long dlen = 0; dlen <= MAX_DATA_LENGTH; dlen++) {
+    d = malloc(dlen);
+    init_buffer(d, dlen);
     fprintf(fp, "Count = %d\n", count++);
     fprint_bstr(fp, "Key = ", key, CRYPTO_KEYBYTES);
     fprint_bstr(fp, "Msg = ", d, dlen);
     if ((func_ret = crypto_auth(t, d, dlen, key)) != 0) {
       fprintf(fp, "crypto_auth returned <%d>\n", func_ret);
       ret_val = KAT_CRYPTO_FAILURE;
+      free(d);
       break;
     }
     fprint_bstr(fp, "Tag = ", t, CRYPTO_BYTES);
@@ -110,6 +113,7 @@ int generate_test_vectors() {
     if ((func_ret = crypto_auth_verify(t, d, dlen, key)) != 0) {
       fprintf(fp, "crypto_auth_verify returned <%d>\n", func_ret);
       ret_val = KAT_CRYPTO_FAILURE;
+      free(d);
       break;
     }
     // test failed verify
@@ -117,8 +121,10 @@ int generate_test_vectors() {
     if ((func_ret = crypto_auth_verify(t, d, dlen, key)) == 0) {
       fprintf(fp, "crypto_auth_verify should have failed\n");
       ret_val = KAT_CRYPTO_FAILURE;
+      free(d);
       break;
     }
+    free(d);
   }
 #if !defined(AVR_UART)
   fclose(fp);
