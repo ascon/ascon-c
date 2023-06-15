@@ -51,7 +51,7 @@ u32_4 ascon_rev8(u32_4 in) {
     dh = dh ^ sh;                                              \
   } while (0)
 
-void P(state *p, u8 round_const, u8 rounds) {
+void P(state *p, u8 round_const) {
   u32 x0h = p->x0.h, x0l = p->x0.l;
   u32 x1h = p->x1.h, x1l = p->x1.l;
   u32 x2h = p->x2.h, x2l = p->x2.l;

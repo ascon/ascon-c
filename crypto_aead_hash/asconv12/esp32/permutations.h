@@ -45,6 +45,6 @@ u32_2 ascon_rev8_half(u32_2 in);
     out = U64BIG(out);              \
   } while (0)
 
-void P(state *p, u8 round_const, u8 rounds);
+void P(state *p, u8 round_const);
 
 #endif  // PERMUTATIONS_H_

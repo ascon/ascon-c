@@ -183,7 +183,6 @@ forceinline void ascon_adata(ascon_state_t* s, const uint8_t* ad,
 
 forceinline void ascon_encrypt(ascon_state_t* s, uint8_t* c, const uint8_t* m,
                                uint64_t mlen) {
-  const int nr = (ASCON_AEAD_RATE == 8) ? 6 : 8;
   /* full plaintext blocks */
 #if ASCON_AEAD_RATE == 8
   PT(6, 8, "d0", "d16", "d26");
@@ -210,7 +209,6 @@ forceinline void ascon_encrypt(ascon_state_t* s, uint8_t* c, const uint8_t* m,
 
 forceinline void ascon_decrypt(ascon_state_t* s, uint8_t* m, const uint8_t* c,
                                uint64_t clen) {
-  const int nr = (ASCON_AEAD_RATE == 8) ? 6 : 8;
   /* full ciphertext blocks */
 #if ASCON_AEAD_RATE == 8
   CT(6, 8, "d0", "d16", "d26");

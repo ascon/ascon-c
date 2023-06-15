@@ -33,7 +33,7 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
     s.x0.h ^= tmp.h;
     s.x0.l ^= tmp.l;
 
-    P(&s, PA_START_ROUND, PA_ROUNDS);
+    P(&s, PA_START_ROUND);
 
     in += RATE;
     len -= RATE;
@@ -48,14 +48,14 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
   s.x0.h ^= tmp.h;
   s.x0.l ^= tmp.l;
 
-  P(&s, PA_START_ROUND, PA_ROUNDS);
+  P(&s, PA_START_ROUND);
 
   len = CRYPTO_BYTES;
   while (len >= RATE) {
     ((u32*)out)[0] = U32BIG(s.x0.h);
     ((u32*)out)[1] = U32BIG(s.x0.l);
 
-    P(&s, PA_START_ROUND, PA_ROUNDS);
+    P(&s, PA_START_ROUND);
 
     out += RATE;
     len -= RATE;

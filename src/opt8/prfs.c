@@ -11,7 +11,6 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
                const unsigned char* in, unsigned long long inlen,
                const unsigned char* k) {
   if (inlen > 16 || outlen > 16 || outlen > CRYPTO_BYTES) return -1;
-  /* load key */
   /* initialize */
   ascon_state_t s;
   s.x[0] = ASCON_PRFS_IV ^ PRFS_MLEN(inlen);

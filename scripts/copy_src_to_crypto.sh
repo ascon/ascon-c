@@ -134,7 +134,7 @@ for alg in $ALG_LIST; do
         cmp --silent $a $b || cp $a $b
       done
     fi
-    if [[ $impl == *"lowsize"* && $alg != *"hash"* ]]; then
+    if [[ $impl == *"lowsize"* && $alg != *"crypto_hash"* ]]; then
       a=$base/lowsize/update.c
       b=$alg/$impl/update.c
       echo "  cp $a $b"

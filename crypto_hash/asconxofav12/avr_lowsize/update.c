@@ -14,14 +14,15 @@
 void ascon_update(uint8_t mode, ascon_state_t* s, uint8_t* c, const uint8_t* m,
                   uint64_t mlen) {
 #if defined(ASCON_AEAD_RATE) && !defined(ASCON_HASH_ROUNDS)
-  const int nr = ASCON_AEAD_ROUNDS;
-  const int rate = ASCON_AEAD_RATE;
+  const uint8_t nr = ASCON_AEAD_ROUNDS;
+  const uint8_t rate = ASCON_AEAD_RATE;
 #elif !defined(ASCON_AEAD_RATE) && defined(ASCON_HASH_ROUNDS)
-  const int nr = ASCON_HASH_ROUNDS;
-  const int rate = ASCON_HASH_RATE;
+  const uint8_t nr = ASCON_HASH_ROUNDS;
+  const uint8_t rate = ASCON_HASH_RATE;
 #else
-  const int nr = (mode & ASCON_HASH) ? ASCON_HASH_ROUNDS : ASCON_AEAD_ROUNDS;
-  const int rate = (mode & ASCON_HASH) ? ASCON_HASH_RATE : ASCON_AEAD_RATE;
+  const uint8_t nr =
+      (mode & ASCON_HASH) ? ASCON_HASH_ROUNDS : ASCON_AEAD_ROUNDS;
+  const uint8_t rate = (mode & ASCON_HASH) ? ASCON_HASH_RATE : ASCON_AEAD_RATE;
 #endif
   /* full plaintext blocks */
   while (mlen >= rate) {

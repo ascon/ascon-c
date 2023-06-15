@@ -22,10 +22,11 @@ void ascon_update(uint8_t mode, ascon_state_t* s, uint8_t* out,
 #endif
 #if ASCON_AEAD_RATE == 8
   const int i = 0;
+  (void)rate;
 #else
   int i = 0;
 #endif
-  uint64_t tmp;
+  uint64_t tmp = 0;
   while (len >= 8) {
     /* absorb data */
 #ifdef ASCON_HASH_BYTES

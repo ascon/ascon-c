@@ -21,7 +21,7 @@ void ascon_duplex(state* s, unsigned char* out, const unsigned char* in,
       s->x0 = tmp;
     }
 
-    P(s, PB_START_ROUND, PB_ROUNDS);
+    P(s, PB_START_ROUND);
 
     in += RATE;
     out += RATE;
@@ -83,7 +83,7 @@ void ascon_core(state* s, unsigned char* out, const unsigned char* in,
   s->x3.l = N0.l;
   s->x4.h = N1.h;
   s->x4.l = N1.l;
-  P(s, PA_START_ROUND, PA_ROUNDS);
+  P(s, PA_START_ROUND);
   s->x3.h ^= K0.h;
   s->x3.l ^= K0.l;
   s->x4.h ^= K1.h;
@@ -92,7 +92,7 @@ void ascon_core(state* s, unsigned char* out, const unsigned char* in,
   // process associated data
   if (adlen) {
     ascon_duplex(s, (void*)0, ad, adlen, ASCON_AD);
-    P(s, PB_START_ROUND, PB_ROUNDS);
+    P(s, PB_START_ROUND);
   }
   s->x4.l ^= 1;
 
@@ -104,7 +104,7 @@ void ascon_core(state* s, unsigned char* out, const unsigned char* in,
   s->x1.l ^= K0.l;
   s->x2.h ^= K1.h;
   s->x2.l ^= K1.l;
-  P(s, PA_START_ROUND, PA_ROUNDS);
+  P(s, PA_START_ROUND);
   s->x3.h ^= K0.h;
   s->x3.l ^= K0.l;
   s->x4.h ^= K1.h;
