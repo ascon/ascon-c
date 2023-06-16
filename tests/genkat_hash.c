@@ -29,6 +29,9 @@
 // not subject to copyright protection within the United States.
 //
 
+// This file has been modified. The history of changes can be found at:
+// https://github.com/ascon/ascon-c/commits/main/tests/genkat_hash.c
+
 // disable deprecation for sprintf and fopen
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS
@@ -53,42 +56,47 @@
 #define MAX_FILE_NAME 256
 #define MAX_MESSAGE_LENGTH 1024
 
+void init_buffer(unsigned char* buffer, unsigned long long numbytes);
+
 void fprint_bstr(FILE* fp, const char* label, const unsigned char* data,
-                 unsigned long long length) {
-  fprintf(fp, "%s", label);
+                 unsigned long long length);
 
-  for (unsigned long long i = 0; i < length; i++) fprintf(fp, "%02X", data[i]);
+int generate_test_vectors();
 
-  fprintf(fp, "\n");
-}
-
-void init_buffer(unsigned char* buffer, unsigned long long numbytes) {
-  for (unsigned long long i = 0; i < numbytes; i++)
-    buffer[i] = (unsigned char)i;
+int main() {
+  int ret = generate_test_vectors();
+  if (ret != KAT_SUCCESS) {
+    fprintf(stderr, "test vector generation failed with code %d\n", ret);
+  }
+  return ret;
 }
 
 int generate_test_vectors() {
+  FILE* fp;
+#if !defined(AVR_UART)
+  char fileName[MAX_FILE_NAME];
+#endif
   unsigned char* msg;
   unsigned char digest[CRYPTO_BYTES];
-  int ret_val = KAT_SUCCESS;
+  unsigned long long mlen;
   int count = 1;
+  int ret_val = KAT_SUCCESS;
 
 #if !defined(AVR_UART)
-  FILE* fp;
-  char fileName[MAX_FILE_NAME];
   sprintf(fileName, "LWC_HASH_KAT_%d.txt", (CRYPTO_BYTES * 8));
+
   if ((fp = fopen(fileName, "w")) == NULL) {
     fprintf(stderr, "Couldn't open <%s> for write\n", fileName);
     return KAT_FILE_OPEN_ERROR;
   }
 #else
-#define fp stdout
   avr_uart_init();
   stdout = &avr_uart_output;
   stdin = &avr_uart_input_echo;
+  fp = stdout;
 #endif
 
-  for (unsigned long long mlen = 0; mlen <= MAX_MESSAGE_LENGTH; mlen++) {
+  for (mlen = 0; mlen <= MAX_MESSAGE_LENGTH; mlen++) {
     fprintf(fp, "Count = %d\n", count++);
 
     msg = malloc(mlen);
@@ -120,12 +128,17 @@ int generate_test_vectors() {
   return ret_val;
 }
 
-int main() {
-  int ret = generate_test_vectors();
+void fprint_bstr(FILE* fp, const char* label, const unsigned char* data,
+                 unsigned long long length) {
+  unsigned long long i;
+  fprintf(fp, "%s", label);
 
-  if (ret != KAT_SUCCESS) {
-    fprintf(stderr, "test vector generation failed with code %d\n", ret);
-  }
+  for (i = 0; i < length; i++) fprintf(fp, "%02X", data[i]);
 
-  return ret;
+  fprintf(fp, "\n");
+}
+
+void init_buffer(unsigned char* buffer, unsigned long long numbytes) {
+  unsigned long long i;
+  for (i = 0; i < numbytes; i++) buffer[i] = (unsigned char)i;
 }

@@ -30,6 +30,9 @@
 //
 
 // This software is modified to work for MACs (05 May 2021)
+//
+// This file has been modified. The history of changes can be found at:
+// https://github.com/ascon/ascon-c/commits/main/tests/genkat_auth.c
 
 // disable deprecation for sprintf and fopen
 #ifdef _MSC_VER
@@ -59,28 +62,36 @@
 #define MAX_DATA_LENGTH 1024
 #endif
 
-void fprint_bstr(FILE* fp, const char* label, const unsigned char* data,
-                 unsigned long long length) {
-  fprintf(fp, "%s", label);
-  for (unsigned long long i = 0; i < length; i++) fprintf(fp, "%02X", data[i]);
-  fprintf(fp, "\n");
-}
+void init_buffer(unsigned char* buffer, unsigned long long numbytes);
 
-void init_buffer(unsigned char* buffer, unsigned long long numbytes) {
-  for (unsigned long long i = 0; i < numbytes; i++)
-    buffer[i] = (unsigned char)i;
+void fprint_bstr(FILE* fp, const char* label, const unsigned char* data,
+                 unsigned long long length);
+
+int generate_test_vectors();
+
+int main() {
+  int ret = generate_test_vectors();
+  if (ret != KAT_SUCCESS) {
+    fprintf(stderr, "test vector generation failed with code %d\n", ret);
+  }
+  return ret;
 }
 
 int generate_test_vectors() {
+  FILE* fp;
+#if !defined(AVR_UART)
+  char fileName[MAX_FILE_NAME];
+#endif
   unsigned char key[CRYPTO_KEYBYTES];
   unsigned char* d;
   unsigned char t[CRYPTO_BYTES];
+  unsigned long long dlen;
   int count = 1;
   int func_ret, ret_val = KAT_SUCCESS;
 
+  init_buffer(key, sizeof(key));
+
 #if !defined(AVR_UART)
-  FILE* fp;
-  char fileName[MAX_FILE_NAME];
   sprintf(fileName, "LWC_AUTH_KAT_%d_%d.txt", (CRYPTO_KEYBYTES * 8),
           (CRYPTO_BYTES * 8));
   if ((fp = fopen(fileName, "w")) == NULL) {
@@ -88,35 +99,41 @@ int generate_test_vectors() {
     return KAT_FILE_OPEN_ERROR;
   }
 #else
-#define fp stdout
   avr_uart_init();
   stdout = &avr_uart_output;
   stdin = &avr_uart_input_echo;
+  fp = stdout;
 #endif
 
-  init_buffer(key, sizeof(key));
-
-  for (unsigned long long dlen = 0; dlen <= MAX_DATA_LENGTH; dlen++) {
+  for (dlen = 0; dlen <= MAX_DATA_LENGTH; dlen++) {
     d = malloc(dlen);
     init_buffer(d, dlen);
+
     fprintf(fp, "Count = %d\n", count++);
+
     fprint_bstr(fp, "Key = ", key, CRYPTO_KEYBYTES);
+
     fprint_bstr(fp, "Msg = ", d, dlen);
+
     if ((func_ret = crypto_auth(t, d, dlen, key)) != 0) {
       fprintf(fp, "crypto_auth returned <%d>\n", func_ret);
       ret_val = KAT_CRYPTO_FAILURE;
       free(d);
       break;
     }
+
     fprint_bstr(fp, "Tag = ", t, CRYPTO_BYTES);
+
     fprintf(fp, "\n");
+
     if ((func_ret = crypto_auth_verify(t, d, dlen, key)) != 0) {
       fprintf(fp, "crypto_auth_verify returned <%d>\n", func_ret);
       ret_val = KAT_CRYPTO_FAILURE;
       free(d);
       break;
     }
-    // test failed verify
+
+    // test failing verification
     t[0] ^= 1;
     if ((func_ret = crypto_auth_verify(t, d, dlen, key)) == 0) {
       fprintf(fp, "crypto_auth_verify should have failed\n");
@@ -126,18 +143,27 @@ int generate_test_vectors() {
     }
     free(d);
   }
+
 #if !defined(AVR_UART)
   fclose(fp);
 #else
   fprintf(stderr, "Press Ctrl-C to quit\n");
 #endif
+
   return ret_val;
 }
 
-int main() {
-  int ret = generate_test_vectors();
-  if (ret != KAT_SUCCESS) {
-    fprintf(stderr, "test vector generation failed with code %d\n", ret);
-  }
-  return ret;
+void fprint_bstr(FILE* fp, const char* label, const unsigned char* data,
+                 unsigned long long length) {
+  unsigned long long i;
+  fprintf(fp, "%s", label);
+
+  for (i = 0; i < length; i++) fprintf(fp, "%02X", data[i]);
+
+  fprintf(fp, "\n");
+}
+
+void init_buffer(unsigned char* buffer, unsigned long long numbytes) {
+  unsigned long long i;
+  for (i = 0; i < numbytes; i++) buffer[i] = (unsigned char)i;
 }
