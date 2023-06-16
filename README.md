@@ -337,14 +337,27 @@ Generate KATs and get CPU cycles:
 
 ## Manually build and run an RV32 target:
 
-Example to build, run and test an AEAD algorithm using `gcc`, `picolibc` and `qemu`:
+
+Setup:
 
 ```
 sudo apt install gcc-riscv64-unknown-elf picolibc-riscv64-unknown-elf qemu-system-misc
+```
+
+Example to build, run and test an AEAD/HASH algorithm using `gcc`, `picolibc` and `qemu`:
+
+```
 riscv64-unknown-elf-gcc -O2 -march=rv32i -mabi=ilp32 --specs=picolibc.specs --oslib=semihost --crt0=hosted -Ttests/rv32.ld \
     -Icrypto_aead/ascon128v12/asm_rv32i crypto_aead/ascon128v12/asm_rv32i/*.[cS] -Itests tests/genkat_aead.c -o genkat
 qemu-system-riscv32 -semihosting-config enable=on -monitor none -serial none -nographic -machine virt,accel=tcg -cpu rv32 -bios none -kernel genkat
 diff LWC_AEAD_KAT_128_128.txt crypto_aead/ascon128v12/LWC_AEAD_KAT_128_128.txt
+```
+
+```
+riscv64-unknown-elf-gcc -O2 -march=rv32i -mabi=ilp32 --specs=picolibc.specs --oslib=semihost --crt0=hosted -Ttests/rv32.ld \
+    -Icrypto_hash/asconhashv12/opt32 crypto_hash/asconhashv12/opt32/*.[cS] -Itests tests/genkat_hash.c -o genkat
+qemu-system-riscv32 -semihosting-config enable=on -monitor none -serial none -nographic -machine virt,accel=tcg -cpu rv32 -bios none -kernel genkat
+diff LWC_HASH_KAT_256.txt crypto_hash/asconhashv12/LWC_HASH_KAT_256.txt
 ```
 
 
@@ -374,7 +387,7 @@ avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/ascon128v12/opt8 crypto_aead/
 simavr -t -m atmega128 ./getcycles
 ```
 
-Generate all test vectors and write result to file. Press Ctrl-C to quit `simavr` after about a minute:
+Generate all test vectors for AEAD/HASH and write result to a file. Press Ctrl-C to quit `simavr` after about a minute:
 
 ```
 avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/ascon128v12/opt8 crypto_aead/ascon128v12/opt8/*.[cS] \
@@ -384,6 +397,16 @@ echo "Press Ctrl-C to quit simavr after about a minute"
 simavr -t -m atmega128 ./genkat_aead 2> LWC_AEAD_KAT_128_128.txt
 sed -i -e 's/\x1b\[[0-9;]*m//g' -e 's/\.\.$//' LWC_AEAD_KAT_128_128.txt
 diff LWC_AEAD_KAT_128_128.txt crypto_aead/ascon128v12/LWC_AEAD_KAT_128_128.txt
+```
+
+```
+avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_hash/asconhashv12/opt8 crypto_hash/asconhashv12/opt8/*.[cS] \
+    -DAVR_UART -Iavr_uart avr_uart/avr_uart.c -Wno-incompatible-pointer-types -Wno-cpp \
+    -Itests tests/genkat_hash.c -o genkat_hash
+echo "Press Ctrl-C to quit simavr after about a minute"
+simavr -t -m atmega128 ./genkat_hash 2> LWC_HASH_KAT_256.txt
+sed -i -e 's/\x1b\[[0-9;]*m//g' -e 's/\.\.$//' LWC_HASH_KAT_256.txt
+diff LWC_HASH_KAT_256.txt crypto_hash/asconhashv12/LWC_HASH_KAT_256.txt
 ```
 
 
