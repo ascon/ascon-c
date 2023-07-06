@@ -28,16 +28,16 @@ If you do not know where to start, use the reference implementations (self-conta
 
 This repository contains implementations of the following 10 Ascon v1.2 algorithms:
 
-- `crypto_aead/ascon128v12`: Ascon-128 (authenticated encryption)
-- `crypto_aead/ascon128av12`: Ascon-128a (authenticated encryption)
-- `crypto_aead/ascon80pqv12`: Ascon-80pq (authenticated encryption)
-- `crypto_hash/asconhashv12`: Ascon-Hash (hash function)
-- `crypto_hash/asconhashav12`: Ascon-Hasha (hash function)
-- `crypto_hash/asconxofv12`: Ascon-Xof (hash function with extendable output, XOF)
-- `crypto_hash/asconxofav12`: Ascon-Xofa (hash function with extendable output, XOF)
-- `crypto_auth/asconmacv12`: Ascon-Mac (message authentication code)
-- `crypto_auth/asconprfv12`: Ascon-Prf (message authentication code with extendable output, PRF)
-- `crypto_auth/asconprfsv12`: Ascon-PrfShort (message authentication code for very short messages)
+- `crypto_aead/ascon128v12`:   **Ascon-128**      (authenticated encryption)
+- `crypto_aead/ascon128av12`:  **Ascon-128a**     (authenticated encryption)
+- `crypto_aead/ascon80pqv12`:  **Ascon-80pq**     (authenticated encryption)
+- `crypto_hash/asconhashv12`:  **Ascon-Hash**     (hash function)
+- `crypto_hash/asconhashav12`: **Ascon-Hasha**    (hash function)
+- `crypto_hash/asconxofv12`:   **Ascon-Xof**      (hash function with extendable output, XOF)
+- `crypto_hash/asconxofav12`:  **Ascon-Xofa**     (hash function with extendable output, XOF)
+- `crypto_auth/asconmacv12`:   **Ascon-Mac**      (message authentication code)
+- `crypto_auth/asconprfv12`:   **Ascon-Prf**      (message authentication code with extendable output, PRF)
+- `crypto_auth/asconprfsv12`:  **Ascon-PrfShort** (message authentication code for very short messages)
 
 We also provide two combined algorithm implementations supporting both AEAD and
 hashing:
