@@ -5,13 +5,13 @@ Ascon is a family of lightweight cryptographic algorithms and consists of:
 - Hash functions (HASH) and extendible output functions (XOF)
 - Pseudo-random functions (PRF) and message authentication codes (MAC)
 
-All implementations use the "ECRYPT Benchmarking of Cryptographic Systems (eBACS)" interface:
+For more information on Ascon visit: https://ascon.iaik.tugraz.at/
+
+All implementations in this repository use the "ECRYPT Benchmarking of Cryptographic Systems (eBACS)" interface:
 
 - https://bench.cr.yp.to/call-aead.html for AEAD (Ascon-128, Ascon-128a, Ascon-80pq)
 - https://bench.cr.yp.to/call-hash.html for HASH and XOF (Ascon-Hash, Ascon-Hasha, Ascon-Xof, Ascon-Xofa)
 - https://nacl.cr.yp.to/auth.html for PRF and MAC (Ascon-Mac, Ascon-Prf, Ascon-PrfShort)
-
-For more information on Ascon visit: https://ascon.iaik.tugraz.at/
 
 
 ## TL;DR
