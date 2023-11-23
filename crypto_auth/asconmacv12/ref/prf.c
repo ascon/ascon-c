@@ -39,7 +39,7 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   ((uint64_t*)(&s.x[0]))[i] ^= PAD(inlen);
   printstate("pad plaintext", &s);
   /* domain separation */
-  s.x[4] ^= 1;
+  s.x[4] ^= DSEP();
   printstate("domain separation", &s);
 
   /* squeeze */

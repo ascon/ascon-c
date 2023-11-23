@@ -79,7 +79,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
     ascon_update(1, &s, (void*)0, ad, adlen);
     P(&s, nr);
   }
-  s.b[4][0] ^= 1;
+  s.b[4][0] ^= DSEP();
   printstate("domain separation", &s);
   ascon_update(3, &s, c, m, mlen);
   ascon_final(&s, &key);
@@ -107,7 +107,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
     ascon_update(1, &s, (void*)0, ad, adlen);
     P(&s, nr);
   }
-  s.b[4][0] ^= 1;
+  s.b[4][0] ^= DSEP();
   printstate("domain separation", &s);
   ascon_update(7, &s, m, c, clen);
   ascon_final(&s, &key);

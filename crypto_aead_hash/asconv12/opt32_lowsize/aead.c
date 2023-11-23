@@ -90,7 +90,7 @@ void ascon_aead(uint8_t* t, uint8_t* out, const uint8_t* in, uint64_t tlen,
     P(&s, nr);
   }
   /* domain separation */
-  s.x[4] ^= 1;
+  s.x[4] ^= DSEP();
   printstate("domain separation", &s);
   /* process plaintext/ciphertext */
   ascon_update(mode, &s, out, in, tlen);

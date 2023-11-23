@@ -69,7 +69,7 @@ void ascon_update(uint8_t mode, ascon_state_t* s, uint8_t* c, const uint8_t* m,
 #if defined(ASCON_HASH_ROUNDS)
   if (mode == 2 || mode == 10) SQUEEZE(c, s->b[0], mlen);
 #endif
-  s->b[i][7 - mlen] ^= 0x80;
+  s->b[i][7 - mlen] ^= PAD();
   if (mode == 1) printstate("pad adata", s);
   if (mode == 3) printstate("pad plaintext", s);
   if (mode == 7) printstate("pad ciphertext", s);

@@ -47,10 +47,10 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   }
   /* absorb final plaintext word */
   ABSORB(s.b[i], in, inlen);
-  s.b[i][7 - inlen] ^= 0x80;
+  s.b[i][7 - inlen] ^= PAD();
   printstate("domain separation", &s);
   /* domain separation */
-  s.b[4][0] ^= 1;
+  s.b[4][0] ^= DSEP();
 
   /* squeeze */
   printstate("domain separation", &s);

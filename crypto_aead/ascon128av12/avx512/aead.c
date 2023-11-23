@@ -86,7 +86,7 @@ forceinline void ascon_adata(ascon_state_t* s, const uint8_t* ad,
     P(s, nr);
   }
   /* domain separation */
-  s->x[4] ^= 1;
+  s->x[4] ^= DSEP();
   printstate("domain separation", s);
 }
 

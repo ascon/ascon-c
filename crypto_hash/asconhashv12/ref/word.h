@@ -15,6 +15,9 @@ typedef uint64_t uint64_t;
 /* set padding byte in 64-bit Ascon word */
 #define PAD(i) SETBYTE(0x80, i)
 
+/* define domain separation bit in 64-bit Ascon word */
+#define DSEP() SETBYTE(0x01, 7)
+
 /* load bytes into 64-bit Ascon word */
 static inline uint64_t LOADBYTES(const uint8_t* bytes, int n) {
   int i;

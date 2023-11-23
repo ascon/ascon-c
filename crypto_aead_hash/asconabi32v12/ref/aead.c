@@ -54,7 +54,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
     P8(&s);
   }
   /* domain separation */
-  s.x[4] ^= 1;
+  s.x[4] ^= DSEP();
   printstate("process associated data", &s);
 
   /* full plaintext blocks */
@@ -155,7 +155,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
     P8(&s);
   }
   /* domain separation */
-  s.x[4] ^= 1;
+  s.x[4] ^= DSEP();
   printstate("process associated data", &s);
 
   /* full ciphertext blocks */

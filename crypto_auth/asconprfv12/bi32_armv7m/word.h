@@ -57,6 +57,8 @@ forceinline int NOTZERO(uint64_t a, uint64_t b) {
 
 forceinline uint64_t PAD(int i) { return 0x80ull << (56 - 8 * i); }
 
+forceinline uint64_t DSEP() { return 0x01; }
+
 forceinline uint64_t PRFS_MLEN(uint64_t len) { return len << 51; }
 
 forceinline uint64_t CLEAR(uint64_t w, int n) {
@@ -70,6 +72,8 @@ forceinline uint64_t CLEAR(uint64_t w, int n) {
 forceinline uint64_t PAD(int i) {
   return ((uint64_t)((uint32_t)0x08 << (28 - 4 * i)) << 32);
 }
+
+forceinline uint64_t DSEP() { return 0x01; }
 
 forceinline uint64_t PRFS_MLEN(uint64_t len) {
   return ((len & 0x01) << 57) | /* 0000x */

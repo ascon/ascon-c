@@ -59,7 +59,9 @@ forceinline int NOTZERO(uint64_t a, uint64_t b) {
   return ((((int)(result & 0xff) - 1) >> 8) & 1) - 1;
 }
 
-forceinline uint64_t PAD(int i) { return 0x80ull << (56 - 8 * i); }
+forceinline uint64_t PAD() { return 0x80; }
+
+forceinline uint64_t DSEP() { return 0x01; }
 
 forceinline uint64_t PRFS_MLEN(uint64_t len) { return len << 51; }
 

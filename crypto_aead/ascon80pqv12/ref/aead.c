@@ -52,7 +52,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
     P6(&s);
   }
   /* domain separation */
-  s.x[4] ^= 1;
+  s.x[4] ^= DSEP();
   printstate("domain separation", &s);
 
   /* full plaintext blocks */
@@ -138,7 +138,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
     P6(&s);
   }
   /* domain separation */
-  s.x[4] ^= 1;
+  s.x[4] ^= DSEP();
   printstate("domain separation", &s);
 
   /* full ciphertext blocks */

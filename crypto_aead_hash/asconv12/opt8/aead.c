@@ -66,12 +66,12 @@ forceinline void ascon_adata(ascon_state_t* s, const uint8_t* ad,
       adlen -= 8;
     }
     ABSORB(s->b[i], ad, adlen);
-    s->b[i][7 - adlen] ^= 0x80;
+    s->b[i][7 - adlen] ^= PAD();
     printstate("pad adata", s);
     P(s, nr);
   }
   /* domain separation */
-  s->b[4][0] ^= 1;
+  s->b[4][0] ^= DSEP();
   printstate("domain separation", s);
 }
 
@@ -98,7 +98,7 @@ forceinline void ascon_encrypt(ascon_state_t* s, uint8_t* c, const uint8_t* m,
     mlen -= 8;
   }
   ENCRYPT(s->b[i], c, m, mlen);
-  s->b[i][7 - mlen] ^= 0x80;
+  s->b[i][7 - mlen] ^= PAD();
   printstate("pad plaintext", s);
 }
 
@@ -125,7 +125,7 @@ forceinline void ascon_decrypt(ascon_state_t* s, uint8_t* m, const uint8_t* c,
     clen -= 8;
   }
   DECRYPT(s->b[i], m, c, clen);
-  s->b[i][7 - clen] ^= 0x80;
+  s->b[i][7 - clen] ^= PAD();
   printstate("pad ciphertext", s);
 }
 
