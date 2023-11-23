@@ -4,16 +4,16 @@
 #include <stdint.h>
 
 /* get byte from 64-bit Ascon word */
-#define GETBYTE(x, i) ((uint8_t)((uint64_t)(x) >> (56 - 8 * (i))))
+#define GETBYTE(x, i) ((uint8_t)((uint64_t)(x) >> (8 * (i))))
 
 /* set byte in 64-bit Ascon word */
-#define SETBYTE(b, i) ((uint64_t)(b) << (56 - 8 * (i)))
+#define SETBYTE(b, i) ((uint64_t)(b) << (8 * (i)))
 
 /* set padding byte in 64-bit Ascon word */
-#define PAD(i) SETBYTE(0x80, i)
+#define PAD(i) SETBYTE(0x01, i)
 
 /* define domain separation bit in 64-bit Ascon word */
-#define DSEP() SETBYTE(0x01, 7)
+#define DSEP() SETBYTE(0x80, 7)
 
 /* load bytes into 64-bit Ascon word */
 static inline uint64_t LOADBYTES(const uint8_t* bytes, int n) {
