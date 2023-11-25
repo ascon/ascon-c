@@ -59,7 +59,7 @@ COMMON_FILES=" \
   ascon.h \
   config.h \
   constants.h \
-  bendian.h \
+  lendian.h \
   forceinline.h \
   goal-constbranch \
   goal-constindex \
