@@ -3,16 +3,16 @@
 #include "bendian.h"
 
 u32_4 ascon_rev8(u32_4 in) {
-  in.words[0].h = U32BIG(in.words[0].h);
-  in.words[0].l = U32BIG(in.words[0].l);
-  in.words[1].h = U32BIG(in.words[1].h);
-  in.words[1].l = U32BIG(in.words[1].l);
+  in.words[0] = ascon_rev8_half(in.words[0]);
+  in.words[1] = ascon_rev8_half(in.words[1]);
   return in;
 }
 
 u32_2 ascon_rev8_half(u32_2 in) {
-  in.h = U32BIG(in.h);
-  in.l = U32BIG(in.l);
+  u64 t = (u64)in.h << 32 | in.l;
+  t = U64BIG(t);
+  in.l = (u32)t;
+  in.h = (u32)(t >> 32);
   return in;
 }
 

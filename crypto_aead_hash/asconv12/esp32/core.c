@@ -7,15 +7,16 @@ void ascon_duplex(state* s, unsigned char* out, const unsigned char* in,
   u32_2 tmp;
 
   while (len >= RATE) {
-    tmp.h = ((u32*)in)[0];
-    tmp.l = ((u32*)in)[1];
+    tmp.l = ((u32*)in)[0];
+    tmp.h = ((u32*)in)[1];
     tmp = ascon_rev8_half(tmp);
     s->x0.h ^= tmp.h;
     s->x0.l ^= tmp.l;
 
     if (mode != ASCON_AD) {
-      ((u32*)out)[0] = U32BIG(s->x0.h);
-      ((u32*)out)[1] = U32BIG(s->x0.l);
+      u32_2 tmp0 = ascon_rev8_half(s->x0);
+      ((u32*)out)[0] = tmp0.l;
+      ((u32*)out)[1] = tmp0.h;
     }
     if (mode == ASCON_DEC) {
       s->x0 = tmp;
@@ -56,25 +57,26 @@ void ascon_core(state* s, unsigned char* out, const unsigned char* in,
   u32_2 K0, K1, N0, N1;
 
   // load key
-  tmp.words[0].h = ((u32*)k)[0];
-  tmp.words[0].l = ((u32*)k)[1];
-  tmp.words[1].h = ((u32*)k)[2];
-  tmp.words[1].l = ((u32*)k)[3];
+  tmp.words[0].l = ((u32*)k)[0];
+  tmp.words[0].h = ((u32*)k)[1];
+  tmp.words[1].l = ((u32*)k)[2];
+  tmp.words[1].h = ((u32*)k)[3];
   tmp = ascon_rev8(tmp);
   K0 = tmp.words[0];
   K1 = tmp.words[1];
 
   // load nonce
-  tmp.words[0].h = ((u32*)npub)[0];
-  tmp.words[0].l = ((u32*)npub)[1];
-  tmp.words[1].h = ((u32*)npub)[2];
-  tmp.words[1].l = ((u32*)npub)[3];
+  tmp.words[0].l = ((u32*)npub)[0];
+  tmp.words[0].h = ((u32*)npub)[1];
+  tmp.words[1].l = ((u32*)npub)[2];
+  tmp.words[1].h = ((u32*)npub)[3];
   tmp = ascon_rev8(tmp);
   N0 = tmp.words[0];
   N1 = tmp.words[1];
 
   // initialization
-  to_big_immediate(s->x0, IV);
+  s->x0.h = IV;
+  s->x0.l = 0;
   s->x1.h = K0.h;
   s->x1.l = K0.l;
   s->x2.h = K1.h;

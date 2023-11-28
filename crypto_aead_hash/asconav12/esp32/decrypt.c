@@ -19,10 +19,10 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
 
   ascon_core(&s, m, c, *mlen, ad, adlen, npub, k, ASCON_DEC);
 
-  tmp.words[0].h = ((u32*)(c + *mlen))[0];
-  tmp.words[0].l = ((u32*)(c + *mlen))[1];
-  tmp.words[1].h = ((u32*)(c + *mlen))[2];
-  tmp.words[1].l = ((u32*)(c + *mlen))[3];
+  tmp.words[0].l = ((u32*)(c + *mlen))[0];
+  tmp.words[0].h = ((u32*)(c + *mlen))[1];
+  tmp.words[1].l = ((u32*)(c + *mlen))[2];
+  tmp.words[1].h = ((u32*)(c + *mlen))[3];
   tmp = ascon_rev8(tmp);
   u32_2 t0 = tmp.words[0];
   u32_2 t1 = tmp.words[1];

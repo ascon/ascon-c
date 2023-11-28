@@ -27,8 +27,8 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
   s.x4.l = 0x539493b6;
 
   while (len >= RATE) {
-    tmp.h = ((u32*)in)[0];
-    tmp.l = ((u32*)in)[1];
+    tmp.l = ((u32*)in)[0];
+    tmp.h = ((u32*)in)[1];
     tmp = ascon_rev8_half(tmp);
     s.x0.h ^= tmp.h;
     s.x0.l ^= tmp.l;
@@ -52,8 +52,9 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
 
   len = CRYPTO_BYTES;
   while (len >= RATE) {
-    ((u32*)out)[0] = U32BIG(s.x0.h);
-    ((u32*)out)[1] = U32BIG(s.x0.l);
+    u32_2 tmp0 = ascon_rev8_half(s.x0);
+    ((u32*)out)[0] = tmp0.l;
+    ((u32*)out)[1] = tmp0.h;
 
     P(&s, PA_START_ROUND);
 
