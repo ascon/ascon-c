@@ -93,6 +93,19 @@ ctest | sed 's/[0-9.]* sec//g' | tee -a ../test-all.log | grep Test >&3
 echo
 ../scripts/benchmark-size.sh
 
+echo
+echo "Test mips $OPT builds:" | tee -a ../test-all.log | grep Test >&3
+cmake .. -DCMAKE_C_COMPILER=mips-linux-gnu-gcc -DALG_LIST="" -DIMPL_LIST=""
+cmake .. -UALG_LIST -DEMULATOR="qemu-mips;-L;/usr/mips-linux-gnu" \
+         -DCMAKE_BUILD_TYPE=$TYPE \
+         -DREL_FLAGS="$OPT;-fomit-frame-pointer" \
+         -DDBG_FLAGS="$OPT;-std=c99;-Wall;-Wextra;-Wshadow" \
+         -DIMPL_LIST="opt32;opt32_lowsize;opt64;opt64_lowsize;ref"
+cmake --build . --clean-first -- -k | tee -a ../test-all.log | grep "Built target genkat" >&3
+ctest | sed 's/[0-9.]* sec//g' | tee -a ../test-all.log | grep Test >&3
+echo
+../scripts/benchmark-size.sh
+
 cd ..
 rm -rf test-all
 
