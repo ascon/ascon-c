@@ -45,16 +45,6 @@ forceinline uint64_t MASK(int n) {
   return ~0ull >> (64 - 8 * n);
 }
 
-forceinline uint64_t LOAD(const uint8_t* bytes, int n) {
-  uint64_t x = *(uint64_t*)bytes & MASK(n);
-  return U64TOWORD(x);
-}
-
-forceinline void STORE(uint8_t* bytes, uint64_t w, int n) {
-  *(uint64_t*)bytes &= ~MASK(n);
-  *(uint64_t*)bytes |= WORDTOU64(w);
-}
-
 forceinline uint64_t LOADBYTES(const uint8_t* bytes, int n) {
   uint64_t x = 0;
   memcpy(&x, bytes, n);
@@ -64,6 +54,14 @@ forceinline uint64_t LOADBYTES(const uint8_t* bytes, int n) {
 forceinline void STOREBYTES(uint8_t* bytes, uint64_t w, int n) {
   uint64_t x = WORDTOU64(w);
   memcpy(bytes, &x, n);
+}
+
+forceinline uint64_t LOAD(const uint8_t* bytes, int n) {
+  return LOADBYTES(bytes, n);
+}
+
+forceinline void STORE(uint8_t* bytes, uint64_t w, int n) {
+  STOREBYTES(bytes, w, n);
 }
 
 #endif /* WORD_H_ */

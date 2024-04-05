@@ -98,8 +98,9 @@ void ascon_aead(uint8_t* t, uint8_t* out, const uint8_t* in, uint64_t tlen,
   if (mode == ASCON_DECRYPT) printstate("pad ciphertext", &s);
   /* finalize */
   ascon_final(&s, &key);
-  ((uint64_t*)t)[0] = WORDTOU64(s.x[3]);
-  ((uint64_t*)t)[1] = WORDTOU64(s.x[4]);
+  /* set tag */
+  STOREBYTES(t, s.x[3], 8);
+  STOREBYTES(t + 8, s.x[4], 8);
 }
 
 #endif
