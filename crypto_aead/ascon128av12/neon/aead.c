@@ -9,7 +9,6 @@
     uint32_t adlen_hi = (uint32_t)(adlen >> 32); \
     uint32_t adlen_lo = (uint32_t)adlen;         \
     __asm__ __volatile__ ( \
-        ".arm \n\t" \
         ".fpu neon \n\t" \
         "cmp %[adlen_hi], #0 \n\t" \
         "cmpeq %[adlen_lo], #(%c[R]-1) \n\t" \
@@ -44,7 +43,6 @@
     uint32_t mlen_hi = (uint32_t)(mlen >> 32); \
     uint32_t mlen_lo = (uint32_t)mlen;         \
     __asm__ __volatile__ ( \
-        ".arm \n\t" \
         ".fpu neon \n\t" \
         "cmp %[mlen_hi], #0 \n\t" \
         "cmpeq %[mlen_lo], #(%c[R]-1) \n\t" \
@@ -81,7 +79,6 @@
     uint32_t clen_hi = (uint32_t)(clen >> 32); \
     uint32_t clen_lo = (uint32_t)clen;         \
     __asm__ __volatile__ ( \
-        ".arm \n\t" \
         ".fpu neon \n\t" \
         "cmp %[clen_hi], #0 \n\t" \
         "cmpeq %[clen_lo], #(%c[R]-1) \n\t" \

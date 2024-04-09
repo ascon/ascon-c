@@ -51,7 +51,6 @@ const uint64_t C[12] = {
 
 forceinline void P12(ascon_state_t* s) {
   __asm__ __volatile__ ( \
-      ".arm \n\t" \
       ".fpu neon \n\t" \
       "vldm %[s], {d0-d4} \n\t" \
       "vmvn d2, d2 \n\t" \
@@ -67,7 +66,6 @@ forceinline void P12(ascon_state_t* s) {
 
 forceinline void P8(ascon_state_t* s) {
   __asm__ __volatile__ ( \
-      ".arm \n\t" \
       ".fpu neon \n\t" \
       "vldm %[s], {d0-d4} \n\t" \
       "vmvn d2, d2 \n\t" \
@@ -83,7 +81,6 @@ forceinline void P8(ascon_state_t* s) {
 
 forceinline void P6(ascon_state_t* s) {
   __asm__ __volatile__ ( \
-      ".arm \n\t" \
       ".fpu neon \n\t" \
       "vldm %[s], {d0-d4} \n\t" \
       "vmvn d2, d2 \n\t" \
