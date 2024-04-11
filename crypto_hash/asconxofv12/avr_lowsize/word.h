@@ -15,6 +15,8 @@ typedef union {
 
 #define U64TOWORD(x) U64BIG(x)
 #define WORDTOU64(x) U64BIG(x)
+#define LOAD(b, n) LOADBYTES(b, n)
+#define STORE(b, w, n) STOREBYTES(b, w, n)
 
 #define XMUL(i, x)                               \
   do {                                           \
@@ -74,16 +76,6 @@ forceinline uint64_t CLEAR(uint64_t w, int n) {
 forceinline uint64_t MASK(int n) {
   /* undefined for n == 0 */
   return ~0ull >> (64 - 8 * n);
-}
-
-forceinline uint64_t LOAD(const uint8_t* bytes, int n) {
-  uint64_t x = *(uint64_t*)bytes & MASK(n);
-  return U64TOWORD(x);
-}
-
-forceinline void STORE(uint8_t* bytes, uint64_t w, int n) {
-  *(uint64_t*)bytes &= ~MASK(n);
-  *(uint64_t*)bytes |= WORDTOU64(w);
 }
 
 forceinline uint64_t LOADBYTES(const uint8_t* bytes, int n) {

@@ -16,6 +16,8 @@ typedef union {
 
 #define U64TOWORD(x) interleave8(U64BIG(x))
 #define WORDTOU64(x) U64BIG(interleave8(x))
+#define LOAD(b, n) LOADBYTES(b, n)
+#define STORE(b, w, n) STOREBYTES(b, w, n)
 
 forceinline uint8_t ROR8(uint8_t a, int n) { return a >> n | a << (8 - n); }
 
@@ -84,16 +86,6 @@ forceinline uint64_t CLEAR(uint64_t w, int n) {
 forceinline uint64_t MASK(int n) {
   /* undefined for n == 0 */
   return ~0ull >> (64 - 8 * n);
-}
-
-forceinline uint64_t LOAD(const uint8_t* bytes, int n) {
-  uint64_t x = *(uint64_t*)bytes & MASK(n);
-  return U64TOWORD(x);
-}
-
-forceinline void STORE(uint8_t* bytes, uint64_t w, int n) {
-  *(uint64_t*)bytes &= ~MASK(n);
-  *(uint64_t*)bytes |= WORDTOU64(w);
 }
 
 forceinline uint64_t LOADBYTES(const uint8_t* bytes, int n) {
