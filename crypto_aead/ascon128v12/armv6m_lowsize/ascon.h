@@ -30,10 +30,10 @@ typedef union {
 #define ASCON_ENCRYPT (ASCON_ABSORB | ASCON_SQUEEZE)
 #define ASCON_DECRYPT (ASCON_ABSORB | ASCON_SQUEEZE | ASCON_INSERT)
 
-void ascon_update(uint8_t mode, ascon_state_t* s, uint8_t* out,
-                  const uint8_t* in, uint64_t len);
+void ascon_update(ascon_state_t* s, uint8_t* out, const uint8_t* in,
+                  uint64_t len, uint8_t mode);
 
-int ascon_aead(uint8_t* tag, uint8_t* out, const uint8_t* in, uint64_t len,
+int ascon_aead(uint8_t* tag, uint8_t* out, const uint8_t* in, uint64_t inlen,
                const uint8_t* ad, uint64_t adlen, const uint8_t* npub,
                const uint8_t* k, uint8_t mode);
 

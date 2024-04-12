@@ -160,23 +160,41 @@ forceinline int ascon_verify(ascon_state_t* s, const uint8_t* t) {
   return ((((int)r - 1) >> 8) & 1) - 1;
 }
 
-int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
-                        const unsigned char* m, unsigned long long mlen,
-                        const unsigned char* ad, unsigned long long adlen,
-                        const unsigned char* nsec, const unsigned char* npub,
-                        const unsigned char* k) {
+int ascon_aead_encrypt(uint8_t* t, uint8_t* c, const uint8_t* m, uint64_t mlen,
+                       const uint8_t* ad, uint64_t adlen, const uint8_t* npub,
+                       const uint8_t* k) {
   ascon_state_t s;
-  (void)nsec;
-  *clen = mlen + CRYPTO_ABYTES;
-  /* perform ascon computation */
   ascon_key_t key;
   ascon_loadkey(&key, k);
   ascon_initaead(&s, &key, npub);
   ascon_adata(&s, ad, adlen);
   ascon_encrypt(&s, c, m, mlen);
   ascon_final(&s, &key);
-  ascon_gettag(&s, c + mlen);
+  ascon_gettag(&s, t);
   return 0;
+}
+
+int ascon_aead_decrypt(uint8_t* m, const uint8_t* t, const uint8_t* c,
+                       uint64_t clen, const uint8_t* ad, uint64_t adlen,
+                       const uint8_t* npub, const uint8_t* k) {
+  ascon_state_t s;
+  ascon_key_t key;
+  ascon_loadkey(&key, k);
+  ascon_initaead(&s, &key, npub);
+  ascon_adata(&s, ad, adlen);
+  ascon_decrypt(&s, m, c, clen);
+  ascon_final(&s, &key);
+  return ascon_verify(&s, t);
+}
+
+int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
+                        const unsigned char* m, unsigned long long mlen,
+                        const unsigned char* ad, unsigned long long adlen,
+                        const unsigned char* nsec, const unsigned char* npub,
+                        const unsigned char* k) {
+  (void)nsec;
+  *clen = mlen + CRYPTO_ABYTES;
+  return ascon_aead_encrypt(c + mlen, c, m, mlen, ad, adlen, npub, k);
 }
 
 int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
@@ -184,18 +202,10 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
                         unsigned long long clen, const unsigned char* ad,
                         unsigned long long adlen, const unsigned char* npub,
                         const unsigned char* k) {
-  ascon_state_t s;
   (void)nsec;
   if (clen < CRYPTO_ABYTES) return -1;
   *mlen = clen = clen - CRYPTO_ABYTES;
-  /* perform ascon computation */
-  ascon_key_t key;
-  ascon_loadkey(&key, k);
-  ascon_initaead(&s, &key, npub);
-  ascon_adata(&s, ad, adlen);
-  ascon_decrypt(&s, m, c, clen);
-  ascon_final(&s, &key);
-  return ascon_verify(&s, c + clen);
+  return ascon_aead_decrypt(m, c + clen, c, clen, ad, adlen, npub, k);
 }
 
 #endif

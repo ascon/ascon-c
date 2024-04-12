@@ -36,6 +36,13 @@ void ascon_final(ascon_state_t* s, const ascon_key_t* k);
 
 #endif
 
+int ascon_aead_encrypt(uint8_t* t, uint8_t* c, const uint8_t* m, uint64_t mlen,
+                       const uint8_t* ad, uint64_t adlen, const uint8_t* npub,
+                       const uint8_t* k);
+int ascon_aead_decrypt(uint8_t* m, const uint8_t* t, const uint8_t* c,
+                       uint64_t clen, const uint8_t* ad, uint64_t adlen,
+                       const uint8_t* npub, const uint8_t* k);
+
 #endif
 
 #ifdef ASCON_HASH_BYTES
@@ -47,6 +54,8 @@ void ascon_absorb(ascon_state_t* s, const uint8_t* in, uint64_t inlen);
 void ascon_squeeze(ascon_state_t* s, uint8_t* out, uint64_t outlen);
 
 #endif
+
+int ascon_xof(uint8_t* out, uint64_t outlen, const uint8_t* in, uint64_t inlen);
 
 #endif
 

@@ -74,7 +74,7 @@ forceinline void ascon_final(ascon_state_t* s, const ascon_key_t* key) {
   printstate("final 2nd key xor", s);
 }
 
-int ascon_aead(uint8_t* tag, uint8_t* out, const uint8_t* in, uint64_t tlen,
+int ascon_aead(uint8_t* tag, uint8_t* out, const uint8_t* in, uint64_t inlen,
                const uint8_t* ad, uint64_t adlen, const uint8_t* npub,
                const uint8_t* k, uint8_t mode) {
   const int nr = (ASCON_AEAD_RATE == 8) ? 6 : 8;
@@ -85,7 +85,7 @@ int ascon_aead(uint8_t* tag, uint8_t* out, const uint8_t* in, uint64_t tlen,
   ascon_initaead(&s, &key, npub);
   /* process associated data */
   if (adlen) {
-    ascon_update(ASCON_ABSORB, &s, (void*)0, ad, adlen);
+    ascon_update(&s, (void*)0, ad, adlen, ASCON_ABSORB);
     printstate("pad adata", &s);
     P(&s, nr);
   }
@@ -93,7 +93,7 @@ int ascon_aead(uint8_t* tag, uint8_t* out, const uint8_t* in, uint64_t tlen,
   s.x[4] ^= DSEP();
   printstate("domain separation", &s);
   /* process plaintext/ciphertext */
-  ascon_update(mode, &s, out, in, tlen);
+  ascon_update(&s, out, in, inlen, mode);
   if (mode == ASCON_ENCRYPT) printstate("pad plaintext", &s);
   if (mode == ASCON_DECRYPT) printstate("pad ciphertext", &s);
   /* finalize */

@@ -11,8 +11,8 @@
 #endif
 #endif
 
-void ascon_update(uint8_t mode, ascon_state_t* s, uint8_t* c, const uint8_t* m,
-                  uint64_t mlen) {
+void ascon_update(ascon_state_t* s, uint8_t* c, const uint8_t* m, uint64_t mlen,
+                  uint8_t mode) {
 #if defined(ASCON_AEAD_RATE) && !defined(ASCON_HASH_ROUNDS)
   const uint8_t nr = ASCON_AEAD_ROUNDS;
   const uint8_t rate = ASCON_AEAD_RATE;

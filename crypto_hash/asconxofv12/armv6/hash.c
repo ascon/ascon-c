@@ -77,13 +77,18 @@ forceinline void ascon_squeeze(ascon_state_t* s, uint8_t* out,
   printstate("squeeze output", s);
 }
 
-int crypto_hash(unsigned char* out, const unsigned char* in,
-                unsigned long long inlen) {
+int ascon_xof(uint8_t* out, uint64_t outlen, const uint8_t* in,
+              uint64_t inlen) {
   ascon_state_t s;
   ascon_inithash(&s);
   ascon_absorb(&s, in, inlen);
-  ascon_squeeze(&s, out, CRYPTO_BYTES);
+  ascon_squeeze(&s, out, outlen);
   return 0;
+}
+
+int crypto_hash(unsigned char* out, const unsigned char* in,
+                unsigned long long inlen) {
+  return ascon_xof(out, CRYPTO_BYTES, in, inlen);
 }
 
 #endif
