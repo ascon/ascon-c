@@ -27,7 +27,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   u32_2 t0 = tmp.words[0];
   u32_2 t1 = tmp.words[1];
 
-  // verify tag (should be constant time, check compiler output)
+  // verify should be constant time, check compiler output
   if (((s.x3.h ^ t0.h) | (s.x3.l ^ t0.l) | (s.x4.h ^ t1.h) | (s.x4.l ^ t1.l)) !=
       0) {
     *mlen = 0;

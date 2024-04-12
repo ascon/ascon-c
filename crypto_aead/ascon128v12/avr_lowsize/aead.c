@@ -83,7 +83,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   printstate("domain separation", &s);
   ascon_update(3, &s, c, m, mlen);
   ascon_final(&s, &key);
-  /* set tag */
+  /* get tag */
   SQUEEZE(c + mlen, s.b[3], 8);
   SQUEEZE(c + mlen + 8, s.b[4], 8);
   return 0;
@@ -111,7 +111,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   printstate("domain separation", &s);
   ascon_update(7, &s, m, c, clen);
   ascon_final(&s, &key);
-  /* verify tag (should be constant time, check compiler output) */
+  /* verify should be constant time, check compiler output */
   uint8_t r = 0;
   r |= VERIFY(s.b[3], c + clen, 8);
   r |= VERIFY(s.b[4], c + clen + 8, 8);

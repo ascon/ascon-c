@@ -91,7 +91,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   s.x[4] ^= K1;
   printstate("finalization", &s);
 
-  /* set tag */
+  /* get tag */
   STOREBYTES(c, s.x[3], 8);
   STOREBYTES(c + 8, s.x[4], 8);
 
@@ -200,12 +200,12 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   s.x[4] ^= K1;
   printstate("finalization", &s);
 
-  /* set tag */
+  /* get tag */
   uint8_t t[16];
   STOREBYTES(t, s.x[3], 8);
   STOREBYTES(t + 8, s.x[4], 8);
 
-  /* verify tag (should be constant time, check compiler output) */
+  /* verify should be constant time, check compiler output */
   int i;
   int result = 0;
   for (i = 0; i < CRYPTO_ABYTES; ++i) result |= c[i] ^ t[i];

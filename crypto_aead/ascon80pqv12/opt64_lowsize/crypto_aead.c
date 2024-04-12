@@ -21,7 +21,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   *clen = mlen + CRYPTO_ABYTES;
   /* ascon encryption */
   ascon_aead(t, c, m, mlen, ad, adlen, npub, k, ASCON_ENCRYPT);
-  /* set tag */
+  /* get tag */
   for (i = 0; i < CRYPTO_ABYTES; ++i) c[mlen + i] = t[i];
   return 0;
 }
@@ -40,7 +40,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   *mlen = clen - CRYPTO_ABYTES;
   /* ascon decryption */
   ascon_aead(t, m, c, *mlen, ad, adlen, npub, k, ASCON_DECRYPT);
-  /* verify tag (should be constant time, check compiler output) */
+  /* verify should be constant time, check compiler output */
   for (i = 0; i < CRYPTO_ABYTES; ++i) result |= t[i] ^ c[*mlen + i];
   return (((result - 1) >> 8) & 1) - 1;
 }

@@ -193,6 +193,18 @@ forceinline void ascon_final(ascon_state_t* s, const ascon_key_t* key) {
   printstate("final 2nd key xor", s);
 }
 
+forceinline void ascon_gettag(ascon_state_t* s, uint8_t* t) {
+  STOREBYTES(t, s->x[3], 8);
+  STOREBYTES(t + 8, s->x[4], 8);
+}
+
+forceinline int ascon_verify(ascon_state_t* s, const uint8_t* t) {
+  /* verify should be constant time, check compiler output */
+  s->x[3] ^= LOADBYTES(t, 8);
+  s->x[4] ^= LOADBYTES(t + 8, 8);
+  return NOTZERO(s->x[3], s->x[4]);
+}
+
 int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
                         const unsigned char* m, unsigned long long mlen,
                         const unsigned char* ad, unsigned long long adlen,
@@ -208,9 +220,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   ascon_adata(&s, ad, adlen);
   ascon_encrypt(&s, c, m, mlen);
   ascon_final(&s, &key);
-  /* set tag */
-  STOREBYTES(c + mlen, s.x[3], 8);
-  STOREBYTES(c + mlen + 8, s.x[4], 8);
+  ascon_gettag(&s, c + mlen);
   return 0;
 }
 
@@ -230,10 +240,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   ascon_adata(&s, ad, adlen);
   ascon_decrypt(&s, m, c, clen);
   ascon_final(&s, &key);
-  /* verify tag (should be constant time, check compiler output) */
-  s.x[3] ^= LOADBYTES(c + clen, 8);
-  s.x[4] ^= LOADBYTES(c + clen + 8, 8);
-  return NOTZERO(s.x[3], s.x[4]);
+  return ascon_verify(&s, c + clen);
 }
 
 #endif

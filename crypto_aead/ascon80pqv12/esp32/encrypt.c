@@ -18,7 +18,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   tmp.words[1] = s.x4;
   tmp = ascon_rev8(tmp);
 
-  // set tag
+  // get tag
   ((u32*)(c + mlen))[0] = tmp.words[0].l;
   ((u32*)(c + mlen))[1] = tmp.words[0].h;
   ((u32*)(c + mlen))[2] = tmp.words[1].l;
