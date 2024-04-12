@@ -74,9 +74,9 @@ forceinline void ascon_final(ascon_state_t* s, const ascon_key_t* key) {
   printstate("final 2nd key xor", s);
 }
 
-void ascon_aead(uint8_t* t, uint8_t* out, const uint8_t* in, uint64_t tlen,
-                const uint8_t* ad, uint64_t adlen, const uint8_t* npub,
-                const uint8_t* k, uint8_t mode) {
+int ascon_aead(uint8_t* tag, uint8_t* out, const uint8_t* in, uint64_t tlen,
+               const uint8_t* ad, uint64_t adlen, const uint8_t* npub,
+               const uint8_t* k, uint8_t mode) {
   const int nr = (ASCON_AEAD_RATE == 8) ? 6 : 8;
   ascon_key_t key;
   ascon_loadkey(&key, k);
@@ -98,8 +98,18 @@ void ascon_aead(uint8_t* t, uint8_t* out, const uint8_t* in, uint64_t tlen,
   if (mode == ASCON_DECRYPT) printstate("pad ciphertext", &s);
   /* finalize */
   ascon_final(&s, &key);
+  uint8_t t[16];
   ((uint64_t*)t)[0] = WORDTOU64(s.x[3]);
   ((uint64_t*)t)[1] = WORDTOU64(s.x[4]);
+  if (mode == ASCON_ENCRYPT) {
+    /* get tag */
+    for (int i = 0; i < CRYPTO_ABYTES; ++i) tag[i] = t[i];
+    return 0;
+  }
+  /* verify should be constant time, check compiler output */
+  int result = 0;
+  for (int i = 0; i < CRYPTO_ABYTES; ++i) result |= tag[i] ^ t[i];
+  return (((result - 1) >> 8) & 1) - 1;
 }
 
 #endif

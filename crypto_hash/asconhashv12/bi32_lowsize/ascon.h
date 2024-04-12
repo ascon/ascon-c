@@ -33,8 +33,8 @@ typedef union {
 void ascon_update(uint8_t mode, ascon_state_t* s, uint8_t* out,
                   const uint8_t* in, uint64_t len);
 
-void ascon_aead(uint8_t* t, uint8_t* out, const uint8_t* in, uint64_t len,
-                const uint8_t* ad, uint64_t adlen, const uint8_t* npub,
-                const uint8_t* k, uint8_t mode);
+int ascon_aead(uint8_t* tag, uint8_t* out, const uint8_t* in, uint64_t len,
+               const uint8_t* ad, uint64_t adlen, const uint8_t* npub,
+               const uint8_t* k, uint8_t mode);
 
 #endif /* ASCON_H_ */
