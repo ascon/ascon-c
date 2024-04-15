@@ -80,17 +80,17 @@ the following C with inline or partial ASM implementations:
 
 - `avx512`: 320-bit speed-optimized AVX512
 - `neon`: 64-bit speed-optimized ARM NEON
-- `armv6`: 32-bit speed-optimized ARMv6
+- `armv6`: 32-bit speed-optimized ARMv6, ARMv7
 - `armv6m`: 32-bit speed-optimized ARMv6-M
-- `armv7m`: 32-bit speed-optimized ARMv7-M
-- `armv6_lowsize`: 32-bit size-optimized ARMv6
+- `armv7m`: 32-bit speed-optimized ARMv7-M, ARMv8, ARMv9
+- `armv6_lowsize`: 32-bit size-optimized ARMv6, ARMv7
 - `armv6m_lowsize`: 32-bit size-optimized ARMv6-M
-- `armv7m_lowsize`: 32-bit size-optimized ARMv7-M
-- `armv7m_small`: 32-bit small speed-optimized ARMv7-M
-- `bi32_armv6`: 32-bit speed-optimized bit-interleaved ARMv6
+- `armv7m_lowsize`: 32-bit size-optimized ARMv7-M, ARMv8, ARMv9
+- `armv7m_small`: 32-bit small speed-optimized ARMv7-M, ARMv8, ARMv9
+- `bi32_armv6`: 32-bit speed-optimized bit-interleaved ARMv6, ARMv7
 - `bi32_armv6m`: 32-bit speed-optimized bit-interleaved ARMv6-M
-- `bi32_armv7m`: 32-bit speed-optimized bit-interleaved ARMv7-M
-- `bi32_armv7m_small`: 32-bit small bit-interleaved ARMv7-M
+- `bi32_armv7m`: 32-bit speed-optimized bit-interleaved ARMv7-M, ARMv8, ARMv9
+- `bi32_armv7m_small`: 32-bit small bit-interleaved ARMv7-M, ARMv8, ARMv9
 - `avr`: 8-bit size- and speed-optimized AVR
 - `avr_lowsize`: 8-bit size-optimized AVR
 
@@ -104,8 +104,8 @@ the following ASM implementations:
 
 and the following high-level masked (shared) C with inline ASM implementations:
 
-- `protected_bi32_armv6`: 32-bit masked bit-interleaved ARMv6
-- `protected_bi32_armv6_leveled`: 32-bit masked and leveled bit-interleaved ARMv6
+- `protected_bi32_armv6`: 32-bit masked bit-interleaved ARMv6, ARMv7
+- `protected_bi32_armv6_leveled`: 32-bit masked and leveled bit-interleaved ARMv6, ARMv7
 
 The masked C implementations can be used as a starting point to generate
 device specific C/ASM implementations. Note that the masked C implementations
