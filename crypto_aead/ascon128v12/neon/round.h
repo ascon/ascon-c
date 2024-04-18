@@ -3,7 +3,9 @@
 
 #include "ascon.h"
 #include "constants.h"
+#include "forceinline.h"
 #include "printstate.h"
+#include "word.h"
 
 #define ROUND(OFFSET) /* clang-format off */ \
   "vldr d31, [%[C], #" #OFFSET "] \n\t" /* clang-format on */ \

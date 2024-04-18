@@ -43,6 +43,7 @@ IMPL_LIST=" \
   bi32_lowreg \
   bi32_lowsize \
   bi8 \
+  neon \
   opt32 \
   opt32_lowsize \
   opt64 \
@@ -54,6 +55,7 @@ IMPL_LIST=" \
 COMMON_FILES=" \
   aead.c \
   ascon.h \
+  config.h \
   constants.h \
   bendian.h \
   forceinline.h \
@@ -91,6 +93,14 @@ BI32_FILES=" \
 
 ARM_FILES=" \
   architectures \
+  "
+
+NEON_FILES=" \
+  architectures \
+  aead.c \
+  config.h \
+  round.h \
+  permutations.h \
   "
 
 OPT8_FILES=" \
@@ -151,6 +161,14 @@ for alg in $ALG_LIST; do
     if [[ $impl == *"arm"* ]]; then
       for i in $ARM_FILES; do
         a=$base/arm/$i
+        b=$alg/$impl/$i
+        echo "  cp $a $b"
+        cmp --silent $a $b || cp $a $b
+      done
+    fi
+    if [[ $impl == *"neon"* ]]; then
+      for i in $NEON_FILES; do
+        a=$base/neon/$i
         b=$alg/$impl/$i
         echo "  cp $a $b"
         cmp --silent $a $b || cp $a $b
@@ -221,14 +239,18 @@ rm -f crypto_auth/*/*/aead.c
 rm -f crypto_*/*/opt8_lowsize/crypto_aead.c
 rm -f crypto_*/*/avr_lowsize/crypto_aead.c
 rm -f crypto_*/*/avr*/permutations.c
+rm -f crypto_*/*/neon/permutations.c
+
 rm -rf crypto_auth/*/*lowsize
+rm -rf crypto_auth/*/neon
 
 rm -rf crypto_*/*bi32*/arm*
 rm -rf crypto_*/*bi32*/bi8*
 rm -rf crypto_*/*bi32*/opt*
 rm -rf crypto_*/*bi32*/avr*
 
-rm -rf crypto_*/*/avr/permutations.c
+rm -rf crypto_*/*bi32*/avx*
+rm -rf crypto_*/*bi32*/neon*
 
 sed -i 's/ASCON_EXTERN_BI 0/ASCON_EXTERN_BI 1/' crypto_*/*bi32*/*/config.h
 
