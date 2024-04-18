@@ -35,6 +35,7 @@ IMPL_LIST=" \
   armv7m_small \
   avr \
   avr_lowsize \
+  avx512 \
   bi32 \
   bi32_armv6 \
   bi32_armv6m \
@@ -101,6 +102,14 @@ NEON_FILES=" \
   config.h \
   round.h \
   permutations.h \
+  "
+
+AVX512_FILES=" \
+  architectures \
+  aead.c \
+  ascon.h \
+  hash.c \
+  round.h \
   "
 
 OPT8_FILES=" \
@@ -174,6 +183,14 @@ for alg in $ALG_LIST; do
         cmp --silent $a $b || cp $a $b
       done
     fi
+    if [[ $impl == *"avx512"* ]]; then
+      for i in $AVX512_FILES; do
+        a=$base/avx512/$i
+        b=$alg/$impl/$i
+        echo "  cp $a $b"
+        cmp --silent $a $b || cp $a $b
+      done
+    fi
     if [[ $impl == *"avr"* ]]; then
       for i in $AVR_FILES; do
         a=$base/avr/$i
@@ -242,15 +259,15 @@ rm -f crypto_*/*/avr*/permutations.c
 rm -f crypto_*/*/neon/permutations.c
 
 rm -rf crypto_auth/*/*lowsize
+rm -rf crypto_auth/*/avx512
 rm -rf crypto_auth/*/neon
 
 rm -rf crypto_*/*bi32*/arm*
 rm -rf crypto_*/*bi32*/bi8*
 rm -rf crypto_*/*bi32*/opt*
 rm -rf crypto_*/*bi32*/avr*
-
 rm -rf crypto_*/*bi32*/avx*
-rm -rf crypto_*/*bi32*/neon*
+rm -rf crypto_*/*bi32*/neon
 
 sed -i 's/ASCON_EXTERN_BI 0/ASCON_EXTERN_BI 1/' crypto_*/*bi32*/*/config.h
 

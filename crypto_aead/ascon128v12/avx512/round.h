@@ -3,9 +3,11 @@
 
 #include "ascon.h"
 #include "constants.h"
+#include "forceinline.h"
 #include "printstate.h"
+#include "word.h"
 
-forceinline void ROUND(ascon_state_t* s, uint64_t C) {
+forceinline void ROUND(ascon_state_t* s, uint8_t C) {
   const uint64_t x = 0;
   const __mmask8 mxor1 = 0x15;
   const __mmask8 mxor2 = 0x0b;
@@ -36,7 +38,11 @@ forceinline void ROUND(ascon_state_t* s, uint64_t C) {
 }
 
 forceinline void PROUNDS(ascon_state_t* s, int nr) {
-  for (int i = START(nr); i != END; i += INC) ROUND(s, (i));
+  int i = START(nr);
+  do {
+    ROUND(s, RC(i));
+    i += INC;
+  } while (i != END);
 }
 
 #endif /* ROUND_H_ */
