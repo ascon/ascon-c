@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ -z $1 ]; then
+  echo "Usage: $0 [-Os | -O0 | -O1 | -O2 | -O3] [Release | Debug]"
+  exit 1
+fi
+
 if [[ $# -lt 1 ]]; then
   OPT=-O2
   TYPE=Release

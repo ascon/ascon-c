@@ -321,7 +321,15 @@ size -t libcrypto_hash_asconhashv12_opt32_lowsize.a
 ```
 
 
-# Manually build and run a single Ascon target:
+## Test build all implementations:
+
+The script `test-build.sh` quickly test builds all implementations of an algorithm using a given compiler and compile flags:
+```
+scripts/test-build.sh ascon128 gcc -O2 -march=native
+```
+
+
+## Manually build and run a single Ascon target:
 
 Build example for AEAD algorithms:
 
@@ -440,7 +448,7 @@ diff LWC_HASH_KAT_256.txt crypto_hash/asconhashv12/LWC_HASH_KAT_256.txt
   - e.g. by watching the frequency using `lscpu` or `cpufreq-info`
 
 * Determine the scaling factor between the actual and base frequency:
-  - factor = actual frequency / base frequency
+  - factor = actual_frequency / base_frequency
 
 * Run a getcycles program using the frequency factor and watch the results:
   ```
@@ -491,29 +499,28 @@ To test only Ascon, just run the following commands:
 Show the cycles/Byte for a 1536 Byte long message:
 
 ```
-cat bench/*/data | grep '_cycles 1536 ' | awk '{printf "%.1f\t%s\t%s\n", $9/$8,
-$6, $7}' | sort -nr
+cat bench/*/data | grep '_cycles 1536 ' | awk '{printf "%.1f\t%s\t%s\n", $9/$8, $6, $7}' | sort -nr
 ```
 
 
 ## Evaluate and optimize Ascon on constraint devices:
+
+* The `benchmark-size.sh` builds and lists the 5 smallest implementations of
+  each algorithm for a given compiler and compile flags, e.g.:
+  ```
+  scripts/benchmark-size.sh arm-linux-gnueabi-gcc -march=armv7-m
+  ```
 
 * The ascon-c code allows to set compile-time parameters `ASCON_INLINE_MODE`
   (IM), `ASCON_INLINE_PERM` (IP), `ASCON_UNROLL_LOOPS` (UL), `ASCON_INLINE_BI`
   (IB), via command line or in the `crypto_*/ascon*/*/config.h` files.
 * Use the `benchmark-config.sh` script to evaluate all combinations of these
   parameters for a given list of Ascon implementations. The script is called
-  with an output file, frequency factor, the algorithm, and the list of
+  with a frequency factor, output file, the algorithm, and a list of
   implementations to test:
   ```
-  scripts/benchmark-config.sh results-config.md $factor ascon128 ref opt64 opt64_lowsize
+  scripts/benchmark-config.sh $factor results-config.md ascon128 ref opt64 opt64_lowsize
   ```
 * The `results-config.md` file then contains a markup table with size and cycles
   for each implementation and parameter set to evaluate several time-area
   trade-offs.
-* The `benchmark-all.sh` and `benchmark-size.sh` scripts provides a time/size
-  and size-only table of all currently compiled implementations:
-  ```
-  scripts/benchmark-all.sh results-all.md
-  scripts/benchmark-size.sh results-size.md
-  ```

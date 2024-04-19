@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ -z $1 ]; then
+  echo "Usage: $0 <algorithms>..."
+  exit 1
+fi
+
 CC="arm-none-eabi-gcc"
 CFLAGS="-mcpu=cortex-m0"
 ALG=$*
