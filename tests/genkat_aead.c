@@ -70,7 +70,7 @@ int main() {
   if (ret != KAT_SUCCESS) {
     fprintf(stderr, "test vector generation failed with code %d\n", ret);
   }
-  return ret;
+  exit(ret);
 }
 
 int generate_test_vectors() {

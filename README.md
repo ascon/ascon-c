@@ -80,14 +80,14 @@ the following C with inline or partial ASM implementations:
 
 - `avx512`: 320-bit speed-optimized AVX512
 - `neon`: 64-bit speed-optimized ARM NEON
-- `armv6`: 32-bit speed-optimized ARMv6, ARMv7
+- `armv6`: 32-bit speed-optimized ARMv6, ARMv7-A
 - `armv6m`: 32-bit speed-optimized ARMv6-M
 - `armv7m`: 32-bit speed-optimized ARMv7-M, ARMv8, ARMv9
-- `armv6_lowsize`: 32-bit size-optimized ARMv6, ARMv7
+- `armv6_lowsize`: 32-bit size-optimized ARMv6, ARMv7-A
 - `armv6m_lowsize`: 32-bit size-optimized ARMv6-M
 - `armv7m_lowsize`: 32-bit size-optimized ARMv7-M, ARMv8, ARMv9
 - `armv7m_small`: 32-bit small speed-optimized ARMv7-M, ARMv8, ARMv9
-- `bi32_armv6`: 32-bit speed-optimized bit-interleaved ARMv6, ARMv7
+- `bi32_armv6`: 32-bit speed-optimized bit-interleaved ARMv6, ARMv7-A
 - `bi32_armv6m`: 32-bit speed-optimized bit-interleaved ARMv6-M
 - `bi32_armv7m`: 32-bit speed-optimized bit-interleaved ARMv7-M, ARMv8, ARMv9
 - `bi32_armv7m_small`: 32-bit small bit-interleaved ARMv7-M, ARMv8, ARMv9
@@ -269,6 +269,16 @@ cmake --build .
 ctest
 ```
 
+Compile and test using Intel SDE (use full path to `sde` or add to path variable):
+
+```
+mkdir build && cd build
+cmake .. -DCMAKE_C_COMPILER=gcc -DIMPL_LIST=avx512 -DEMULATOR="sde;--" \
+         -DREL_FLAGS="-O2;-fomit-frame-pointer;-march=icelake-client"
+cmake --build .
+ctest
+```
+
 Cross compile and test with custom emulator using e.g. `qemu-arm`:
 
 ```
@@ -281,12 +291,26 @@ cmake --build .
 ctest
 ```
 
-or using Intel SDE (use full path to `sde` or add to path variable):
+Compile and test for ARMv6-M on bare metal using `picolibc` and `qemu-system-arm`:
 
 ```
 mkdir build && cd build
-cmake .. -DCMAKE_C_COMPILER=gcc -DIMPL_LIST=avx512 -DEMULATOR="sde;--" \
-         -DREL_FLAGS="-O2;-fomit-frame-pointer;-march=icelake-client"
+cmake .. -DCMAKE_C_COMPILER="arm-none-eabi-gcc" -DCMAKE_C_COMPILER_FORCED=ON \
+         -DREL_FLAGS="-O2;-mcpu=cortex-m0;--specs=picolibc.specs;--oslib=semihost;-T../tests/microbit.ld" \
+         -DEMULATOR="qemu-system-arm;-semihosting;-nographic;-machine;microbit;-kernel" \
+         -DALG_LIST="ascon128;ascon128a" -DIMPL_LIST="armv6m;armv6m_lowsize"
+cmake --build .
+ctest
+```
+
+Compile and test for RV32 on bare metal using `picolibc` and `qemu-system-riscv32`:
+
+```
+mkdir build && cd build
+cmake .. -DCMAKE_C_COMPILER="riscv64-unknown-elf-gcc" -DCMAKE_C_COMPILER_FORCED=ON \
+         -DREL_FLAGS="-O2;-march=rv32i;-mabi=ilp32;--specs=picolibc.specs;--oslib=semihost;-T../tests/rv32.ld" \
+         -DEMULATOR="qemu-system-riscv32;-semihosting;-nographic;-cpu;rv32;-bios;none;-kernel" \
+         -DALG_LIST="ascon128;ascon128a" -DIMPL_LIST="asm_rv32i"
 cmake --build .
 ctest
 ```
@@ -321,14 +345,6 @@ size -t libcrypto_hash_asconhashv12_opt32_lowsize.a
 ```
 
 
-## Test build all implementations:
-
-The script `test-build.sh` quickly test builds all implementations of an algorithm using a given compiler and compile flags:
-```
-scripts/test-build.sh ascon128 gcc -O2 -march=native
-```
-
-
 ## Manually build and run a single Ascon target:
 
 Build example for AEAD algorithms:
@@ -353,6 +369,32 @@ Generate KATs and get CPU cycles:
 ```
 
 
+## Manually build and run an ARMv6-M target:
+
+
+Setup:
+
+```
+sudo apt install gcc-arm-none-eabi picolibc-arm-none-eabi qemu-system-arm
+```
+
+Example to build, run and test an AEAD/HASH algorithm using `gcc`, `picolibc` and `qemu`:
+
+```
+arm-none-eabi-gcc -O2 -mcpu=cortex-m0 --specs=picolibc.specs --oslib=semihost -Ttests/microbit.ld \
+    -Icrypto_aead/ascon128v12/armv6m crypto_aead/ascon128v12/armv6m/*.[cS] -Itests tests/genkat_aead.c -o genkat
+qemu-system-arm -semihosting -nographic -machine microbit -kernel genkat
+diff LWC_AEAD_KAT_128_128.txt crypto_aead/ascon128v12/LWC_AEAD_KAT_128_128.txt
+```
+
+```
+arm-none-eabi-gcc -O2 -mcpu=cortex-m0 --specs=picolibc.specs --oslib=semihost -Ttests/microbit.ld \
+    -Icrypto_hash/asconhashv12/opt32 crypto_hash/asconhashv12/opt32/*.[cS] -Itests tests/genkat_hash.c -o genkat
+qemu-system-arm -semihosting -nographic -machine microbit -kernel genkat
+diff LWC_HASH_KAT_256.txt crypto_hash/asconhashv12/LWC_HASH_KAT_256.txt
+```
+
+
 ## Manually build and run an RV32 target:
 
 
@@ -365,16 +407,16 @@ sudo apt install gcc-riscv64-unknown-elf picolibc-riscv64-unknown-elf qemu-syste
 Example to build, run and test an AEAD/HASH algorithm using `gcc`, `picolibc` and `qemu`:
 
 ```
-riscv64-unknown-elf-gcc -O2 -march=rv32i -mabi=ilp32 --specs=picolibc.specs --oslib=semihost --crt0=hosted -Ttests/rv32.ld \
+riscv64-unknown-elf-gcc -O2 -march=rv32i -mabi=ilp32 --specs=picolibc.specs --oslib=semihost -Ttests/rv32.ld \
     -Icrypto_aead/ascon128v12/asm_rv32i crypto_aead/ascon128v12/asm_rv32i/*.[cS] -Itests tests/genkat_aead.c -o genkat
-qemu-system-riscv32 -semihosting-config enable=on -monitor none -serial none -nographic -machine virt,accel=tcg -cpu rv32 -bios none -kernel genkat
+qemu-system-riscv32 -semihosting -nographic -cpu rv32 -bios none -kernel genkat
 diff LWC_AEAD_KAT_128_128.txt crypto_aead/ascon128v12/LWC_AEAD_KAT_128_128.txt
 ```
 
 ```
-riscv64-unknown-elf-gcc -O2 -march=rv32i -mabi=ilp32 --specs=picolibc.specs --oslib=semihost --crt0=hosted -Ttests/rv32.ld \
+riscv64-unknown-elf-gcc -O2 -march=rv32i -mabi=ilp32 --specs=picolibc.specs --oslib=semihost -Ttests/rv32.ld \
     -Icrypto_hash/asconhashv12/opt32 crypto_hash/asconhashv12/opt32/*.[cS] -Itests tests/genkat_hash.c -o genkat
-qemu-system-riscv32 -semihosting-config enable=on -monitor none -serial none -nographic -machine virt,accel=tcg -cpu rv32 -bios none -kernel genkat
+qemu-system-riscv32 -semihosting -nographic -cpu rv32 -bios none -kernel genkat
 diff LWC_HASH_KAT_256.txt crypto_hash/asconhashv12/LWC_HASH_KAT_256.txt
 ```
 
@@ -505,22 +547,34 @@ cat bench/*/data | grep '_cycles 1536 ' | awk '{printf "%.1f\t%s\t%s\n", $9/$8, 
 
 ## Evaluate and optimize Ascon on constraint devices:
 
-* The `benchmark-size.sh` builds and lists the 5 smallest implementations of
-  each algorithm for a given compiler and compile flags, e.g.:
-  ```
-  scripts/benchmark-size.sh arm-linux-gnueabi-gcc -march=armv7-m
-  ```
+The script `test-build.sh` quickly test builds all implementations of an algorithm
+for a given compiler with compile flags:
+```
+scripts/test-build.sh ascon128 arm-none-eabi-gcc -march=armv6-m -O2
+scripts/test-build.sh ascon128 arm-linux-gnueabi-gcc -march=armv7-m -O2
+scripts/test-build.sh ascon128 clang --target=riscv32-unknown-elf -march=rv32i -mabi=ilp32 -I/usr/lib/picolibc/arm-none-eabi/include
+```
 
-* The ascon-c code allows to set compile-time parameters `ASCON_INLINE_MODE`
-  (IM), `ASCON_INLINE_PERM` (IP), `ASCON_UNROLL_LOOPS` (UL), `ASCON_INLINE_BI`
-  (IB), via command line or in the `crypto_*/ascon*/*/config.h` files.
-* Use the `benchmark-config.sh` script to evaluate all combinations of these
-  parameters for a given list of Ascon implementations. The script is called
-  with a frequency factor, output file, the algorithm, and a list of
-  implementations to test:
-  ```
-  scripts/benchmark-config.sh $factor results-config.md ascon128 ref opt64 opt64_lowsize
-  ```
-* The `results-config.md` file then contains a markup table with size and cycles
-  for each implementation and parameter set to evaluate several time-area
-  trade-offs.
+
+The `benchmark-size.sh` script builds and sorts the size of all implementations
+of an algorithm for a given compiler with compile flags:
+```
+scripts/benchmark-size.sh ascon128 arm-none-eabi-gcc -march=armv6-m
+scripts/benchmark-size.sh ascon128 arm-linux-gnueabi-gcc -march=armv7-m
+scripts/benchmark-size.sh ascon128 clang --target=riscv32-unknown-elf -march=rv32i -mabi=ilp32 -I/usr/lib/picolibc/arm-none-eabi/include
+```
+
+The ascon-c code allows to set compile-time parameters `ASCON_INLINE_MODE`
+(IM), `ASCON_INLINE_PERM` (IP), `ASCON_UNROLL_LOOPS` (UL), `ASCON_INLINE_BI`
+(IB), via command line or in the `crypto_*/ascon*/*/config.h` files.
+
+Use the `benchmark-config.sh` script to evaluate all combinations of these
+parameters for a given list of Ascon implementations. The script is called
+with a frequency factor, output file, the algorithm, and a list of
+implementations to test:
+```
+scripts/benchmark-config.sh $factor results-config.md ascon128 ref opt64 opt64_lowsize
+```
+The `results-config.md` file then contains a markup table with size and cycles
+for each implementation and parameter set to evaluate several time-area
+trade-offs.

@@ -18,4 +18,4 @@ for i in crypto_*/${ALG}v12/*/; do
     echo -n "[FAIL] "
   fi
   echo $i
-done | grep --color -e $ -e ".*FAIL.*"
+done | sed -u 's|/$||' | grep --color -e $ -e ".*FAIL.*"

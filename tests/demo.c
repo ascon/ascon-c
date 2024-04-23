@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "api.h"
@@ -21,16 +22,22 @@ void print(unsigned char c, unsigned char* x, unsigned long long xlen) {
 }
 
 int main() {
-  unsigned char n[CRYPTO_NPUBBYTES] = {0, 1, 2,  3,  4,  5,  6,  7,
-                                       8, 9, 10, 11, 12, 13, 14, 15};
-  unsigned char k[CRYPTO_KEYBYTES] = {0, 1, 2,  3,  4,  5,  6,  7,
-                                      8, 9, 10, 11, 12, 13, 14, 15};
-  unsigned char a[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-  unsigned char m[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+  unsigned char n[32] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                         11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+                         22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
+  unsigned char k[32] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                         11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+                         22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
+  unsigned char a[32] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                         11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+                         22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
+  unsigned char m[32] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                         11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+                         22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
   unsigned char c[32], h[32], t[32];
   unsigned long long alen = 16;
   unsigned long long mlen = 16;
-  unsigned long long clen = CRYPTO_ABYTES;
+  unsigned long long clen;
   int result = 0;
 #if defined(AVR_UART)
   avr_uart_init();
@@ -38,38 +45,31 @@ int main() {
   stdin = &avr_uart_input_echo;
 #endif
 #if defined(CRYPTO_AEAD)
+  printf("input:\n");
   print('k', k, CRYPTO_KEYBYTES);
-  printf(" ");
   print('n', n, CRYPTO_NPUBBYTES);
-  printf("\n");
   print('a', a, alen);
-  printf(" ");
   print('m', m, mlen);
-  printf(" -> ");
   result |= crypto_aead_encrypt(c, &clen, m, mlen, a, alen, (void*)0, n, k);
+  printf("encrypt:\n");
   print('c', c, clen - CRYPTO_ABYTES);
-  printf(" ");
   print('t', c + clen - CRYPTO_ABYTES, CRYPTO_ABYTES);
-  printf(" -> ");
   result |= crypto_aead_decrypt(m, &mlen, (void*)0, c, clen, a, alen, n, k);
-  print('a', a, alen);
-  printf(" ");
+  printf("decrypt:\n");
   print('m', m, mlen);
-  printf("\n");
 #elif defined(CRYPTO_HASH)
+  printf("input:\n");
   print('m', m, mlen);
-  printf(" -> ");
   result |= crypto_hash(h, m, mlen);
+  printf("hash:\n");
   print('h', h, CRYPTO_BYTES);
-  printf("\n");
 #elif defined(CRYPTO_AUTH)
+  printf("input:\n");
   print('k', k, CRYPTO_KEYBYTES);
-  printf(" ");
   print('m', m, mlen);
-  printf(" -> ");
   result |= crypto_auth(t, m, mlen, k);
+  printf("tag:\n");
   print('h', t, CRYPTO_BYTES);
-  printf("\n");
 #endif
-  return result;
+  exit(result);
 }
