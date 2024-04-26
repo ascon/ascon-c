@@ -2,9 +2,6 @@
 #define WORD_H_
 
 #include <stdint.h>
-#include <string.h>
-
-typedef uint64_t uint64_t;
 
 /* get byte from 64-bit Ascon word */
 #define GETBYTE(x, i) ((uint8_t)((uint64_t)(x) >> (56 - 8 * (i))))
