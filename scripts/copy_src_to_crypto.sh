@@ -257,6 +257,7 @@ rm -f crypto_*/*/opt8_lowsize/crypto_aead.c
 rm -f crypto_*/*/avr_lowsize/crypto_aead.c
 rm -f crypto_*/*/avr*/permutations.c
 rm -f crypto_*/*/neon/permutations.c
+rm -f crypto_*/*/armv6m_lowsize/permutations.c
 
 rm -rf crypto_auth/*/*lowsize
 rm -rf crypto_auth/*/avx512
