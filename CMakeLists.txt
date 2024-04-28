@@ -110,7 +110,7 @@ foreach(CRYPTO aead hash auth)
               -DEXE_NAME=${EXE_NAME} -DALG=${ALG}${VER} -DCRYPTO=${CRYPTO}
               -DSRC_DIR=${CMAKE_SOURCE_DIR} -DBIN_DIR=${CMAKE_BINARY_DIR}
               -DEMULATOR=${EMULATOR_STRING} -DCONFIG=$<CONFIGURATION>
-              -P ${CMAKE_SOURCE_DIR}/genkat.cmake)
+              -P ${CMAKE_SOURCE_DIR}/tests/genkat.cmake)
           else()
             add_test(${EXE_NAME} ${EXE_NAME})
           endif()
