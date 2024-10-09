@@ -134,6 +134,11 @@ AVR_FILES=" \
   permutations.S \
   "
 
+ESP_FILES=" \
+  constants.h \
+  lendian.h \
+  "
+
 for alg in $ALG_LIST; do
   for impl in $IMPL_LIST; do
     echo
@@ -158,6 +163,14 @@ for alg in $ALG_LIST; do
       b=$alg/$impl/update.c
       echo "  cp $a $b"
       cmp --silent $a $b || cp $a $b
+    fi
+    if [[ $impl == *"esp"* ]]; then
+      for i in $ESP_FILES; do
+        a=$base/$i
+        b=$alg/$impl/$i
+        echo "  cp $a $b"
+        cmp --silent $a $b || cp $a $b
+      done
     fi
     if [[ $impl == *"bi32"* ]]; then
       for i in $BI32_FILES; do
