@@ -10,8 +10,8 @@
 #define WORDTOU64
 #endif
 
-#ifndef U64BIG
-#define U64BIG
+#ifndef U64LE
+#define U64LE
 #endif
 
 #include "ascon.h"

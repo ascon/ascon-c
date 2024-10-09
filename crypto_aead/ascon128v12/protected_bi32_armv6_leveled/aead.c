@@ -1,5 +1,6 @@
 #include "api.h"
 #include "ascon.h"
+#include "constants.h"
 #include "permutations.h"
 #include "printstate.h"
 
@@ -11,13 +12,10 @@ void ascon_initaead(ascon_state_t* s, const mask_key_uint32_t* k,
   s->x[5] = MZERO(NUM_SHARES_KEY);
   s->x[0] = MZERO(NUM_SHARES_KEY);
   /* set the initial value */
-  if (ASCON_AEAD_RATE == 8) {
-    s->x[0].s[0].w[0] ^= 0x08220000;
-    s->x[0].s[0].w[1] ^= 0x80210000;
-  } else {
-    s->x[0].s[0].w[0] ^= 0x00200000;
-    s->x[0].s[0].w[1] ^= 0x88220000;
-  }
+  if (ASCON_AEAD_RATE == 8) s->x[0].s[0].w[0] ^= (uint32_t)ASCON_128_IV;
+  if (ASCON_AEAD_RATE == 8) s->x[0].s[0].w[1] ^= ASCON_128_IV >> 32;
+  if (ASCON_AEAD_RATE == 16) s->x[0].s[0].w[0] ^= (uint32_t)ASCON_128A_IV;
+  if (ASCON_AEAD_RATE == 16) s->x[0].s[0].w[1] ^= ASCON_128A_IV >> 32;
   /* set the nonce */
   N0 = MLOAD((uint32_t*)n, NUM_SHARES_NPUB);
   N1 = MLOAD((uint32_t*)(n + 2), NUM_SHARES_NPUB);
@@ -66,7 +64,7 @@ void ascon_adata(ascon_state_t* s, const mask_ad_uint32_t* ad, uint64_t adlen) {
       ad += 2;
       adlen -= 8;
     }
-    s->x[i].s[0].w[1] ^= 0x80000000 >> (adlen * 4);
+    s->x[i].s[0].w[0] ^= 0x01 << (adlen * 4);
     if (adlen) {
       as = MLOAD((uint32_t*)ad, NUM_SHARES_AD);
       s->x[i] = MXOR(s->x[i], as, NUM_SHARES_AD);
@@ -75,7 +73,7 @@ void ascon_adata(ascon_state_t* s, const mask_ad_uint32_t* ad, uint64_t adlen) {
     P(s, nr, NUM_SHARES_AD);
   }
   /* domain separation */
-  s->x[4].s[0].w[0] ^= 1;
+  s->x[4].s[0].w[1] ^= 0x80000000;
   printstate("domain separation", s, NUM_SHARES_AD);
 }
 
@@ -113,7 +111,7 @@ void ascon_encrypt(ascon_state_t* s, mask_c_uint32_t* c,
     c += 2;
     mlen -= 8;
   }
-  s->x[i].s[0].w[1] ^= 0x80000000 >> (mlen * 4);
+  s->x[i].s[0].w[0] ^= 0x01 << (mlen * 4);
   if (mlen) {
     ms = MLOAD((uint32_t*)m, NUM_SHARES_M);
     s->x[i] = MXOR(s->x[i], ms, NUM_SHARES_M);
@@ -157,7 +155,7 @@ void ascon_decrypt(ascon_state_t* s, mask_m_uint32_t* m,
     c += 2;
     clen -= 8;
   }
-  s->x[i].s[0].w[1] ^= 0x80000000 >> (clen * 4);
+  s->x[i].s[0].w[0] ^= 0x01 << (clen * 4);
   if (clen) {
     cx = MLOAD((uint32_t*)c, NUM_SHARES_C);
     s->x[i] = MXOR(s->x[i], cx, NUM_SHARES_C);

@@ -5,10 +5,10 @@
 #include <string.h>
 
 #include "asm.h"
-#include "bendian.h"
 #include "config.h"
 #include "forceinline.h"
 #include "interleave.h"
+#include "lendian.h"
 #include "randombytes.h"
 #include "shares.h"
 
@@ -158,7 +158,7 @@ forceinline word_t MREFRESH(word_t w, int ns) {
 }
 
 forceinline word_t MMASK(word_t w, int n) {
-  uint32_t mask = 0xffffffff >> (n * 4);
+  uint32_t mask = 0xffffffff << (n * 4);
   w.s[0].w[0] ^= mask;
   w.s[0].w[1] ^= mask;
   return w;

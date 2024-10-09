@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bendian.h"
 #include "forceinline.h"
 #include "interleave.h"
+#include "lendian.h"
 #include "randombytes.h"
 
 forceinline uint32_t ROR32(uint32_t x, int n) {
@@ -90,7 +90,7 @@ void generate_shares(uint32_t* s, int num_shares, const uint8_t* data,
   for (i = 0; i < len / 8; ++i) {
     uint64_t x;
     memcpy(&x, data + i * 8, 8);
-    x = U64BIG(x);
+    x = U64LE(x);
 #if ASCON_EXTERN_BI
     x = TOBI(x);
 #endif
@@ -103,7 +103,7 @@ void generate_shares(uint32_t* s, int num_shares, const uint8_t* data,
     for (i = (len / 8) * 8; i < len; ++i) {
       x ^= (uint64_t)data[i] << ((i % 8) * 8);
     }
-    x = U64BIG(x);
+    x = U64LE(x);
 #if ASCON_EXTERN_BI
     x = TOBI(x);
 #endif
@@ -132,7 +132,7 @@ void combine_shares(uint8_t* data, uint64_t len, const uint32_t* s,
 #if ASCON_EXTERN_BI
     x = FROMBI(x);
 #endif
-    x = U64BIG(x);
+    x = U64LE(x);
     memcpy(data + i * 8, &x, 8);
   }
   /* unmask remaining bytes */
@@ -151,7 +151,7 @@ void combine_shares(uint8_t* data, uint64_t len, const uint32_t* s,
 #if ASCON_EXTERN_BI
     x = FROMBI(x);
 #endif
-    x = U64BIG(x);
+    x = U64LE(x);
     for (i = (len / 8) * 8; i < len; ++i) {
       data[i] = x >> ((i % 8) * 8);
     }
