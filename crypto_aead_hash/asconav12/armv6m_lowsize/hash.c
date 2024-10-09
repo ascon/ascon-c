@@ -20,7 +20,7 @@ forceinline void ascon_inithash(ascon_state_t* s) {
   for (i = 1; i < 5; ++i) s->x[i] = 0;
   printstate("initial value", s);
   P(s, 12);
-#endif
+#else
 #if ASCON_HASH_BYTES == 32 && ASCON_HASH_ROUNDS == 12
   const uint64_t iv[5] = {ASCON_HASH_IV0, ASCON_HASH_IV1, ASCON_HASH_IV2,
                           ASCON_HASH_IV3, ASCON_HASH_IV4};
@@ -34,7 +34,8 @@ forceinline void ascon_inithash(ascon_state_t* s) {
   const uint64_t iv[5] = {ASCON_XOFA_IV0, ASCON_XOFA_IV1, ASCON_XOFA_IV2,
                           ASCON_XOFA_IV3, ASCON_XOFA_IV4};
 #endif
-  for (i = 0; i < 5; ++i) s->x[i] = (iv[i]);
+  for (i = 0; i < 5; ++i) s->x[i] = iv[i];
+#endif
   printstate("initialization", s);
 }
 

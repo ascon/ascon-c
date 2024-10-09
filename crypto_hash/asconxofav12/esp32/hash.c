@@ -13,10 +13,15 @@
 
 int crypto_hash(unsigned char* out, const unsigned char* in,
                 unsigned long long inlen) {
-  state s;
+  state s = {0};
   u32_2 tmp;
   unsigned long len = inlen;
 
+#if ASCON_PRINT_STATE
+  s.x0.h = ASCON_XOFA_IV >> 32;
+  s.x0.l = (u32)ASCON_XOFA_IV;
+  P(&s, PA_START_ROUND);
+#else
   // initialization
   s.x0.h = 0x44906568;
   s.x0.l = 0xb77b9832;
@@ -28,6 +33,7 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
   s.x3.l = 0xde0d225b;
   s.x4.h = 0xa8cb5ce3;
   s.x4.l = 0x3449973f;
+#endif
 
   while (len >= RATE) {
     tmp.l = ((u32*)in)[0];
