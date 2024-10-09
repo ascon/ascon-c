@@ -31,7 +31,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
 
   /* initialize */
   ascon_state_t s;
-  s.x[0] = K0 | ASCON_80PQ_IV >> 32;
+  s.x[0] = K0 | ASCON_80PQ_IV;
   s.x[1] = K1;
   s.x[2] = K2;
   s.x[3] = N0;
@@ -131,7 +131,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
 
   /* initialize */
   ascon_state_t s;
-  s.x[0] = K0 | ASCON_80PQ_IV >> 32;
+  s.x[0] = K0 | ASCON_80PQ_IV;
   s.x[1] = K1;
   s.x[2] = K2;
   s.x[3] = N0;
