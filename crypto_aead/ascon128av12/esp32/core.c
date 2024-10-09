@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include "constants.h"
+
 void ascon_duplex(state* s, unsigned char* out, const unsigned char* in,
                   unsigned long len, u8 mode) {
   u32_4 tmp;
@@ -85,8 +87,8 @@ void ascon_core(state* s, unsigned char* out, const unsigned char* in,
   N1 = tmp.words[1];
 
   // initialization
-  s->x0.h = IV;
-  s->x0.l = 0;
+  s->x0.h = ASCON_128A_IV >> 32;
+  s->x0.l = (u32)ASCON_128A_IV;
   s->x1.h = K0.h;
   s->x1.l = K0.l;
   s->x2.h = K1.h;

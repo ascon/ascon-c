@@ -2,6 +2,7 @@
 
 #include "api.h"
 #include "bendian.h"
+#include "constants.h"
 #include "permutations.h"
 
 #define RATE (64 / 8)
