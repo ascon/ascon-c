@@ -34,16 +34,16 @@ forceinline uint64_t ROR(uint64_t x, int n) {
   return b.x;
 }
 
-forceinline uint64_t KEYROT(uint64_t a, uint64_t b) {
-  word_t w, lo2hi = {.x = a}, hi2lo = {.x = b};
-  w.b[0] = lo2hi.b[0] << 4 | hi2lo.b[0] >> 4;
-  w.b[1] = lo2hi.b[1] << 4 | hi2lo.b[1] >> 4;
-  w.b[2] = lo2hi.b[2] << 4 | hi2lo.b[2] >> 4;
-  w.b[3] = lo2hi.b[3] << 4 | hi2lo.b[3] >> 4;
-  w.b[4] = lo2hi.b[4] << 4 | hi2lo.b[4] >> 4;
-  w.b[5] = lo2hi.b[5] << 4 | hi2lo.b[5] >> 4;
-  w.b[6] = lo2hi.b[6] << 4 | hi2lo.b[6] >> 4;
-  w.b[7] = lo2hi.b[7] << 4 | hi2lo.b[7] >> 4;
+forceinline uint64_t KEYROT(uint64_t lo2hi, uint64_t hi2lo) {
+  word_t w, a = {.x = lo2hi}, b = {.x = hi2lo};
+  w.b[0] = a.b[0] << 4 | b.b[0] >> 4;
+  w.b[1] = a.b[1] << 4 | b.b[1] >> 4;
+  w.b[2] = a.b[2] << 4 | b.b[2] >> 4;
+  w.b[3] = a.b[3] << 4 | b.b[3] >> 4;
+  w.b[4] = a.b[4] << 4 | b.b[4] >> 4;
+  w.b[5] = a.b[5] << 4 | b.b[5] >> 4;
+  w.b[6] = a.b[6] << 4 | b.b[6] >> 4;
+  w.b[7] = a.b[7] << 4 | b.b[7] >> 4;
   return w.x;
 }
 

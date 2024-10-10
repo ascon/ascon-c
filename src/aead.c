@@ -30,7 +30,7 @@ forceinline void ascon_initaead(ascon_state_t* s, const ascon_key_t* key,
   s->x[1] = key->x[0];
   s->x[2] = key->x[1];
 #else /* CRYPTO_KEYBYTES == 20 */
-  s->x[0] = key->x[0] ^ ASCON_80PQ_IV;
+  s->x[0] = key->x[0] | ASCON_80PQ_IV;
   s->x[1] = key->x[1];
   s->x[2] = key->x[2];
 #endif

@@ -37,10 +37,10 @@ forceinline uint64_t ROR(uint64_t x, int n) {
   return b.x;
 }
 
-forceinline uint64_t KEYROT(uint64_t a, uint64_t b) {
-  word_t w, lo2hi = {.x = a}, hi2lo = {.x = b};
-  w.w[0] = lo2hi.w[0] << 16 | hi2lo.w[0] >> 16;
-  w.w[1] = lo2hi.w[1] << 16 | hi2lo.w[1] >> 16;
+forceinline uint64_t KEYROT(uint64_t lo2hi, uint64_t hi2lo) {
+  word_t w, a = {.x = lo2hi}, b = {.x = hi2lo};
+  w.w[0] = a.w[0] << 16 | b.w[0] >> 16;
+  w.w[1] = a.w[1] << 16 | b.w[1] >> 16;
   return w.x;
 }
 

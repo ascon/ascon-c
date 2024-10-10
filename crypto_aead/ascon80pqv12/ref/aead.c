@@ -24,7 +24,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
 
   /* initialize */
   ascon_state_t s;
-  s.x[0] = ASCON_80PQ_IV | K0;
+  s.x[0] = K0 | ASCON_80PQ_IV;
   s.x[1] = K1;
   s.x[2] = K2;
   s.x[3] = N0;
