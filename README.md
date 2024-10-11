@@ -23,6 +23,12 @@ If you do not know where to start, use the reference implementations (self-conta
 - `crypto_hash/asconxofv12/ref`
 - `crypto_hash/asconxofav12/ref`
 
+An implementation can be built and run manually using the following commands (more details below):
+
+```
+gcc -march=native -O3 -Icrypto_aead/ascon128v12/ref crypto_aead/ascon128v12/ref/*.c -Itests tests/genkat_aead.c -o genkat && ./genkat
+gcc -march=native -O3 -Icrypto_aead/ascon128v12/ref crypto_aead/ascon128v12/ref/*.c -DCRYPTO_AEAD -Itests tests/getcycles.c -o getcycles && ./getcycles
+```
 
 ## Algorithms
 
@@ -363,7 +369,9 @@ size -t libcrypto_hash_asconhashv12_opt32_lowsize.a
 ```
 
 
-## Manually build and run a single Ascon target:
+# Manual builds
+
+## Build and run native targets:
 
 Build example for AEAD algorithms:
 
@@ -386,8 +394,31 @@ Generate KATs and get CPU cycles:
 ./getcycles
 ```
 
+## Build and run ARMv7-M targets:
 
-## Manually build and run an ARMv6-M target:
+Build example for AEAD algorithms:
+
+```
+arm-linux-gnueabi-gcc -march=armv7 -O2 -Icrypto_aead/ascon128v12/armv7m crypto_aead/ascon128v12/armv7m/*.c -Itests tests/genkat_aead.c -o genkat
+arm-linux-gnueabi-gcc -march=armv7 -O2 -Icrypto_aead/ascon128v12/armv7m crypto_aead/ascon128v12/armv7m/*.c -DCRYPTO_AEAD -Itests tests/getcycles.c -o getcycles
+```
+
+Build example for HASH algorithms:
+
+```
+arm-linux-gnueabi-gcc -march=armv7 -O2 -Icrypto_aead/ascon128v12/armv7m crypto_aead/ascon128v12/armv7m/*.c -Itests tests/genkat_hash.c -o genkat
+arm-linux-gnueabi-gcc -march=armv7 -O2 -Icrypto_aead/ascon128v12/armv7m crypto_aead/ascon128v12/armv7m/*.c -DCRYPTO_HASH -Itests tests/getcycles.c -o getcycles
+```
+
+Generate KATs and get CPU cycles:
+
+```
+qemu-arm -L /usr/arm-linux-gnueabi ./genkat
+qemu-arm -L /usr/arm-linux-gnueabi ./getcycles
+```
+
+
+## Build and run ARMv6-M targets:
 
 
 Setup:
@@ -413,8 +444,7 @@ diff LWC_HASH_KAT_256.txt crypto_hash/asconhashv12/LWC_HASH_KAT_256.txt
 ```
 
 
-## Manually build and run an RV32 target:
-
+## Build and run RV32 targets:
 
 Setup:
 
@@ -439,7 +469,7 @@ diff LWC_HASH_KAT_256.txt crypto_hash/asconhashv12/LWC_HASH_KAT_256.txt
 ```
 
 
-## Manually build and run an AVR target:
+## Build and run AVR targets:
 
 Example to build, run and test an AEAD algorithm using `avr-gcc`, `avr-libc` and `simavr`.
 
