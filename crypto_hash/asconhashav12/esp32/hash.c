@@ -54,7 +54,7 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
   P(&s, PA_START_ROUND);
 
   len = CRYPTO_BYTES;
-  while (len >= RATE) {
+  while (len > RATE) {
     u32_2 tmp0 = ascon_rev8_half(s.x0);
     ((u32*)out)[0] = tmp0.l;
     ((u32*)out)[1] = tmp0.h;
