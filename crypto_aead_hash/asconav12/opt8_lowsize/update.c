@@ -38,9 +38,9 @@ void ascon_update(ascon_state_t* s, uint8_t* c, const uint8_t* m, uint64_t mlen,
     if (mode == 7 && ASCON_AEAD_RATE == 16) DECRYPT(s->b[1], c + 8, m + 8, 8);
 #endif
     if (mode == 1) printstate("absorb adata", s);
-    if (mode == 3) printstate("absorb plaintext", s);
+    if (mode == 3 || mode == 9) printstate("absorb plaintext", s);
     if (mode == 7) printstate("insert ciphertext", s);
-    if (mode == 8) printstate("squeeze output", s);
+    if (mode == 2 || mode == 10) printstate("squeeze output", s);
 #if defined(ASCON_HASH_ROUNDS)
     if (!(mode == 10 && mlen == rate)) P(s, nr);
 #else

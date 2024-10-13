@@ -14,8 +14,17 @@
 #define U64BIG
 #endif
 
+void print(const char* text) { printf("%s", text); }
+
+void printbytes(const char* text, const uint8_t* b, uint64_t len) {
+  uint64_t i;
+  printf(" %s[%" PRIu64 "]\t= {", text, len);
+  for (i = 0; i < len; ++i) printf("0x%02x%s", b[i], i < len - 1 ? ", " : "");
+  printf("}\n");
+}
+
 void printword(const char* text, const uint64_t x) {
-  printf("%s=%016" PRIx64, text, U64BIG(WORDTOU64(x)));
+  printf("%s=0x%016" PRIx64, text, U64BIG(WORDTOU64(x)));
 }
 
 void printstate(const char* text, const ascon_state_t* s) {

@@ -4,6 +4,7 @@
 
 #include "api.h"
 #include "crypto_aead_shared.h"
+#include "printstate.h"
 
 #ifdef SS_VER
 #include "hal.h"
@@ -18,6 +19,11 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
                         const unsigned char* nsec, const unsigned char* npub,
                         const unsigned char* k) {
   (void)nsec;
+  print("encrypt\n");
+  printbytes("k", k, CRYPTO_KEYBYTES);
+  printbytes("n", npub, CRYPTO_NPUBBYTES);
+  printbytes("a", a, alen);
+  printbytes("m", m, mlen);
   /* dynamic allocation of input/output shares */
   mask_key_uint32_t* ks = malloc(sizeof(*ks) * NUM_WORDS(CRYPTO_KEYBYTES));
   mask_npub_uint32_t* ns = malloc(sizeof(*ns) * NUM_WORDS(CRYPTO_NPUBBYTES));
@@ -38,6 +44,9 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   free(as);
   free(ms);
   free(cs);
+  printbytes("c", c, mlen);
+  printbytes("t", c + mlen, CRYPTO_ABYTES);
+  print("\n");
   return 0;
 }
 
@@ -48,6 +57,12 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
                         const unsigned char* k) {
   int result = 0;
   (void)nsec;
+  print("decrypt\n");
+  printbytes("k", k, CRYPTO_KEYBYTES);
+  printbytes("n", npub, CRYPTO_NPUBBYTES);
+  printbytes("a", a, alen);
+  printbytes("c", c, clen - CRYPTO_ABYTES);
+  printbytes("t", c + clen - CRYPTO_ABYTES, CRYPTO_ABYTES);
   if (clen < CRYPTO_ABYTES) return -1;
   /* dynamic allocation of input/output shares */
   mask_key_uint32_t* ks = malloc(sizeof(*ks) * NUM_WORDS(CRYPTO_KEYBYTES));
@@ -69,5 +84,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   free(as);
   free(ms);
   free(cs);
+  printbytes("m", m, *mlen);
+  print("\n");
   return result;
 }

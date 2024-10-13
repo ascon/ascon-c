@@ -11,6 +11,8 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
                const unsigned char* in, unsigned long long inlen,
                const unsigned char* k) {
   if (inlen > 16 || outlen > 16 || outlen > CRYPTO_BYTES) return -1;
+  printbytes("k", k, CRYPTO_KEYBYTES);
+  printbytes("m", in, inlen);
   /* load key */
   const uint64_t K0 = LOAD(k, 8);
   const uint64_t K1 = LOAD(k + 8, 8);
@@ -43,6 +45,8 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   } else if (outlen) {
     STOREBYTES(out, s.x[3], outlen);
   }
+  printbytes("t", out, CRYPTO_BYTES);
+  print("\n");
   return 0;
 }
 

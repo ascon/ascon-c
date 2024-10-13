@@ -18,6 +18,15 @@
 #include "shares.h"
 #include "word.h"
 
+void print(const char* text) { printf("%s", text); }
+
+void printbytes(const char* text, const uint8_t* b, uint64_t len) {
+  uint64_t i;
+  printf(" %s[%" PRIu64 "]\t= {", text, len);
+  for (i = 0; i < len; ++i) printf("0x%02x%s", b[i], i < len - 1 ? ", " : "");
+  printf("}\n");
+}
+
 void printword(const char* text, const word_t x, int ns) {
   uint32_t lo, hi, e = 0, o = 0;
   for (int d = 0; d < ns; ++d) {
@@ -25,7 +34,7 @@ void printword(const char* text, const word_t x, int ns) {
     o ^= ROR32(x.s[d].w[1], ROT(d));
   }
   BI(lo, hi, e, o);
-  printf("%s=%016" PRIx64, text, (uint64_t)hi << 32 | lo);
+  printf("%s=0x%016" PRIx64, text, (uint64_t)hi << 32 | lo);
 #ifdef ASCON_PRINTBI32
   printf(" (%08x_%08x)", o, e);
 #endif

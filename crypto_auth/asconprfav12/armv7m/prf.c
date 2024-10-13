@@ -15,6 +15,8 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   int or = ASCON_PRF_OUT_RATE;
   int nr = ASCON_PRF_ROUNDS;
   int i;
+  printbytes("k", k, CRYPTO_KEYBYTES);
+  printbytes("m", in, inlen);
   /* load key */
   const uint64_t K0 = LOAD(k, 8);
   const uint64_t K1 = LOAD(k + 8, 8);
@@ -68,6 +70,8 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   /* squeeze final output word */
   STOREBYTES(out, s.x[i], outlen);
   printstate("squeeze output", &s);
+  printbytes("t", out, CRYPTO_BYTES);
+  print("\n");
   return 0;
 }
 

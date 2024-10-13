@@ -15,6 +15,13 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   /* set ciphertext size */
   *clen = mlen + CRYPTO_ABYTES;
 
+  /* print input bytes */
+  print("encrypt\n");
+  printbytes("k", k, CRYPTO_KEYBYTES);
+  printbytes("n", npub, CRYPTO_NPUBBYTES);
+  printbytes("a", ad, adlen);
+  printbytes("m", m, mlen);
+
   /* load key and nonce */
   const uint64_t K0 = LOADBYTES(k, 8);
   const uint64_t K1 = LOADBYTES(k + 8, 8);
@@ -28,15 +35,17 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   s.x[2] = K1;
   s.x[3] = N0;
   s.x[4] = N1;
+  printstate("init 1st key xor", &s);
   P12(&s);
   s.x[3] ^= K0;
   s.x[4] ^= K1;
-  printstate("initialization", &s);
+  printstate("init 2nd key xor", &s);
 
   if (adlen) {
     /* full associated data blocks */
     while (adlen >= ASCON_128_RATE) {
       s.x[0] ^= LOADBYTES(ad, 8);
+      printstate("absorb adata", &s);
       P6(&s);
       ad += ASCON_128_RATE;
       adlen -= ASCON_128_RATE;
@@ -44,16 +53,18 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
     /* final associated data block */
     s.x[0] ^= LOADBYTES(ad, adlen);
     s.x[0] ^= PAD(adlen);
+    printstate("pad adata", &s);
     P6(&s);
   }
   /* domain separation */
   s.x[4] ^= DSEP();
-  printstate("process associated data", &s);
+  printstate("domain separation", &s);
 
   /* full plaintext blocks */
   while (mlen >= ASCON_128_RATE) {
     s.x[0] ^= LOADBYTES(m, 8);
     STOREBYTES(c, s.x[0], 8);
+    printstate("absorb plaintext", &s);
     P6(&s);
     m += ASCON_128_RATE;
     c += ASCON_128_RATE;
@@ -63,29 +74,30 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   s.x[0] ^= LOADBYTES(m, mlen);
   STOREBYTES(c, s.x[0], mlen);
   s.x[0] ^= PAD(mlen);
+  m += mlen;
   c += mlen;
-  printstate("process plaintext", &s);
+  printstate("pad plaintext", &s);
 
   /* finalize */
   s.x[1] ^= K0;
   s.x[2] ^= K1;
+  printstate("final 1st key xor", &s);
   P12(&s);
   s.x[3] ^= K0;
   s.x[4] ^= K1;
-  printstate("finalization", &s);
+  printstate("final 2nd key xor", &s);
 
   /* get tag */
   STOREBYTES(c, s.x[3], 8);
   STOREBYTES(c + 8, s.x[4], 8);
 
+  /* print output bytes */
+  printbytes("c", c - *clen + CRYPTO_ABYTES, *clen - CRYPTO_ABYTES);
+  printbytes("t", c, CRYPTO_ABYTES);
+  print("\n");
+
   return 0;
 }
-#include "api.h"
-#include "ascon.h"
-#include "crypto_aead.h"
-#include "permutations.h"
-#include "printstate.h"
-#include "word.h"
 
 int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
                         unsigned char* nsec, const unsigned char* c,
@@ -99,6 +111,14 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   /* set plaintext size */
   *mlen = clen - CRYPTO_ABYTES;
 
+  /* print input bytes */
+  print("decrypt\n");
+  printbytes("k", k, CRYPTO_KEYBYTES);
+  printbytes("n", npub, CRYPTO_NPUBBYTES);
+  printbytes("a", ad, adlen);
+  printbytes("c", c, *mlen);
+  printbytes("t", c + *mlen, CRYPTO_ABYTES);
+
   /* load key and nonce */
   const uint64_t K0 = LOADBYTES(k, 8);
   const uint64_t K1 = LOADBYTES(k + 8, 8);
@@ -112,15 +132,17 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   s.x[2] = K1;
   s.x[3] = N0;
   s.x[4] = N1;
+  printstate("init 1st key xor", &s);
   P12(&s);
   s.x[3] ^= K0;
   s.x[4] ^= K1;
-  printstate("initialization", &s);
+  printstate("init 2nd key xor", &s);
 
   if (adlen) {
     /* full associated data blocks */
     while (adlen >= ASCON_128_RATE) {
       s.x[0] ^= LOADBYTES(ad, 8);
+      printstate("absorb adata", &s);
       P6(&s);
       ad += ASCON_128_RATE;
       adlen -= ASCON_128_RATE;
@@ -128,11 +150,12 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
     /* final associated data block */
     s.x[0] ^= LOADBYTES(ad, adlen);
     s.x[0] ^= PAD(adlen);
+    printstate("pad adata", &s);
     P6(&s);
   }
   /* domain separation */
   s.x[4] ^= DSEP();
-  printstate("process associated data", &s);
+  printstate("domain separation", &s);
 
   /* full ciphertext blocks */
   clen -= CRYPTO_ABYTES;
@@ -140,6 +163,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
     uint64_t c0 = LOADBYTES(c, 8);
     STOREBYTES(m, s.x[0] ^ c0, 8);
     s.x[0] = c0;
+    printstate("insert ciphertext", &s);
     P6(&s);
     m += ASCON_128_RATE;
     c += ASCON_128_RATE;
@@ -151,16 +175,18 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   s.x[0] = CLEARBYTES(s.x[0], clen);
   s.x[0] |= c0;
   s.x[0] ^= PAD(clen);
+  m += clen;
   c += clen;
-  printstate("process ciphertext", &s);
+  printstate("pad ciphertext", &s);
 
   /* finalize */
   s.x[1] ^= K0;
   s.x[2] ^= K1;
+  printstate("final 1st key xor", &s);
   P12(&s);
   s.x[3] ^= K0;
   s.x[4] ^= K1;
-  printstate("finalization", &s);
+  printstate("final 2nd key xor", &s);
 
   /* get tag */
   uint8_t t[16];
@@ -172,6 +198,10 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   int result = 0;
   for (i = 0; i < CRYPTO_ABYTES; ++i) result |= c[i] ^ t[i];
   result = (((result - 1) >> 8) & 1) - 1;
+
+  /* print output bytes */
+  printbytes("m", m - *mlen, *mlen);
+  print("\n");
 
   return result;
 }

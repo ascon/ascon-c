@@ -230,8 +230,20 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
                         const unsigned char* nsec, const unsigned char* npub,
                         const unsigned char* k) {
   (void)nsec;
+  /* set ciphertext size */
   *clen = mlen + CRYPTO_ABYTES;
-  return ascon_aead_encrypt(c + mlen, c, m, mlen, ad, adlen, npub, k);
+  uint8_t* t = (uint8_t*)c + mlen;
+  print("encrypt\n");
+  printbytes("k", k, CRYPTO_KEYBYTES);
+  printbytes("n", npub, CRYPTO_NPUBBYTES);
+  printbytes("a", ad, adlen);
+  printbytes("m", m, mlen);
+  /* ascon encryption */
+  int result = ascon_aead_encrypt(t, c, m, mlen, ad, adlen, npub, k);
+  printbytes("c", c, mlen);
+  printbytes("t", t, CRYPTO_ABYTES);
+  print("\n");
+  return result;
 }
 
 int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
@@ -241,8 +253,20 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
                         const unsigned char* k) {
   (void)nsec;
   if (clen < CRYPTO_ABYTES) return -1;
-  *mlen = clen = clen - CRYPTO_ABYTES;
-  return ascon_aead_decrypt(m, c + clen, c, clen, ad, adlen, npub, k);
+  /* set plaintext size */
+  *mlen = clen - CRYPTO_ABYTES;
+  uint8_t* t = (uint8_t*)c + *mlen;
+  print("decrypt\n");
+  printbytes("k", k, CRYPTO_KEYBYTES);
+  printbytes("n", npub, CRYPTO_NPUBBYTES);
+  printbytes("a", ad, adlen);
+  printbytes("c", c, *mlen);
+  printbytes("t", t, CRYPTO_ABYTES);
+  /* ascon decryption */
+  int result = ascon_aead_decrypt(m, t, c, *mlen, ad, adlen, npub, k);
+  printbytes("m", m, *mlen);
+  print("\n");
+  return result;
 }
 
 #endif

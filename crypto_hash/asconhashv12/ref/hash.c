@@ -7,6 +7,7 @@
 
 int crypto_hash(unsigned char* out, const unsigned char* in,
                 unsigned long long len) {
+  printbytes("m", in, len);
   /* initialize */
   ascon_state_t s;
   s.x[0] = ASCON_HASH_IV;
@@ -44,6 +45,7 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
   /* squeeze final output block */
   STOREBYTES(out, s.x[0], len);
   printstate("squeeze output", &s);
+  printbytes("h", out + len - CRYPTO_BYTES, CRYPTO_BYTES);
 
   return 0;
 }

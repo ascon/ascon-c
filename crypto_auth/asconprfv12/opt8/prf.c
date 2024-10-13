@@ -15,6 +15,8 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   int or = ASCON_PRF_OUT_RATE;
   int nr = ASCON_PRF_ROUNDS;
   int i;
+  printbytes("k", k, CRYPTO_KEYBYTES);
+  printbytes("m", in, inlen);
   /* initialize */
   ascon_state_t s;
   if (ASCON_PRF_BYTES == 0 && ASCON_PRF_ROUNDS == 12) s.x[0] = ASCON_PRF_IV;
@@ -65,6 +67,8 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   /* squeeze final output word */
   SQUEEZE(out, s.b[i], outlen);
   printstate("squeeze output", &s);
+  printbytes("t", out, CRYPTO_BYTES);
+  print("\n");
   return 0;
 }
 

@@ -68,9 +68,11 @@ forceinline void ascon_squeeze(ascon_state_t* s, uint8_t* out,
 int ascon_xof(uint8_t* out, uint64_t outlen, const uint8_t* in,
               uint64_t inlen) {
   ascon_state_t s;
+  printbytes("m", in, inlen);
   ascon_inithash(&s);
   ascon_absorb(&s, in, inlen);
   ascon_squeeze(&s, out, outlen);
+  printbytes("h", out, outlen);
   return 0;
 }
 

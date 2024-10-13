@@ -154,6 +154,7 @@ void ascon_xortag(ascon_state_t* s, const mask_c_uint32_t* t) {
   s->x[3] = MXOR(s->x[3], t0, NUM_SHARES_C);
   word_t t1 = MLOAD((uint32_t*)(t + 2), NUM_SHARES_C);
   s->x[4] = MXOR(s->x[4], t1, NUM_SHARES_C);
+#ifndef ASCON_PRINT_STATE
   /* compute P(0) if tags are equal */
   P(s, ASCON_PB_ROUNDS, NUM_SHARES_KEY);
   /* xor expected result to x3, x4 */
@@ -161,6 +162,7 @@ void ascon_xortag(ascon_state_t* s, const mask_c_uint32_t* t) {
   s->x[3].s[0].w[1] ^= c[1];
   s->x[4].s[0].w[0] ^= c[2];
   s->x[4].s[0].w[1] ^= c[3];
+#endif
 }
 
 int ascon_iszero(ascon_state_t* s) {

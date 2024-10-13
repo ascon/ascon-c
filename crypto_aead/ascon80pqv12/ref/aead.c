@@ -15,6 +15,13 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   /* set ciphertext size */
   *clen = mlen + CRYPTO_ABYTES;
 
+  /* print input bytes */
+  print("encrypt\n");
+  printbytes("k", k, CRYPTO_KEYBYTES);
+  printbytes("n", npub, CRYPTO_NPUBBYTES);
+  printbytes("a", ad, adlen);
+  printbytes("m", m, mlen);
+
   /* load key and nonce */
   const uint64_t K0 = LOADBYTES(k + 0, 4) >> 32;
   const uint64_t K1 = LOADBYTES(k + 4, 8);
@@ -69,6 +76,7 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   s.x[0] ^= LOADBYTES(m, mlen);
   STOREBYTES(c, s.x[0], mlen);
   s.x[0] ^= PAD(mlen);
+  m += mlen;
   c += mlen;
   printstate("pad plaintext", &s);
 
@@ -86,6 +94,11 @@ int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
   STOREBYTES(c, s.x[3], 8);
   STOREBYTES(c + 8, s.x[4], 8);
 
+  /* print output bytes */
+  printbytes("c", c - *clen + CRYPTO_ABYTES, *clen - CRYPTO_ABYTES);
+  printbytes("t", c, CRYPTO_ABYTES);
+  print("\n");
+
   return 0;
 }
 
@@ -100,6 +113,14 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
 
   /* set plaintext size */
   *mlen = clen - CRYPTO_ABYTES;
+
+  /* print input bytes */
+  print("decrypt\n");
+  printbytes("k", k, CRYPTO_KEYBYTES);
+  printbytes("n", npub, CRYPTO_NPUBBYTES);
+  printbytes("a", ad, adlen);
+  printbytes("c", c, *mlen);
+  printbytes("t", c + *mlen, CRYPTO_ABYTES);
 
   /* load key and nonce */
   const uint64_t K0 = LOADBYTES(k + 0, 4) >> 32;
@@ -159,6 +180,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   s.x[0] = CLEARBYTES(s.x[0], clen);
   s.x[0] |= c0;
   s.x[0] ^= PAD(clen);
+  m += clen;
   c += clen;
   printstate("pad ciphertext", &s);
 
@@ -182,6 +204,10 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   int result = 0;
   for (i = 0; i < CRYPTO_ABYTES; ++i) result |= c[i] ^ t[i];
   result = (((result - 1) >> 8) & 1) - 1;
+
+  /* print output bytes */
+  printbytes("m", m - *mlen, *mlen);
+  print("\n");
 
   return result;
 }

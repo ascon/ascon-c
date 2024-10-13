@@ -13,6 +13,8 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   const uint64_t K0 = LOADBYTES(k, 8);
   const uint64_t K1 = LOADBYTES(k + 8, 8);
   int i;
+  printbytes("k", k, CRYPTO_KEYBYTES);
+  printbytes("m", in, inlen);
   /* initialize */
   ascon_state_t s;
   s.x[0] = ASCON_MAC_IV;
@@ -57,6 +59,8 @@ int crypto_prf(unsigned char* out, unsigned long long outlen,
   /* squeeze final output word */
   STOREBYTES(out, ((uint64_t*)(&s.x[0]))[i], outlen);
   printstate("squeeze output", &s);
+  printbytes("t", out, CRYPTO_BYTES);
+  print("\n");
   return 0;
 }
 

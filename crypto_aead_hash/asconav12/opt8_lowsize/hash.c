@@ -29,11 +29,13 @@ forceinline void ascon_inithash(ascon_state_t* s) {
 int ascon_xof(uint8_t* out, uint64_t outlen, const uint8_t* in,
               uint64_t inlen) {
   ascon_state_t s;
+  printbytes("m", in, inlen);
   ascon_inithash(&s);
   ascon_update(&s, (void*)0, in, inlen, ASCON_HASH | ASCON_ABSORB);
   printstate("pad plaintext", &s);
   P(&s, 12);
   ascon_update(&s, out, (void*)0, outlen, ASCON_HASH | ASCON_SQUEEZE);
+  printbytes("h", out, outlen);
   return 0;
 }
 
