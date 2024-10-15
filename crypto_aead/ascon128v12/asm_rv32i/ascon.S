@@ -57,13 +57,14 @@
 ##  80 +-----------+-----------+-----------+------------+-----------+
 
 ## ASCON128
+#define VARIANT 1
 #define RATE 8
 #define PA_ROUNDS 12
 #define PA_START_ROUND 0xf0
 #define PB_ROUNDS 6
 #define PB_START_ROUND 0x96
-#define IVh (((8 * CRYPTO_KEYBYTES) << 24) | ((8 * RATE) << 16) | (PA_ROUNDS << 8) | (PB_ROUNDS << 0))
-#define IVl 0
+#define IVl ((CRYPTO_ABYTES * 8) << 24 | PB_ROUNDS << 20 | PA_ROUNDS << 16 | VARIANT)
+#define IVh (RATE << 8)
 
 #define S_key 16
 #define S_optr 20
@@ -140,36 +141,6 @@ ascon_permute:
 .LPend:
     jalr zero, 0(t0)
 
-.macro rev8 d, x, t0, t1
-    slli \t0, \x, 24
-    srli \d, \x, 8
-    or \d, \d, \t0
-    srli \t0, \d, 16
-    xor \t0, \t0, \d
-    andi \t0, \t0, 0xff
-    slli \t1, \t0, 16
-    xor \t0, \t0, \t1
-    xor \d, \d, \t0
-.endm
-
-.align 4
-.globl ascon_rev8
-.type ascon_rev8,@function
-ascon_rev8:
-    # ascon bytereverse one block
-    # arguments and results in t3, t4, t5, t6
-    # temporaries in t1, t2
-    # link register in t0
-    rev8 t1h, t1h, t1, t2
-    rev8 t1l, t1l, t1, t2
-.align 4
-.globl ascon_rev8_half
-.type ascon_rev8_half,@function
-ascon_rev8_half:
-    rev8 t0h, t0h, t1, t2
-    rev8 t0l, t0l, t1, t2
-    jalr zero, 0(t0)
-
 .align 4
 .globl ascon_memcpy
 .type ascon_memcpy,@function
@@ -200,21 +171,15 @@ ascon_duplex:
     j .LDcond
 
 .LDloop:
-    lw t0h, 0(iptr)
-    lw t0l, 4(iptr)
-    jal t0, ascon_rev8_half
+    lw t0l, 0(iptr)
+    lw t0h, 4(iptr)
     xor x0h, x0h, t0h
     xor x0l, x0l, t0l
 
 .LDsqueeze:
     beq mode, zero, .LDreset
-
-    # ascon_rev8
-    # inlined here to preserve registers
-    rev8 t0, x0h, t1, t2
-    sw t0, 0(optr)
-    rev8 t0, x0l, t1, t2
-    sw t0, 4(optr)
+    sw x0l, 0(optr)
+    sw x0h, 4(optr)
 
 .LDreset:
     bge mode, zero, .LDpermute
@@ -243,12 +208,11 @@ ascon_duplex:
 
     add t1, sp, ilen
     lbu t0, 0(t1)
-    xori t0, t0, 0x80
+    xori t0, t0, 1
     sb t0, 0(t1)
 
-    lw t0h, 0(sp)
-    lw t0l, 4(sp)
-    jal t0, ascon_rev8_half
+    lw t0l, 0(sp)
+    lw t0h, 4(sp)
     xor x0h, x0h, t0h
     xor x0l, x0l, t0l
 
@@ -257,9 +221,8 @@ ascon_duplex:
 
     mv t0h, x0h
     mv t0l, x0l
-    jal t0, ascon_rev8_half
-    sw t0h, 0(sp)
-    sw t0l, 4(sp)
+    sw t0l, 0(sp)
+    sw t0h, 4(sp)
 
     mv t1, optr
     mv t2, sp
@@ -272,9 +235,8 @@ ascon_duplex:
     mv t2, iptr
     jal t0, ascon_memcpy
 
-    lw t0h, 0(sp)
-    lw t0l, 4(sp)
-    jal t0, ascon_rev8_half
+    lw t0l, 0(sp)
+    lw t0h, 4(sp)
     mv x0h, t0h
     mv x0l, t0l
 
@@ -353,21 +315,19 @@ ascon_core:
     slli a7, a7, 24
     srai a7, a7, 24
 
-    lw t0h, 0(a5)
-    lw t0l, 4(a5)
-    lw t1h, 8(a5)
-    lw t1l, 12(a5)
-    jal t0, ascon_rev8
+    lw t0l, 0(a5)
+    lw t0h, 4(a5)
+    lw t1l, 8(a5)
+    lw t1h, 12(a5)
     mv x3h, t0h
     mv x3l, t0l
     mv x4h, t1h
     mv x4l, t1l
 
-    lw t0h, 0(a6)
-    lw t0l, 4(a6)
-    lw t1h, 8(a6)
-    lw t1l, 12(a6)
-    jal t0, ascon_rev8
+    lw t0l, 0(a6)
+    lw t0h, 4(a6)
+    lw t1l, 8(a6)
+    lw t1h, 12(a6)
     mv k0h, t0h
     mv k0l, t0l
     mv k1h, t1h
@@ -401,7 +361,8 @@ ascon_core:
     jal t0, ascon_permute
 
 .LCskipad:
-    xori x4l, x4l, 1
+    li t0, 0x80000000
+    xor x4h, x4h, t0
 
     mv iptr, a1
     mv ilen, a2
@@ -422,8 +383,7 @@ ascon_core:
 
     bge mode, zero, .LCencrypt
 .LCdecrypt:
-    lw_unaligned_4x t0h, t0l, t1h, t1l, iptr, t0, t1, t2, k0h
-    jal t0, ascon_rev8
+    lw_unaligned_4x t0l, t0h, t1l, t1h, iptr, t0, t1, t2, k0h
 
     xor t0, x3h, t0h
     xor t1, x3l, t0l
@@ -442,11 +402,10 @@ ascon_core:
     mv t0l, x3l
     mv t1h, x4h
     mv t1l, x4l
-    jal t0, ascon_rev8
-    sw_unaligned t0h, 0, optr
-    sw_unaligned t0l, 4, optr
-    sw_unaligned t1h, 8, optr
-    sw_unaligned t1l, 12, optr
+    sw_unaligned t0l, 0, optr
+    sw_unaligned t0h, 4, optr
+    sw_unaligned t1l, 8, optr
+    sw_unaligned t1h, 12, optr
 
 .LCzeroreturn:
     li a0, 0
