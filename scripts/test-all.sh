@@ -99,7 +99,7 @@ echo "Test rv32 $OPT builds:" | tee -a ../test-all.log | grep Test >&3
 rm -f CMakeCache.txt
 cmake .. -DCMAKE_C_COMPILER=riscv64-unknown-elf-gcc -DCMAKE_C_COMPILER_FORCED=ON -DALG_LIST="" -DIMPL_LIST=""
 cmake .. -DCMAKE_BUILD_TYPE=$TYPE -UALG_LIST \
-         -DEMULATOR="qemu-system-riscv32;-semihosting;-nographic;-cpu;rv32;-bios;none;-kernel" \
+         -DEMULATOR="qemu-system-riscv32;-semihosting;-nographic;-machine;virt;-cpu;rv32;-bios;none;-kernel" \
          -DREL_FLAGS="$OPT;-fomit-frame-pointer;--specs=picolibc.specs;--oslib=semihost;-T../tests/rv32.ld;-march=rv32i;-mabi=ilp32" \
          -DDBG_FLAGS="$OPT;-std=c99;-Wall;-Wextra;-Wshadow;--specs=picolibc.specs;--oslib=semihost;-T../tests/rv32.ld;-march=rv32i;-mabi=ilp32" \
          -DIMPL_LIST="asm_rv32i;ref"

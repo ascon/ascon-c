@@ -327,7 +327,7 @@ Compile and test for RV32 on bare metal using `picolibc` and `qemu-system-riscv3
 mkdir build && cd build
 cmake .. -DCMAKE_C_COMPILER="riscv64-unknown-elf-gcc" -DCMAKE_C_COMPILER_FORCED=ON \
          -DREL_FLAGS="-O2;-march=rv32i;-mabi=ilp32;--specs=picolibc.specs;--oslib=semihost;-T../tests/rv32.ld" \
-         -DEMULATOR="qemu-system-riscv32;-semihosting;-nographic;-cpu;rv32;-bios;none;-kernel" \
+         -DEMULATOR="qemu-system-riscv32;-semihosting;-nographic;-machine;virt;-cpu;rv32;-bios;none;-kernel" \
          -DALG_LIST="ascon128;ascon128a" -DIMPL_LIST="asm_rv32i"
 cmake --build .
 ctest
@@ -427,14 +427,14 @@ Example to build, run and test an AEAD/HASH algorithm using `gcc`, `picolibc` an
 ```
 riscv64-unknown-elf-gcc -O2 -march=rv32i -mabi=ilp32 --specs=picolibc.specs --oslib=semihost -Ttests/rv32.ld \
     -Icrypto_aead/ascon128v12/asm_rv32i crypto_aead/ascon128v12/asm_rv32i/*.[cS] -Itests tests/genkat_aead.c -o genkat
-qemu-system-riscv32 -semihosting -nographic -cpu rv32 -bios none -kernel genkat
+qemu-system-riscv32 -semihosting -nographic -machine virt -cpu rv32 -bios none -kernel genkat
 diff LWC_AEAD_KAT_128_128.txt crypto_aead/ascon128v12/LWC_AEAD_KAT_128_128.txt
 ```
 
 ```
 riscv64-unknown-elf-gcc -O2 -march=rv32i -mabi=ilp32 --specs=picolibc.specs --oslib=semihost -Ttests/rv32.ld \
     -Icrypto_hash/asconhashv12/opt32 crypto_hash/asconhashv12/opt32/*.[cS] -Itests tests/genkat_hash.c -o genkat
-qemu-system-riscv32 -semihosting -nographic -cpu rv32 -bios none -kernel genkat
+qemu-system-riscv32 -semihosting -nographic -machine virt -cpu rv32 -bios none -kernel genkat
 diff LWC_HASH_KAT_256.txt crypto_hash/asconhashv12/LWC_HASH_KAT_256.txt
 ```
 
