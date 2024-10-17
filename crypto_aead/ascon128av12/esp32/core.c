@@ -148,10 +148,10 @@ void ascon_core(ascon_state_t* s, unsigned char* out, const unsigned char* in,
   // initialization
 #if CRYPTO_KEYBYTES == 20
 #if (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
-  s->w[0].h = ASCON_80PQ_IV >> 32;
+  s->w[0].h = (uint32_t)ASCON_80PQ_IV;
   s->w[0].l = K0.l;
 #else
-  s->w[0].l = ASCON_80PQ_IV >> 32;
+  s->w[0].l = (uint32_t)ASCON_80PQ_IV;
   s->w[0].h = K0.h;
 #endif
   s->w[1].h = K1.h;

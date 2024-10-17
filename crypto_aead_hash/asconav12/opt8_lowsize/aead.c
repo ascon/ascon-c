@@ -29,7 +29,7 @@ forceinline void ascon_initaead(ascon_state_t* s, const ascon_key_t* key,
   if (ASCON_AEAD_RATE == 16) s->x[0] = ASCON_128A_IV;
   memcpy(s->b[1], key->b[0], 16);
 #else /* CRYPTO_KEYBYTES == 20 */
-  s->x[0] = key->x[0] | KEYROT(ASCON_80PQ_IV, 0);
+  s->x[0] = key->x[0] | ASCON_80PQ_IV;
   memcpy(s->b[1], key->b[1], 16);
 #endif
   INSERT(s->b[3], npub, 8);
