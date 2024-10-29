@@ -16,7 +16,6 @@
         "vldm %[s], {d0-d4} \n\t" \
         ".LAD0: \n\t" \
         "vldm %[ad]!, {" RA "} \n\t" \
-        "vrev64.8 " RA ", " RA " \n\t" \
         "veor " RS ", " RS ", " RA " \n\t" \
         "vmvn d2, d2 \n\t" \
         P ## NR ## ROUNDS(s) \
@@ -50,10 +49,8 @@
         "vldm %[s], {d0-d4} \n\t" \
         ".LPT0: \n\t" \
         "vldm %[m]!, {" RM "} \n\t" \
-        "vrev64.8 " RM ", " RM " \n\t" \
         "veor " RS ", " RS ", " RM " \n\t" \
-        "vrev64.8 " RC ", " RS " \n\t" \
-        "vstm %[c]!, {" RC "} \n\t" \
+        "vstm %[c]!, {" RS "} \n\t" \
         "vmvn d2, d2 \n\t" \
         P ## NR ## ROUNDS(s) \
         "vmvn d2, d2 \n\t" \
@@ -86,10 +83,9 @@
         "vldm %[s], {d0-d4} \n\t" \
         ".LCT0: \n\t" \
         "vldm %[c]!, {" RC "} \n\t" \
-        "vrev64.8 " RM ", " RS " \n\t" \
-        "veor " RM ", " RM ", " RC " \n\t" \
-        "vrev64.8 " RS ", " RC " \n\t" \
+        "veor " RM ", " RS ", " RC " \n\t" \
         "vstm %[m]!, {" RM "} \n\t" \
+        "vmov " RS ", " RC " \n\t" \
         "vmvn d2, d2 \n\t" \
         P ## NR ## ROUNDS(s) \
         "vmvn d2, d2 \n\t" \
@@ -136,7 +132,7 @@ forceinline void ascon_initaead(ascon_state_t* s, const ascon_key_t* key,
   s->x[1] = key->x[0];
   s->x[2] = key->x[1];
 #else /* CRYPTO_KEYBYTES == 20 */
-  s->x[0] = key->x[0] | ASCON_80PQ_IV;
+  s->x[0] = key->x[0] | KEYROT(ASCON_80PQ_IV, 0);
   s->x[1] = key->x[1];
   s->x[2] = key->x[2];
 #endif

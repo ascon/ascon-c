@@ -45,7 +45,7 @@ forceinline void ascon_absorb(ascon_state_t* s, const uint8_t* in,
   }
   /* absorb final plaintext block */
   ABSORB(s->b[0], in, inlen);
-  s->b[0][7 - inlen] ^= PAD();
+  s->b[0][inlen] ^= PAD();
   printstate("pad plaintext", s);
 }
 

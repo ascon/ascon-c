@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "bendian.h"
 #include "forceinline.h"
+#include "lendian.h"
 
 typedef union {
   uint64_t x;
@@ -13,8 +13,8 @@ typedef union {
   uint8_t b[8];
 } word_t;
 
-#define U64TOWORD(x) U64BIG(x)
-#define WORDTOU64(x) U64BIG(x)
+#define U64TOWORD(x) U64LE(x)
+#define WORDTOU64(x) U64LE(x)
 #define LOAD(b, n) LOADBYTES(b, n)
 #define STORE(b, w, n) STOREBYTES(b, w, n)
 
@@ -49,7 +49,7 @@ forceinline uint8_t AND8(uint8_t a, uint8_t b) { return a & b; }
 
 forceinline uint8_t OR8(uint8_t a, uint8_t b) { return a | b; }
 
-forceinline uint64_t KEYROT(uint64_t lo2hi, uint64_t hi2lo) {
+forceinline uint64_t KEYROT(uint64_t hi2lo, uint64_t lo2hi) {
   return lo2hi << 32 | hi2lo >> 32;
 }
 
@@ -61,21 +61,21 @@ forceinline int NOTZERO(uint64_t a, uint64_t b) {
   return ((((int)(result & 0xff) - 1) >> 8) & 1) - 1;
 }
 
-forceinline uint64_t PAD() { return 0x80; }
+forceinline uint64_t PAD() { return 0x01; }
 
-forceinline uint64_t DSEP() { return 0x01; }
+forceinline uint64_t DSEP() { return 0x80; }
 
 forceinline uint64_t PRFS_MLEN(uint64_t len) { return len << 51; }
 
 forceinline uint64_t CLEAR(uint64_t w, int n) {
   /* undefined for n == 0 */
-  uint64_t mask = ~0ull >> (8 * n);
+  uint64_t mask = ~0ull << (8 * n);
   return w & mask;
 }
 
 forceinline uint64_t MASK(int n) {
   /* undefined for n == 0 */
-  return ~0ull >> (64 - 8 * n);
+  return ~0ull << (64 - 8 * n);
 }
 
 forceinline uint64_t LOADBYTES(const uint8_t* bytes, int n) {
@@ -97,52 +97,46 @@ forceinline void memxor(uint8_t* dst, const uint8_t* src, int n) {
 }
 
 forceinline void INSERT(uint8_t* s, const uint8_t* d, int n) {
-  s += 7;
   while (n > 0) {
-    *s-- = *d++;
+    *s++ = *d++;
     --n;
   }
 }
 
 forceinline void SQUEEZE(uint8_t* d, const uint8_t* s, int n) {
-  s += 7;
   while (n > 0) {
-    *d++ = *s--;
+    *d++ = *s++;
     --n;
   }
 }
 
 forceinline void ABSORB(uint8_t* s, const uint8_t* d, int n) {
-  s += 7;
   while (n > 0) {
-    *s-- ^= *d++;
+    *s++ ^= *d++;
     --n;
   }
 }
 
 forceinline void ENCRYPT(uint8_t* s, uint8_t* c, const uint8_t* m, int n) {
-  s += 7;
   while (n > 0) {
-    *c++ = (*s-- ^= *m++);
+    *c++ = (*s++ ^= *m++);
     --n;
   }
 }
 
 forceinline void DECRYPT(uint8_t* s, uint8_t* m, const uint8_t* c, int n) {
-  s += 7;
   while (n > 0) {
     uint8_t t = *c++;
     *m++ = *s ^ t;
-    *s-- = t;
+    *s++ = t;
     --n;
   }
 }
 
 forceinline uint8_t VERIFY(const uint8_t* s, const uint8_t* d, int n) {
   uint8_t r = 0;
-  s += 7;
   while (n > 0) {
-    r |= *s-- ^ *d++;
+    r |= *s++ ^ *d++;
     --n;
   }
   return r;

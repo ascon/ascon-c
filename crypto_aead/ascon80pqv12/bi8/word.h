@@ -4,9 +4,9 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "bendian.h"
 #include "forceinline.h"
 #include "interleave.h"
+#include "lendian.h"
 
 typedef union {
   uint64_t x;
@@ -14,8 +14,8 @@ typedef union {
   uint8_t b[8];
 } word_t;
 
-#define U64TOWORD(x) interleave8(U64BIG(x))
-#define WORDTOU64(x) U64BIG(interleave8(x))
+#define U64TOWORD(x) interleave8(U64LE(x))
+#define WORDTOU64(x) U64LE(interleave8(x))
 #define LOAD(b, n) LOADBYTES(b, n)
 #define STORE(b, w, n) STOREBYTES(b, w, n)
 
@@ -34,7 +34,7 @@ forceinline uint64_t ROR(uint64_t x, int n) {
   return b.x;
 }
 
-forceinline uint64_t KEYROT(uint64_t lo2hi, uint64_t hi2lo) {
+forceinline uint64_t KEYROT(uint64_t hi2lo, uint64_t lo2hi) {
   word_t w, a = {.x = lo2hi}, b = {.x = hi2lo};
   w.b[0] = a.b[0] << 4 | b.b[0] >> 4;
   w.b[1] = a.b[1] << 4 | b.b[1] >> 4;
@@ -55,9 +55,9 @@ forceinline int NOTZERO(uint64_t a, uint64_t b) {
   return ((((int)(result & 0xff) - 1) >> 8) & 1) - 1;
 }
 
-forceinline uint64_t PAD(int i) { return (uint64_t)(0x80 >> i) << 56; }
+forceinline uint64_t PAD(int i) { return (uint8_t)0x01 << i; }
 
-forceinline uint64_t DSEP() { return 0x01; }
+forceinline uint64_t DSEP() { return 0x80ull << 56; }
 
 forceinline uint64_t PRFS_MLEN(uint64_t len) {
   return ((len & 0x01) << 30) | /* 0000x */
@@ -69,7 +69,7 @@ forceinline uint64_t PRFS_MLEN(uint64_t len) {
 
 forceinline uint64_t CLEAR(uint64_t w, int n) {
   /* undefined for n == 0 */
-  uint8_t m = 0xff >> n;
+  uint8_t m = 0xff << n;
   word_t mask = {
       .b[0] = m,
       .b[1] = m,
@@ -85,7 +85,7 @@ forceinline uint64_t CLEAR(uint64_t w, int n) {
 
 forceinline uint64_t MASK(int n) {
   /* undefined for n == 0 */
-  return ~0ull >> (64 - 8 * n);
+  return ~0ull << (64 - 8 * n);
 }
 
 forceinline uint64_t LOADBYTES(const uint8_t* bytes, int n) {

@@ -29,7 +29,7 @@ forceinline void ascon_initaead(ascon_state_t* s, const ascon_key_t* key,
   if (ASCON_AEAD_RATE == 16) s->x[0] = ASCON_128A_IV;
   memcpy(s->b[1], key->b[0], 16);
 #else /* CRYPTO_KEYBYTES == 20 */
-  s->x[0] = key->x[0] | ASCON_80PQ_IV;
+  s->x[0] = key->x[0] | KEYROT(ASCON_80PQ_IV, 0);
   memcpy(s->b[1], key->b[1], 16);
 #endif
   INSERT(s->b[3], npub, 8);
@@ -87,7 +87,7 @@ int ascon_aead_encrypt(uint8_t* t, uint8_t* c, const uint8_t* m, uint64_t mlen,
     ascon_update(&s, (void*)0, ad, adlen, ASCON_ABSORB);
     P(&s, nr);
   }
-  s.b[4][0] ^= DSEP();
+  s.b[4][7] ^= DSEP();
   printstate("domain separation", &s);
   ascon_update(&s, c, m, mlen, ASCON_ENCRYPT);
   ascon_final(&s, &key);
@@ -107,7 +107,7 @@ int ascon_aead_decrypt(uint8_t* m, const uint8_t* t, const uint8_t* c,
     ascon_update(&s, (void*)0, ad, adlen, ASCON_ABSORB);
     P(&s, nr);
   }
-  s.b[4][0] ^= DSEP();
+  s.b[4][7] ^= DSEP();
   printstate("domain separation", &s);
   ascon_update(&s, m, c, clen, ASCON_DECRYPT);
   ascon_final(&s, &key);

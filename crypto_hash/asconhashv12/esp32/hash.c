@@ -1,8 +1,8 @@
 #include <string.h>
 
 #include "api.h"
-#include "bendian.h"
 #include "constants.h"
+#include "lendian.h"
 #include "permutations.h"
 #include "printstate.h"
 
@@ -42,7 +42,7 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
   while (len >= ASCON_HASH_RATE) {
     tmp.l = ((uint32_t*)in)[0];
     tmp.h = ((uint32_t*)in)[1];
-    tmp.x = U64BIG(tmp.x);
+    tmp.x = U64LE(tmp.x);
     s.w[0].h ^= tmp.h;
     s.w[0].l ^= tmp.l;
     printstate("absorb plaintext", &s);
@@ -56,9 +56,9 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
   uint8_t* bytes = (uint8_t*)&tmp;
   memset(bytes, 0, sizeof tmp);
   memcpy(bytes, in, len);
-  bytes[len] ^= 0x80;
+  bytes[len] ^= 0x01;
 
-  tmp.x = U64BIG(tmp.x);
+  tmp.x = U64LE(tmp.x);
   s.w[0].h ^= tmp.h;
   s.w[0].l ^= tmp.l;
   printstate("pad plaintext", &s);
@@ -68,7 +68,7 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
   len = CRYPTO_BYTES;
   while (len > ASCON_HASH_RATE) {
     uint32x2_t tmp0 = s.w[0];
-    tmp0.x = U64BIG(tmp0.x);
+    tmp0.x = U64LE(tmp0.x);
     ((uint32_t*)out)[0] = tmp0.l;
     ((uint32_t*)out)[1] = tmp0.h;
     printstate("squeeze output", &s);
@@ -80,7 +80,7 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
   }
 
   tmp = s.w[0];
-  tmp.x = U64BIG(tmp.x);
+  tmp.x = U64LE(tmp.x);
   memcpy(out, bytes, len);
   printstate("squeeze output", &s);
   printbytes("h", out + len - CRYPTO_BYTES, CRYPTO_BYTES);

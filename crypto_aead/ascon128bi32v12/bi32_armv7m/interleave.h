@@ -3,9 +3,9 @@
 
 #include <stdint.h>
 
-#include "bendian.h"
 #include "config.h"
 #include "forceinline.h"
+#include "lendian.h"
 
 #if ASCON_INLINE_BI
 
@@ -41,7 +41,7 @@ forceinline uint32_t interleave16(uint32_t x) {
 
 /* credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002 */
 forceinline uint64_t deinterleave32(uint64_t in) {
-  in = U64BIG(in);
+  in = U64LE(in);
   uint32_t hi = in >> 32;
   uint32_t lo = in;
   uint32_t t0, t1, e, o;
@@ -61,7 +61,7 @@ forceinline uint64_t interleave32(uint64_t in) {
   t1 = (o & 0xFFFF0000) | (e >> 16);
   lo = interleave16(t0);
   hi = interleave16(t1);
-  return U64BIG((uint64_t)hi << 32 | lo);
+  return U64LE((uint64_t)hi << 32 | lo);
 }
 
 #endif /* INTERLEAVE_H_ */

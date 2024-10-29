@@ -4,14 +4,14 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "bendian.h"
 #include "config.h"
 #include "forceinline.h"
 #include "interleave.h"
+#include "lendian.h"
 
 #if ASCON_EXTERN_BI
-#define U64TOWORD(x) U64BIG(x)
-#define WORDTOU64(x) U64BIG(x)
+#define U64TOWORD(x) U64LE(x)
+#define WORDTOU64(x) U64LE(x)
 #else
 #define U64TOWORD(x) TOBI(x)
 #define WORDTOU64(x) FROMBI(x)
@@ -37,7 +37,7 @@ forceinline uint64_t ROR(uint64_t x, int n) {
   return b.x;
 }
 
-forceinline uint64_t KEYROT(uint64_t lo2hi, uint64_t hi2lo) {
+forceinline uint64_t KEYROT(uint64_t hi2lo, uint64_t lo2hi) {
   word_t w, a = {.x = lo2hi}, b = {.x = hi2lo};
   w.w[0] = a.w[0] << 16 | b.w[0] >> 16;
   w.w[1] = a.w[1] << 16 | b.w[1] >> 16;
@@ -54,25 +54,23 @@ forceinline int NOTZERO(uint64_t a, uint64_t b) {
 
 #if ASCON_EXTERN_BI
 
-forceinline uint64_t PAD(int i) { return 0x80ull << (56 - 8 * i); }
+forceinline uint64_t PAD(int i) { return 0x01ull << (8 * i); }
 
-forceinline uint64_t DSEP() { return 0x01; }
+forceinline uint64_t DSEP() { return 0x80ull << 56; }
 
 forceinline uint64_t PRFS_MLEN(uint64_t len) { return len << 51; }
 
 forceinline uint64_t CLEAR(uint64_t w, int n) {
   /* undefined for n == 0 */
-  uint64_t mask = ~0ull >> (8 * n);
+  uint64_t mask = ~0ull << (8 * n);
   return w & mask;
 }
 
 #else
 
-forceinline uint64_t PAD(int i) {
-  return ((uint64_t)((uint32_t)0x08 << (28 - 4 * i)) << 32);
-}
+forceinline uint64_t PAD(int i) { return (uint32_t)0x01 << (4 * i); }
 
-forceinline uint64_t DSEP() { return 0x01; }
+forceinline uint64_t DSEP() { return 0x80ull << 56; }
 
 forceinline uint64_t PRFS_MLEN(uint64_t len) {
   return ((len & 0x01) << 57) | /* 0000x */
@@ -84,7 +82,7 @@ forceinline uint64_t PRFS_MLEN(uint64_t len) {
 
 forceinline uint64_t CLEAR(uint64_t w, int n) {
   /* undefined for n == 0 */
-  uint32_t mask = 0xffffffffull >> (4 * n);
+  uint32_t mask = 0xffffffffull << (4 * n);
   return w & ((uint64_t)mask << 32 | mask);
 }
 
@@ -92,7 +90,7 @@ forceinline uint64_t CLEAR(uint64_t w, int n) {
 
 forceinline uint64_t MASK(int n) {
   /* undefined for n == 0 */
-  return ~0ull >> (64 - 8 * n);
+  return ~0ull << (64 - 8 * n);
 }
 
 forceinline uint64_t LOADBYTES(const uint8_t* bytes, int n) {

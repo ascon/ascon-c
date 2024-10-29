@@ -1,6 +1,6 @@
 #include "permutations.h"
 
-#include "bendian.h"
+#include "lendian.h"
 #include "printstate.h"
 
 #define START_ROUND(x) (12 - (x))

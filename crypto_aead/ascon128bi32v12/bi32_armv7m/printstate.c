@@ -10,8 +10,8 @@
 #define WORDTOU64
 #endif
 
-#ifndef U64BIG
-#define U64BIG
+#ifndef U64LE
+#define U64LE
 #endif
 
 void print(const char* text) { printf("%s", text); }
@@ -24,7 +24,7 @@ void printbytes(const char* text, const uint8_t* b, uint64_t len) {
 }
 
 void printword(const char* text, const uint64_t x) {
-  printf("%s=0x%016" PRIx64, text, U64BIG(WORDTOU64(x)));
+  printf("%s=0x%016" PRIx64, text, U64LE(WORDTOU64(x)));
 }
 
 void printstate(const char* text, const ascon_state_t* s) {

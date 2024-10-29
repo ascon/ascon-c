@@ -4,16 +4,6 @@
 #include "permutations.h"
 #include "printstate.h"
 
-#define AVX512_SHUFFLE_U64BIG                                  \
-  _mm512_set_epi8(-1, -1, -1, -1, -1, -1, -1, -1, /* word 7 */ \
-                  -1, -1, -1, -1, -1, -1, -1, -1, /* word 6 */ \
-                  -1, -1, -1, -1, -1, -1, -1, -1, /* word 5 */ \
-                  -1, -1, -1, -1, -1, -1, -1, -1, /* word 4 */ \
-                  -1, -1, -1, -1, -1, -1, -1, -1, /* word 3 */ \
-                  -1, -1, -1, -1, -1, -1, -1, -1, /* word 2 */ \
-                  8, 9, 10, 11, 12, 13, 14, 15,   /* word 1 */ \
-                  0, 1, 2, 3, 4, 5, 6, 7)         /* word 0 */
-
 #if !ASCON_INLINE_MODE
 #undef forceinline
 #define forceinline
@@ -40,7 +30,7 @@ forceinline void ascon_initaead(ascon_state_t* s, const ascon_key_t* key,
   s->x[1] = key->x[0];
   s->x[2] = key->x[1];
 #else /* CRYPTO_KEYBYTES == 20 */
-  s->x[0] = key->x[0] | ASCON_80PQ_IV;
+  s->x[0] = key->x[0] | KEYROT(ASCON_80PQ_IV, 0);
   s->x[1] = key->x[1];
   s->x[2] = key->x[2];
 #endif
@@ -61,7 +51,6 @@ forceinline void ascon_initaead(ascon_state_t* s, const ascon_key_t* key,
 
 forceinline void ascon_adata(ascon_state_t* s, const uint8_t* ad,
                              uint64_t adlen) {
-  const __m512i u64big = AVX512_SHUFFLE_U64BIG;
   const int mask = (ASCON_AEAD_RATE == 8) ? 0xff : 0xffff;
   const int nr = (ASCON_AEAD_RATE == 8) ? 6 : 8;
   if (adlen) {
@@ -69,7 +58,6 @@ forceinline void ascon_adata(ascon_state_t* s, const uint8_t* ad,
     while (adlen >= ASCON_AEAD_RATE) {
       ascon_state_t t;
       t.z = _mm512_maskz_loadu_epi8(mask, ad);
-      t.z = _mm512_maskz_shuffle_epi8(mask, t.z, u64big);
       s->z = _mm512_xor_epi64(s->z, t.z);
       printstate("absorb adata", s);
       P(s, nr);
@@ -96,17 +84,14 @@ forceinline void ascon_adata(ascon_state_t* s, const uint8_t* ad,
 
 forceinline void ascon_encrypt(ascon_state_t* s, uint8_t* c, const uint8_t* m,
                                uint64_t mlen) {
-  const __m512i u64big = AVX512_SHUFFLE_U64BIG;
   const int mask = (ASCON_AEAD_RATE == 8) ? 0xff : 0xffff;
   const int nr = (ASCON_AEAD_RATE == 8) ? 6 : 8;
   /* full plaintext blocks */
   while (mlen >= ASCON_AEAD_RATE) {
     ascon_state_t t;
     t.z = _mm512_maskz_loadu_epi8(mask, m);
-    t.z = _mm512_maskz_shuffle_epi8(mask, t.z, u64big);
     s->z = _mm512_xor_epi64(s->z, t.z);
-    t.z = _mm512_maskz_shuffle_epi8(mask, s->z, u64big);
-    _mm512_mask_storeu_epi8(c, mask, t.z);
+    _mm512_mask_storeu_epi8(c, mask, s->z);
     printstate("absorb plaintext", s);
     P(s, nr);
     m += ASCON_AEAD_RATE;
@@ -133,18 +118,15 @@ forceinline void ascon_encrypt(ascon_state_t* s, uint8_t* c, const uint8_t* m,
 
 forceinline void ascon_decrypt(ascon_state_t* s, uint8_t* m, const uint8_t* c,
                                uint64_t clen) {
-  const __m512i u64big = AVX512_SHUFFLE_U64BIG;
   const int mask = (ASCON_AEAD_RATE == 8) ? 0xff : 0xffff;
   const int nr = (ASCON_AEAD_RATE == 8) ? 6 : 8;
   /* full ciphertext blocks */
   while (clen >= ASCON_AEAD_RATE) {
-    ascon_state_t t, u;
+    ascon_state_t t;
     t.z = _mm512_maskz_loadu_epi8(mask, c);
-    t.z = _mm512_maskz_shuffle_epi8(mask, t.z, u64big);
     s->z = _mm512_xor_epi64(s->z, t.z);
-    u.z = _mm512_maskz_shuffle_epi8(mask, s->z, u64big);
+    _mm512_mask_storeu_epi8(m, mask, s->z);
     s->z = _mm512_mask_blend_epi8(mask, s->z, t.z);
-    _mm512_mask_storeu_epi8(m, mask, u.z);
     printstate("insert ciphertext", s);
     P(s, nr);
     m += ASCON_AEAD_RATE;

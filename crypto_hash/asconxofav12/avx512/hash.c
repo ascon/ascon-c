@@ -4,16 +4,6 @@
 #include "permutations.h"
 #include "printstate.h"
 
-#define AVX512_SHUFFLE_U64BIG                                  \
-  _mm512_set_epi8(-1, -1, -1, -1, -1, -1, -1, -1, /* word 7 */ \
-                  -1, -1, -1, -1, -1, -1, -1, -1, /* word 6 */ \
-                  -1, -1, -1, -1, -1, -1, -1, -1, /* word 5 */ \
-                  -1, -1, -1, -1, -1, -1, -1, -1, /* word 4 */ \
-                  -1, -1, -1, -1, -1, -1, -1, -1, /* word 3 */ \
-                  -1, -1, -1, -1, -1, -1, -1, -1, /* word 2 */ \
-                  8, 9, 10, 11, 12, 13, 14, 15,   /* word 1 */ \
-                  0, 1, 2, 3, 4, 5, 6, 7)         /* word 0 */
-
 #if !ASCON_INLINE_MODE
 #undef forceinline
 #define forceinline
@@ -45,12 +35,10 @@ forceinline void ascon_inithash(ascon_state_t* s) {
 
 forceinline void ascon_absorb(ascon_state_t* s, const uint8_t* in,
                               uint64_t inlen) {
-  const __m512i u64big = AVX512_SHUFFLE_U64BIG;
   /* absorb full plaintext blocks */
   while (inlen >= ASCON_HASH_RATE) {
     ascon_state_t t;
     t.z = _mm512_maskz_loadu_epi8(0xff, in);
-    t.z = _mm512_maskz_shuffle_epi8(0xff, t.z, u64big);
     s->z = _mm512_xor_epi64(s->z, t.z);
     printstate("absorb plaintext", s);
     P(s, ASCON_HASH_ROUNDS);
@@ -65,13 +53,10 @@ forceinline void ascon_absorb(ascon_state_t* s, const uint8_t* in,
 
 forceinline void ascon_squeeze(ascon_state_t* s, uint8_t* out,
                                uint64_t outlen) {
-  const __m512i u64big = AVX512_SHUFFLE_U64BIG;
   /* squeeze full output blocks */
   P(s, 12);
   while (outlen > ASCON_HASH_RATE) {
-    ascon_state_t t;
-    t.z = _mm512_maskz_shuffle_epi8(0xff, s->z, u64big);
-    _mm512_mask_storeu_epi8(out, 0xff, t.z);
+    _mm512_mask_storeu_epi8(out, 0xff, s->z);
     printstate("squeeze output", s);
     P(s, ASCON_HASH_ROUNDS);
     out += ASCON_HASH_RATE;
