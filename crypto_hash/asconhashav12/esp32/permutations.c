@@ -1,20 +1,10 @@
 #include "permutations.h"
 
 #include "bendian.h"
+#include "printstate.h"
 
-u32_4 ascon_rev8(u32_4 in) {
-  in.words[0] = ascon_rev8_half(in.words[0]);
-  in.words[1] = ascon_rev8_half(in.words[1]);
-  return in;
-}
-
-u32_2 ascon_rev8_half(u32_2 in) {
-  u64 t = (u64)in.h << 32 | in.l;
-  t = U64BIG(t);
-  in.l = (u32)t;
-  in.h = (u32)(t >> 32);
-  return in;
-}
+#define START_ROUND(x) (12 - (x))
+#define LAST_ROUND 0x4b
 
 #define SBOX(x0, x1, x2, x3, x4, r0, t0, t1, t2) \
   do {                                           \
@@ -40,9 +30,9 @@ u32_2 ascon_rev8_half(u32_2 in) {
     r0 = x0;                                     \
   } while (0)
 
-#define SRC(o, h, l, amt)            \
-  do {                               \
-    o = (((u64)h << 32) | l) >> amt; \
+#define SRC(o, h, l, amt)                 \
+  do {                                    \
+    o = (((uint64_t)h << 32) | l) >> amt; \
   } while (0)
 
 #define LINEAR(dl, dh, sl, sh, sl0, sh0, r0, sl1, sh1, r1, t0) \
@@ -57,15 +47,23 @@ u32_2 ascon_rev8_half(u32_2 in) {
     dh = dh ^ sh;                                              \
   } while (0)
 
-void P(state *p, u8 round_const) {
-  u32 x0h = p->x0.h, x0l = p->x0.l;
-  u32 x1h = p->x1.h, x1l = p->x1.l;
-  u32 x2h = p->x2.h, x2l = p->x2.l;
-  u32 x3h = p->x3.h, x3l = p->x3.l;
-  u32 x4h = p->x4.h, x4l = p->x4.l;
-  u32 t0l, t0h;
-  u32 rnd = round_const;
-  u32 tmp0;
+#if (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+#define lo h
+#define hi l
+#else
+#define lo l
+#define hi h
+#endif
+
+void P(ascon_state_t *p, uint8_t round_const) {
+  uint32_t x0h = p->w[0].hi, x0l = p->w[0].lo;
+  uint32_t x1h = p->w[1].hi, x1l = p->w[1].lo;
+  uint32_t x2h = p->w[2].hi, x2l = p->w[2].lo;
+  uint32_t x3h = p->w[3].hi, x3l = p->w[3].lo;
+  uint32_t x4h = p->w[4].hi, x4l = p->w[4].lo;
+  uint32_t t0l, t0h;
+  uint32_t rnd = round_const;
+  uint32_t tmp0;
 
   while (rnd >= LAST_ROUND) {
     x2l ^= rnd;
@@ -80,16 +78,30 @@ void P(state *p, u8 round_const) {
     LINEAR(x3l, x3h, t0l, t0h, t0l, t0h, 10, t0l, t0h, 17, tmp0);
 
     rnd -= 15;
+
+#ifdef ASCON_PRINT_STATE
+    p->w[0].hi = x0h;
+    p->w[0].lo = x0l;
+    p->w[1].hi = x1h;
+    p->w[1].lo = x1l;
+    p->w[2].hi = x2h;
+    p->w[2].lo = x2l;
+    p->w[3].hi = x3h;
+    p->w[3].lo = x3l;
+    p->w[4].hi = x4h;
+    p->w[4].lo = x4l;
+    printstate(" round output", p);
+#endif
   }
 
-  p->x0.h = x0h;
-  p->x0.l = x0l;
-  p->x1.h = x1h;
-  p->x1.l = x1l;
-  p->x2.h = x2h;
-  p->x2.l = x2l;
-  p->x3.h = x3h;
-  p->x3.l = x3l;
-  p->x4.h = x4h;
-  p->x4.l = x4l;
+  p->w[0].hi = x0h;
+  p->w[0].lo = x0l;
+  p->w[1].hi = x1h;
+  p->w[1].lo = x1l;
+  p->w[2].hi = x2h;
+  p->w[2].lo = x2l;
+  p->w[3].hi = x3h;
+  p->w[3].lo = x3l;
+  p->w[4].hi = x4h;
+  p->w[4].lo = x4l;
 }

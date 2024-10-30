@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ALG="ascon128 ascon128a ascon80pq asconxof asconxofa asconprf asconprfs ascon ascona"
-ARCH="x86-64-v4 armv7-a armv7-m armv6-m rv32i avr"
+ARCH="x86-64-v4 armv7-a armv7-m armv6-m rv32i esp32 avr"
 
 printf "| %-9s "
 for a in $ALG; do

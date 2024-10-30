@@ -9,18 +9,12 @@
 #define ASCON_ENC 1
 #define ASCON_DEC 2
 
-#define RATE (64 / 8)
-#define PA_ROUNDS 12
-#define PB_ROUNDS 6
-#define PA_START_ROUND 0xf0
-#define PB_START_ROUND 0x96
+void process_data(ascon_state_t* s, unsigned char* out, const unsigned char* in,
+                  unsigned long long len, uint8_t mode);
 
-void process_data(state* s, unsigned char* out, const unsigned char* in,
-                  unsigned long long len, u8 mode);
-
-void ascon_core(state* s, unsigned char* out, const unsigned char* in,
+void ascon_core(ascon_state_t* s, unsigned char* out, const unsigned char* in,
                 unsigned long long tlen, const unsigned char* ad,
                 unsigned long long adlen, const unsigned char* npub,
-                const unsigned char* k, u8 mode);
+                const unsigned char* k, uint8_t mode);
 
 #endif  // CORE_H_

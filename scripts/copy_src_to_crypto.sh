@@ -44,6 +44,7 @@ IMPL_LIST=" \
   bi32_lowreg \
   bi32_lowsize \
   bi8 \
+  esp32 \
   neon \
   opt32 \
   opt32_lowsize \
@@ -135,8 +136,10 @@ AVR_FILES=" \
   "
 
 ESP_FILES=" \
-  constants.h \
-  lendian.h \
+  ascon.h \
+  implementors \
+  permutations.c \
+  permutations.h \
   "
 
 for alg in $ALG_LIST; do
@@ -266,15 +269,25 @@ rm -f crypto_auth/asconprfav12/*/prfs.c
 rm -f crypto_auth/asconprfsv12/*/prf.c
 rm -f crypto_auth/*/*/hash.c
 rm -f crypto_auth/*/*/aead.c
+rm -f crypto_*/*/armv6m_lowsize/permutations.c
 rm -f crypto_*/*/opt8_lowsize/crypto_aead.c
 rm -f crypto_*/*/avr_lowsize/crypto_aead.c
 rm -f crypto_*/*/avr*/permutations.c
 rm -f crypto_*/*/neon/permutations.c
-rm -f crypto_*/*/armv6m_lowsize/permutations.c
+
+rm -f crypto_*/*/esp32/aead.c
+rm -f crypto_*/*/esp32/config.h
+rm -f crypto_*/*/esp32/forceinline.h
+rm -f crypto_*/*/esp32/word.h
+rm -f crypto_hash/*/esp32/*crypt.c
+rm -f crypto_hash/*/esp32/core.c
+rm -f crypto_hash/*/esp32/core.h
+rm -f crypto_aead/*/esp32/hash.c
 
 rm -rf crypto_auth/*/*lowsize
 rm -rf crypto_auth/*/avx512
 rm -rf crypto_auth/*/neon
+rm -rf crypto_auth/*/esp32
 
 rm -rf crypto_*/*bi32*/arm*
 rm -rf crypto_*/*bi32*/bi8*
@@ -282,6 +295,7 @@ rm -rf crypto_*/*bi32*/opt*
 rm -rf crypto_*/*bi32*/avr*
 rm -rf crypto_*/*bi32*/avx*
 rm -rf crypto_*/*bi32*/neon
+rm -rf crypto_*/*bi32*/esp32
 
 sed -i 's/ASCON_EXTERN_BI 0/ASCON_EXTERN_BI 1/' crypto_*/*bi32*/*/config.h
 

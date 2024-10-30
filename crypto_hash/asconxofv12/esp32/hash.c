@@ -4,73 +4,85 @@
 #include "bendian.h"
 #include "constants.h"
 #include "permutations.h"
+#include "printstate.h"
 
-#define RATE (64 / 8)
-#define PA_ROUNDS 12
+#if ASCON_HASH_BYTES == 32 && ASCON_HASH_ROUNDS == 12
+#define IV(i) ASCON_HASH_IV##i
+#define PB_START_ROUND 0xf0
+#elif ASCON_HASH_BYTES == 32 && ASCON_HASH_ROUNDS == 8
+#define IV(i) ASCON_HASHA_IV##i
+#define PB_START_ROUND 0xb4
+#elif ASCON_HASH_BYTES == 0 && ASCON_HASH_ROUNDS == 12
+#define IV(i) ASCON_XOF_IV##i
+#define PB_START_ROUND 0xf0
+#elif ASCON_HASH_BYTES == 0 && ASCON_HASH_ROUNDS == 8
+#define IV(i) ASCON_XOFA_IV##i
+#define PB_START_ROUND 0xb4
+#endif
+
 #define PA_START_ROUND 0xf0
 
 int crypto_hash(unsigned char* out, const unsigned char* in,
                 unsigned long long inlen) {
-  state s = {0};
-  u32_2 tmp;
+  printbytes("m", in, inlen);
+  ascon_state_t s = {0};
+  uint32x2_t tmp;
   unsigned long len = inlen;
 
-#if ASCON_PRINT_STATE
-  s.x0.h = ASCON_XOF_IV >> 32;
-  s.x0.l = (u32)ASCON_XOF_IV;
+  // initialization
+#ifdef ASCON_PRINT_STATE
+  s = (ascon_state_t){{IV(), 0, 0, 0, 0}};
+  printstate("initial value", &s);
   P(&s, PA_START_ROUND);
 #else
-  // initialization
-  s.x0.h = 0xb57e273b;
-  s.x0.l = 0x814cd416;
-  s.x1.h = 0x2b510425;
-  s.x1.l = 0x62ae2420;
-  s.x2.h = 0x66a3a776;
-  s.x2.l = 0x8ddf2218;
-  s.x3.h = 0x5aad0a7a;
-  s.x3.l = 0x8153650c;
-  s.x4.h = 0x4f3e0e32;
-  s.x4.l = 0x539493b6;
+  s = (ascon_state_t){{IV(0), IV(1), IV(2), IV(3), IV(4)}};
 #endif
+  printstate("initialization", &s);
 
-  while (len >= RATE) {
-    tmp.l = ((u32*)in)[0];
-    tmp.h = ((u32*)in)[1];
-    tmp = ascon_rev8_half(tmp);
-    s.x0.h ^= tmp.h;
-    s.x0.l ^= tmp.l;
+  while (len >= ASCON_HASH_RATE) {
+    tmp.l = ((uint32_t*)in)[0];
+    tmp.h = ((uint32_t*)in)[1];
+    tmp.x = U64BIG(tmp.x);
+    s.w[0].h ^= tmp.h;
+    s.w[0].l ^= tmp.l;
+    printstate("absorb plaintext", &s);
 
-    P(&s, PA_START_ROUND);
+    P(&s, PB_START_ROUND);
 
-    in += RATE;
-    len -= RATE;
+    in += ASCON_HASH_RATE;
+    len -= ASCON_HASH_RATE;
   }
 
-  u8* bytes = (u8*)&tmp;
+  uint8_t* bytes = (uint8_t*)&tmp;
   memset(bytes, 0, sizeof tmp);
   memcpy(bytes, in, len);
   bytes[len] ^= 0x80;
 
-  tmp = ascon_rev8_half(tmp);
-  s.x0.h ^= tmp.h;
-  s.x0.l ^= tmp.l;
+  tmp.x = U64BIG(tmp.x);
+  s.w[0].h ^= tmp.h;
+  s.w[0].l ^= tmp.l;
+  printstate("pad plaintext", &s);
 
   P(&s, PA_START_ROUND);
 
   len = CRYPTO_BYTES;
-  while (len > RATE) {
-    u32_2 tmp0 = ascon_rev8_half(s.x0);
-    ((u32*)out)[0] = tmp0.l;
-    ((u32*)out)[1] = tmp0.h;
+  while (len > ASCON_HASH_RATE) {
+    uint32x2_t tmp0 = s.w[0];
+    tmp0.x = U64BIG(tmp0.x);
+    ((uint32_t*)out)[0] = tmp0.l;
+    ((uint32_t*)out)[1] = tmp0.h;
+    printstate("squeeze output", &s);
 
-    P(&s, PA_START_ROUND);
+    P(&s, PB_START_ROUND);
 
-    out += RATE;
-    len -= RATE;
+    out += ASCON_HASH_RATE;
+    len -= ASCON_HASH_RATE;
   }
 
-  tmp = ascon_rev8_half(s.x0);
+  tmp = s.w[0];
+  tmp.x = U64BIG(tmp.x);
   memcpy(out, bytes, len);
-
+  printstate("squeeze output", &s);
+  printbytes("h", out + len - CRYPTO_BYTES, CRYPTO_BYTES);
   return 0;
 }
