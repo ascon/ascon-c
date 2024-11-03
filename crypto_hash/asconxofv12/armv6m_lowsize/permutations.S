@@ -55,8 +55,6 @@ P:
 	mov	r2, r10
 	mov	r10, r0
 	.syntax divided
-@ 12 "crypto_aead/ascon128v12/armv6m_lowsize/round.h" 1
-	@.syntax_unified
 	rbegin_49:;
 	eor r5, r5, r1
 	push  {r1}
@@ -216,7 +214,6 @@ P:
 	b rbegin_49
 	rend_49:;
 	
-@ 0 "" 2
 	.thumb
 	.syntax unified
 	ldr	r1, [sp, #4]
