@@ -251,6 +251,14 @@ cmake --build . --config Release
 ctest -C Release
 ```
 
+To print input/output values and intermediate Ascon states, add `-DASCON_PRINT_STATE` to the build via the cmake `-DCOMPILE_DEFS` option:
+
+```
+mkdir build && cd build
+cmake .. -DCOMPILE_DEFS="-DASCON_PRINT_STATE"
+cmake --build .
+ctest
+```
 
 Build and test all Ascon C targets using debug flags (with NIST defined flags and sanitizers):
 
@@ -393,6 +401,13 @@ Generate KATs and get CPU cycles:
 ./genkat
 ./getcycles
 ```
+
+To print input/output values and intermediate Ascon states, add `-DASCON_PRINT_STATE` to the build:
+
+```
+gcc -DASCON_PRINT_STATE -Icrypto_aead/ascon128v12/opt64 crypto_aead/ascon128v12/opt64/*.c -Itests tests/genkat_aead.c -o genkat && ./genkat
+```
+
 
 ## Build and run ARMv7-M targets:
 
