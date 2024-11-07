@@ -61,8 +61,14 @@ void P6(ascon_state_t* s);
 
 forceinline void P(ascon_state_t* s, int nr) {
   if (nr == 12) P12(s);
+#if ((defined(ASCON_AEAD_RATE) && ASCON_AEAD_RATE == 16) ||    \
+     (defined(ASCON_HASH_ROUNDS) && ASCON_HASH_ROUNDS == 8) || \
+     (defined(ASCON_PRF_ROUNDS) && ASCON_PRF_ROUNDS == 8))
   if (nr == 8) P8(s);
+#endif
+#if (defined(ASCON_AEAD_RATE) && ASCON_AEAD_RATE == 8)
   if (nr == 6) P6(s);
+#endif
 }
 
 #elif ASCON_INLINE_PERM && !ASCON_UNROLL_LOOPS
