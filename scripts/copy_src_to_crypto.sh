@@ -3,26 +3,26 @@
 base="src"
 
 ALG_LIST=" \
-  crypto_aead/ascon128v12 \
-  crypto_aead/ascon128av12 \
-  crypto_aead/ascon80pqv12 \
-  crypto_hash/asconhashv12 \
-  crypto_hash/asconhashav12 \
-  crypto_hash/asconxofv12 \
-  crypto_hash/asconxofav12 \
-  crypto_auth/asconmacv12 \
-  crypto_auth/asconmacav12 \
-  crypto_auth/asconprfv12 \
-  crypto_auth/asconprfav12 \
-  crypto_auth/asconprfsv12 \
-  crypto_aead_hash/asconv12 \
-  crypto_aead_hash/asconav12 \
-  crypto_aead/ascon128bi32v12 \
-  crypto_aead/ascon128abi32v12 \
-  crypto_hash/asconhashbi32v12 \
-  crypto_hash/asconhashabi32v12 \
-  crypto_aead_hash/asconbi32v12 \
-  crypto_aead_hash/asconabi32v12 \
+  crypto_aead/ascon128v13 \
+  crypto_aead/ascon128av13 \
+  crypto_aead/ascon80pqv13 \
+  crypto_hash/asconhashv13 \
+  crypto_hash/asconhashav13 \
+  crypto_hash/asconxofv13 \
+  crypto_hash/asconxofav13 \
+  crypto_auth/asconmacv13 \
+  crypto_auth/asconmacav13 \
+  crypto_auth/asconprfv13 \
+  crypto_auth/asconprfav13 \
+  crypto_auth/asconprfsv13 \
+  crypto_aead_hash/asconv13 \
+  crypto_aead_hash/asconav13 \
+  crypto_aead/ascon128bi32v13 \
+  crypto_aead/ascon128abi32v13 \
+  crypto_hash/asconhashbi32v13 \
+  crypto_hash/asconhashabi32v13 \
+  crypto_aead_hash/asconbi32v13 \
+  crypto_aead_hash/asconabi32v13 \
   "
 
 IMPL_LIST=" \
@@ -253,20 +253,20 @@ for alg in $ALG_LIST; do
   echo
 done
 
-rm -f crypto_*/ascon128*v12/*/hash.c
-rm -f crypto_*/ascon80pqv12/*/hash.c
-rm -f crypto_*/asconhash*v12/*/aead.c
-rm -f crypto_*/asconxof*v12/*/aead.c
-rm -f crypto_*/asconhash*v12/*/crypto_aead.c
-rm -f crypto_*/asconxof*v12/*/crypto_aead.c
+rm -f crypto_*/ascon128*v13/*/hash.c
+rm -f crypto_*/ascon80pqv13/*/hash.c
+rm -f crypto_*/asconhash*v13/*/aead.c
+rm -f crypto_*/asconxof*v13/*/aead.c
+rm -f crypto_*/asconhash*v13/*/crypto_aead.c
+rm -f crypto_*/asconxof*v13/*/crypto_aead.c
 
 rm -f crypto_aead*/*/*/prf*.c
 rm -f crypto_hash*/*/*/prf*.c
-rm -f crypto_auth/asconmacv12/*/prfs.c
-rm -f crypto_auth/asconmacav12/*/prfs.c
-rm -f crypto_auth/asconprfv12/*/prfs.c
-rm -f crypto_auth/asconprfav12/*/prfs.c
-rm -f crypto_auth/asconprfsv12/*/prf.c
+rm -f crypto_auth/asconmacv13/*/prfs.c
+rm -f crypto_auth/asconmacav13/*/prfs.c
+rm -f crypto_auth/asconprfv13/*/prfs.c
+rm -f crypto_auth/asconprfav13/*/prfs.c
+rm -f crypto_auth/asconprfsv13/*/prf.c
 rm -f crypto_auth/*/*/hash.c
 rm -f crypto_auth/*/*/aead.c
 rm -f crypto_*/*/armv6m_lowsize/permutations.c

@@ -3,7 +3,7 @@ project(ascon LANGUAGES C ASM)
 enable_testing()
 
 # set the default version
-set(DEFAULT_VERSIONS v12)
+set(DEFAULT_VERSIONS v13)
 
 # default to all Ascon algorithms:
 set(DEFAULT_ALGS ascon128 ascon128a ascon80pq

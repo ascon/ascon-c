@@ -11,7 +11,7 @@ CC=$1
 shift
 CFLAGS=$*
 
-for i in crypto_*/${ALG}v12/*/; do
+for i in crypto_*/${ALG}v13/*/; do
   if $CC $CFLAGS -Itests -I$i $i/*.[cS] -c 2>/dev/null; then
     echo -n "[PASS] "
   else
