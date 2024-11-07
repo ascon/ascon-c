@@ -54,7 +54,9 @@
 #define KAT_CRYPTO_FAILURE -4
 
 #define MAX_FILE_NAME 256
+#ifndef MAX_MESSAGE_LENGTH
 #define MAX_MESSAGE_LENGTH 1024
+#endif
 
 void init_buffer(unsigned char* buffer, unsigned long long numbytes);
 
@@ -80,11 +82,10 @@ int generate_test_vectors() {
   unsigned char digest[CRYPTO_BYTES];
   unsigned long long mlen;
   int count = 1;
-  int ret_val = KAT_SUCCESS;
+  int func_ret, ret_val = KAT_SUCCESS;
 
 #if !defined(AVR_UART)
   sprintf(fileName, "LWC_HASH_KAT_%d.txt", (CRYPTO_BYTES * 8));
-
   if ((fp = fopen(fileName, "w")) == NULL) {
     fprintf(stderr, "Couldn't open <%s> for write\n", fileName);
     return KAT_FILE_OPEN_ERROR;
@@ -97,16 +98,13 @@ int generate_test_vectors() {
 #endif
 
   for (mlen = 0; mlen <= MAX_MESSAGE_LENGTH; mlen++) {
-    fprintf(fp, "Count = %d\n", count++);
-
     msg = malloc(mlen);
     init_buffer(msg, mlen);
 
+    fprintf(fp, "Count = %d\n", count++);
     fprint_bstr(fp, "Msg = ", msg, mlen);
 
-    ret_val = crypto_hash(digest, msg, mlen);
-
-    if (ret_val != 0) {
+    if ((func_ret = crypto_hash(digest, msg, mlen)) != 0) {
       fprintf(fp, "crypto_hash returned <%d>\n", ret_val);
       ret_val = KAT_CRYPTO_FAILURE;
       free(msg);
@@ -114,7 +112,6 @@ int generate_test_vectors() {
     }
 
     fprint_bstr(fp, "MD = ", digest, CRYPTO_BYTES);
-
     fprintf(fp, "\n");
     free(msg);
   }
@@ -132,9 +129,7 @@ void fprint_bstr(FILE* fp, const char* label, const unsigned char* data,
                  unsigned long long length) {
   unsigned long long i;
   fprintf(fp, "%s", label);
-
   for (i = 0; i < length; i++) fprintf(fp, "%02X", data[i]);
-
   fprintf(fp, "\n");
 }
 

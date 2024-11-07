@@ -39,7 +39,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -57,9 +56,8 @@
 #define KAT_CRYPTO_FAILURE -4
 
 #define MAX_FILE_NAME 256
-
-#ifndef MAX_DATA_LENGTH
-#define MAX_DATA_LENGTH 1024
+#ifndef MAX_MESSAGE_LENGTH
+#define MAX_MESSAGE_LENGTH 1024
 #endif
 
 void init_buffer(unsigned char* buffer, unsigned long long numbytes);
@@ -83,9 +81,9 @@ int generate_test_vectors() {
   char fileName[MAX_FILE_NAME];
 #endif
   unsigned char key[CRYPTO_KEYBYTES];
-  unsigned char* d;
-  unsigned char t[CRYPTO_BYTES];
-  unsigned long long dlen;
+  unsigned char* msg;
+  unsigned char tag[CRYPTO_BYTES];
+  unsigned long long mlen;
   int count = 1;
   int func_ret, ret_val = KAT_SUCCESS;
 
@@ -105,43 +103,40 @@ int generate_test_vectors() {
   fp = stdout;
 #endif
 
-  for (dlen = 0; dlen <= MAX_DATA_LENGTH; dlen++) {
-    d = malloc(dlen);
-    init_buffer(d, dlen);
+  for (mlen = 0; mlen <= MAX_MESSAGE_LENGTH; mlen++) {
+    msg = malloc(mlen);
+    init_buffer(msg, mlen);
 
     fprintf(fp, "Count = %d\n", count++);
-
     fprint_bstr(fp, "Key = ", key, CRYPTO_KEYBYTES);
+    fprint_bstr(fp, "Msg = ", msg, mlen);
 
-    fprint_bstr(fp, "Msg = ", d, dlen);
-
-    if ((func_ret = crypto_auth(t, d, dlen, key)) != 0) {
+    if ((func_ret = crypto_auth(tag, msg, mlen, key)) != 0) {
       fprintf(fp, "crypto_auth returned <%d>\n", func_ret);
       ret_val = KAT_CRYPTO_FAILURE;
-      free(d);
+      free(msg);
       break;
     }
 
-    fprint_bstr(fp, "Tag = ", t, CRYPTO_BYTES);
-
+    fprint_bstr(fp, "Tag = ", tag, CRYPTO_BYTES);
     fprintf(fp, "\n");
 
-    if ((func_ret = crypto_auth_verify(t, d, dlen, key)) != 0) {
+    if ((func_ret = crypto_auth_verify(tag, msg, mlen, key)) != 0) {
       fprintf(fp, "crypto_auth_verify returned <%d>\n", func_ret);
       ret_val = KAT_CRYPTO_FAILURE;
-      free(d);
+      free(msg);
       break;
     }
 
     // test failing verification
-    t[0] ^= 1;
-    if ((func_ret = crypto_auth_verify(t, d, dlen, key)) == 0) {
+    tag[0] ^= 1;
+    if ((func_ret = crypto_auth_verify(tag, msg, mlen, key)) == 0) {
       fprintf(fp, "crypto_auth_verify should have failed\n");
       ret_val = KAT_CRYPTO_FAILURE;
-      free(d);
+      free(msg);
       break;
     }
-    free(d);
+    free(msg);
   }
 
 #if !defined(AVR_UART)
@@ -157,9 +152,7 @@ void fprint_bstr(FILE* fp, const char* label, const unsigned char* data,
                  unsigned long long length) {
   unsigned long long i;
   fprintf(fp, "%s", label);
-
   for (i = 0; i < length; i++) fprintf(fp, "%02X", data[i]);
-
   fprintf(fp, "\n");
 }
 

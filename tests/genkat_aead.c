@@ -55,7 +55,9 @@
 #define KAT_CRYPTO_FAILURE -4
 
 #define MAX_FILE_NAME 256
+#ifndef MAX_MESSAGE_LENGTH
 #define MAX_MESSAGE_LENGTH 32
+#endif
 #define MAX_ASSOCIATED_DATA_LENGTH 32
 
 void init_buffer(unsigned char* buffer, unsigned long long numbytes);
@@ -95,7 +97,6 @@ int generate_test_vectors() {
 #if !defined(AVR_UART)
   sprintf(fileName, "LWC_AEAD_KAT_%d_%d.txt", (CRYPTO_KEYBYTES * 8),
           (CRYPTO_NPUBBYTES * 8));
-
   if ((fp = fopen(fileName, "w")) == NULL) {
     fprintf(stderr, "Couldn't open <%s> for write\n", fileName);
     return KAT_FILE_OPEN_ERROR;
@@ -107,8 +108,7 @@ int generate_test_vectors() {
   fp = stdout;
 #endif
 
-  for (mlen = 0; (mlen <= MAX_MESSAGE_LENGTH) && (ret_val == KAT_SUCCESS);
-       mlen++) {
+  for (mlen = 0; mlen <= MAX_MESSAGE_LENGTH; mlen++) {
     msg = malloc(mlen);
     msg2 = malloc(mlen);
     ct = malloc(mlen + CRYPTO_ABYTES);
@@ -119,13 +119,9 @@ int generate_test_vectors() {
       init_buffer(ad, adlen);
 
       fprintf(fp, "Count = %d\n", count++);
-
       fprint_bstr(fp, "Key = ", key, CRYPTO_KEYBYTES);
-
       fprint_bstr(fp, "Nonce = ", nonce, CRYPTO_NPUBBYTES);
-
       fprint_bstr(fp, "PT = ", msg, mlen);
-
       fprint_bstr(fp, "AD = ", ad, adlen);
 
       if ((func_ret = crypto_aead_encrypt(ct, &clen, msg, mlen, ad, adlen, NULL,
@@ -137,7 +133,6 @@ int generate_test_vectors() {
       }
 
       fprint_bstr(fp, "CT = ", ct, clen);
-
       fprintf(fp, "\n");
 
       if ((func_ret = crypto_aead_decrypt(msg2, &mlen2, NULL, ct, clen, ad,
@@ -179,6 +174,7 @@ int generate_test_vectors() {
     free(msg);
     free(msg2);
     free(ct);
+    if (ret_val != KAT_SUCCESS) break;
   }
 
 #if !defined(AVR_UART)
@@ -194,9 +190,7 @@ void fprint_bstr(FILE* fp, const char* label, const unsigned char* data,
                  unsigned long long length) {
   unsigned long long i;
   fprintf(fp, "%s", label);
-
   for (i = 0; i < length; i++) fprintf(fp, "%02X", data[i]);
-
   fprintf(fp, "\n");
 }
 
