@@ -58,7 +58,8 @@
 #define MAX_MESSAGE_LENGTH 1024
 #endif
 
-void init_buffer(unsigned char* buffer, unsigned long long numbytes);
+void init_buffer(unsigned char offset, unsigned char* buffer,
+                 unsigned long long numbytes);
 
 void fprint_bstr(FILE* fp, const char* label, const unsigned char* data,
                  unsigned long long length);
@@ -99,7 +100,7 @@ int generate_test_vectors() {
 
   for (mlen = 0; mlen <= MAX_MESSAGE_LENGTH; mlen++) {
     msg = malloc(mlen);
-    init_buffer(msg, mlen);
+    init_buffer(0x00, msg, mlen);
 
     fprintf(fp, "Count = %d\n", count++);
     fprint_bstr(fp, "Msg = ", msg, mlen);
@@ -133,7 +134,8 @@ void fprint_bstr(FILE* fp, const char* label, const unsigned char* data,
   fprintf(fp, "\n");
 }
 
-void init_buffer(unsigned char* buffer, unsigned long long numbytes) {
+void init_buffer(unsigned char offset, unsigned char* buffer,
+                 unsigned long long numbytes) {
   unsigned long long i;
-  for (i = 0; i < numbytes; i++) buffer[i] = (unsigned char)i;
+  for (i = 0; i < numbytes; i++) buffer[i] = (unsigned char)(offset + i);
 }

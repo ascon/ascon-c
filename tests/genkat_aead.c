@@ -60,7 +60,8 @@
 #endif
 #define MAX_ASSOCIATED_DATA_LENGTH 32
 
-void init_buffer(unsigned char* buffer, unsigned long long numbytes);
+void init_buffer(unsigned char offset, unsigned char* buffer,
+                 unsigned long long numbytes);
 
 void fprint_bstr(FILE* fp, const char* label, const unsigned char* data,
                  unsigned long long length);
@@ -91,8 +92,8 @@ int generate_test_vectors() {
   int count = 1;
   int func_ret, ret_val = KAT_SUCCESS;
 
-  init_buffer(key, sizeof(key));
-  init_buffer(nonce, sizeof(nonce));
+  init_buffer(0x00, key, sizeof(key));
+  init_buffer(0x10, nonce, sizeof(nonce));
 
 #if !defined(AVR_UART)
   sprintf(fileName, "LWC_AEAD_KAT_%d_%d.txt", (CRYPTO_KEYBYTES * 8),
@@ -112,11 +113,11 @@ int generate_test_vectors() {
     msg = malloc(mlen);
     msg2 = malloc(mlen);
     ct = malloc(mlen + CRYPTO_ABYTES);
-    init_buffer(msg, mlen);
+    init_buffer(0x20, msg, mlen);
 
     for (adlen = 0; adlen <= MAX_ASSOCIATED_DATA_LENGTH; adlen++) {
       ad = malloc(adlen);
-      init_buffer(ad, adlen);
+      init_buffer(0x30, ad, adlen);
 
       fprintf(fp, "Count = %d\n", count++);
       fprint_bstr(fp, "Key = ", key, CRYPTO_KEYBYTES);
@@ -194,7 +195,8 @@ void fprint_bstr(FILE* fp, const char* label, const unsigned char* data,
   fprintf(fp, "\n");
 }
 
-void init_buffer(unsigned char* buffer, unsigned long long numbytes) {
+void init_buffer(unsigned char offset, unsigned char* buffer,
+                 unsigned long long numbytes) {
   unsigned long long i;
-  for (i = 0; i < numbytes; i++) buffer[i] = (unsigned char)i;
+  for (i = 0; i < numbytes; i++) buffer[i] = (unsigned char)(offset + i);
 }
