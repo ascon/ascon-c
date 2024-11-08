@@ -1,28 +1,21 @@
 # setup KAT file name
-if(${ALG} STREQUAL ascon128v13 OR ${ALG} STREQUAL ascon128av13 OR
-   ${ALG} STREQUAL ascon128bi32v13 OR ${ALG} STREQUAL ascon128abi32v13)
+if(${ALG} STREQUAL ascon128av13)
   set(KAT_PATH crypto_aead/${ALG})
   set(KAT_FILE LWC_AEAD_KAT_128_128.txt)
-elseif(${ALG} STREQUAL ascon80pqv13)
-  set(KAT_PATH crypto_aead/${ALG})
-  set(KAT_FILE LWC_AEAD_KAT_160_128.txt)
-elseif(${ALG} STREQUAL asconhashv13 OR ${ALG} STREQUAL asconhashav13 OR
-    ${ALG} STREQUAL asconhashbi32v13 OR ${ALG} STREQUAL asconhashabi32v13 OR
-    ${ALG} STREQUAL asconxofv13 OR ${ALG} STREQUAL asconxofav13)
+elseif(${ALG} STREQUAL asconhashv13 OR
+    ${ALG} STREQUAL asconxofv13)
   set(KAT_PATH crypto_hash/${ALG})
   set(KAT_FILE LWC_HASH_KAT_256.txt)
-elseif((${ALG} STREQUAL asconv13 OR ${ALG} STREQUAL asconav13 OR
-        ${ALG} STREQUAL asconbi32v13 OR ${ALG} STREQUAL asconabi32v13) AND
+elseif((${ALG} STREQUAL asconav13) AND
     ${CRYPTO} STREQUAL aead)
   set(KAT_PATH crypto_aead_hash/${ALG})
   set(KAT_FILE LWC_AEAD_KAT_128_128.txt)
-elseif((${ALG} STREQUAL asconv13 OR ${ALG} STREQUAL asconav13 OR
-        ${ALG} STREQUAL asconbi32v13 OR ${ALG} STREQUAL asconabi32v13) AND
+elseif((${ALG} STREQUAL asconav13) AND
     ${CRYPTO} STREQUAL hash)
   set(KAT_PATH crypto_aead_hash/${ALG})
   set(KAT_FILE LWC_HASH_KAT_256.txt)
-elseif(${ALG} STREQUAL asconmacv13 OR ${ALG} STREQUAL asconmacav13 OR
-       ${ALG} STREQUAL asconprfv13 OR ${ALG} STREQUAL asconprfav13 OR
+elseif(${ALG} STREQUAL asconmacv13 OR
+       ${ALG} STREQUAL asconprfv13 OR
        ${ALG} STREQUAL asconprfsv13)
   set(KAT_PATH crypto_auth/${ALG})
   set(KAT_FILE LWC_AUTH_KAT_128_128.txt)
