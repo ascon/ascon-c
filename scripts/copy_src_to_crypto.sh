@@ -3,13 +3,13 @@
 base="src"
 
 ALG_LIST=" \
-  crypto_aead/ascon128av13 \
-  crypto_hash/asconhashv13 \
-  crypto_hash/asconxofv13 \
+  crypto_aead/asconaead128 \
+  crypto_hash/asconhash256 \
+  crypto_hash/asconxof128 \
   crypto_auth/asconmacv13 \
   crypto_auth/asconprfv13 \
   crypto_auth/asconprfsv13 \
-  crypto_aead_hash/asconav13 \
+  crypto_aead_hash/asconaeadxof128 \
   "
 
 IMPL_LIST=" \
@@ -240,11 +240,9 @@ for alg in $ALG_LIST; do
   echo
 done
 
-rm -f crypto_*/ascon128*v13/*/hash.c
-rm -f crypto_*/asconhash*v13/*/aead.c
-rm -f crypto_*/asconxof*v13/*/aead.c
-rm -f crypto_*/asconhash*v13/*/crypto_aead.c
-rm -f crypto_*/asconxof*v13/*/crypto_aead.c
+rm -f crypto_aead/*/*/hash.c
+rm -f crypto_hash/*/*/aead.c
+rm -f crypto_hash/*/*/crypto_aead.c
 
 rm -f crypto_aead*/*/*/prf*.c
 rm -f crypto_hash*/*/*/prf*.c

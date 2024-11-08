@@ -3,10 +3,11 @@ project(ascon LANGUAGES C ASM)
 enable_testing()
 
 # set the default version
-set(DEFAULT_VERSIONS v13)
+set(DEFAULT_VERSIONS 128 256 v13)
 
 # default to all Ascon algorithms:
-set(DEFAULT_ALGS ascon128a asconhash asconxof asconmac asconprf asconprfs ascona)
+set(DEFAULT_ALGS asconaead128 asconhash128 asconxof128 asconaeadxof128
+  asconmacv13 asconprfv13 asconprfsv13)
 
 # default to all C implementations:
 set(DEFAULT_IMPLS ref opt64 opt64_lowsize opt32 opt32_lowsize bi32 bi32_lowsize bi32_lowreg esp32 opt8 opt8_lowsize bi8)
@@ -53,7 +54,7 @@ message(STATUS "cmake host system processor: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
 set(KAT_PATH KAT)
 set(TEST_PATH tests)
 foreach(CRYPTO aead hash auth)
-  foreach(VER ${VERSION_LIST})
+  foreach(VER ${VERSION_LIST} "")
     foreach(ALG ${ALG_LIST})
       foreach(IMPL ${IMPL_LIST})
         set(IMPL_PATH crypto_${CRYPTO}/${ALG}${VER}/${IMPL})
@@ -84,10 +85,10 @@ foreach(CRYPTO aead hash auth)
             set(TEST_FILES ${TEST_PATH}/crypto_${CRYPTO}.h ${TEST_PATH}/getcycles.c)
           endif()
           string(TOUPPER CRYPTO_${CRYPTO} DEFINE_CRYPTO)
-          if(${IMPL} MATCHES protected.*)
+          if(${IMPL} MATCHES protected)
             set(DEFINE_CRYPTO ${DEFINE_CRYPTO}_SHARED)
           endif()
-          if(${ALG} STREQUAL asconprfs)
+          if(${ALG} MATCHES asconprfs)
             set(DEFINE_MAXMSGLEN "MAX_DATA_LENGTH=16")
           else()
             set(DEFINE_MAXMSGLEN "MAX_DATA_LENGTH=1024")
