@@ -1,69 +1,76 @@
-# Reference, highly optimized, masked C and ASM implementations of Ascon
+# Reference, highly optimized, masked C and ASM implementations of Ascon (NIST SP 800-232)
+
+Ascon will be standardized as **NIST SP 800-232**: https://csrc.nist.gov/pubs/sp/800/232/ipd 
 
 Ascon is a family of lightweight cryptographic algorithms and consists of:
 - Authenticated encryption schemes with associated data (AEAD)
 - Hash functions (HASH) and extendible output functions (XOF)
-- Pseudo-random functions (PRF) and message authentication codes (MAC)
+- Message authentication codes (MAC) and pseudo-random functions (PRF)
 
 For more information on Ascon visit: https://ascon.iaik.tugraz.at/
 
 All implementations in this repository use the "ECRYPT Benchmarking of Cryptographic Systems (eBACS)" interface:
 
-- https://bench.cr.yp.to/call-aead.html for AEAD (Ascon-128, Ascon-128a, Ascon-80pq)
-- https://bench.cr.yp.to/call-hash.html for HASH and XOF (Ascon-Hash, Ascon-Hasha, Ascon-Xof, Ascon-Xofa)
-- https://nacl.cr.yp.to/auth.html for PRF and MAC (Ascon-Mac, Ascon-Prf, Ascon-PrfShort)
+- https://bench.cr.yp.to/call-aead.html for AEAD (Ascon-AEAD128)
+- https://bench.cr.yp.to/call-hash.html for HASH and XOF (Ascon-Hash256, Ascon-XOF128)
+- https://nacl.cr.yp.to/auth.html for MAC and PRF (Ascon-Mac, Ascon-Prf, Ascon-PrfShort)
 
 
 ## TL;DR
 
 If you do not know where to start, use the reference implementations (self-contained, portable, very fast):
 
-- `crypto_aead/ascon128v13/ref`
-- `crypto_aead/ascon128av13/ref`
-- `crypto_hash/asconxofv13/ref`
-- `crypto_hash/asconxofav13/ref`
+- **Ascon-AEAD128**: `crypto_aead/asconaead128/ref`
+- **Ascon-Hash256**: `crypto_hash/asconhash256/ref`
+- **Ascon-XOF128**:  `crypto_hash/asconxof128/ref`
 
 An implementation can be built and run manually using the following commands (more details below):
 
 ```
-gcc -march=native -O3 -Icrypto_aead/ascon128v13/ref crypto_aead/ascon128v13/ref/*.c -Itests tests/genkat_aead.c -o genkat && ./genkat
-gcc -march=native -O3 -Icrypto_aead/ascon128v13/ref crypto_aead/ascon128v13/ref/*.c -DCRYPTO_AEAD -Itests tests/getcycles.c -o getcycles && ./getcycles
+gcc -march=native -O3 -Icrypto_aead/asconaead128/ref crypto_aead/asconaead128/ref/*.c -Itests tests/genkat_aead.c -o genkat && ./genkat
+gcc -march=native -O3 -Icrypto_aead/asconaead128/ref crypto_aead/asconaead128/ref/*.c -DCRYPTO_AEAD -Itests tests/getcycles.c -o getcycles && ./getcycles
+```
+
+```
+gcc -march=native -O3 -Icrypto_hash/asconhash256/ref crypto_hash/asconhash256/ref/*.c -Itests tests/genkat_hash.c -o genkat && ./genkat
+gcc -march=native -O3 -Icrypto_hash/asconhash256/ref crypto_hash/asconhash256/ref/*.c -DCRYPTO_HASH -Itests tests/getcycles.c -o getcycles && ./getcycles
+```
+
+```
+gcc -march=native -O3 -Icrypto_hash/asconxof128/ref crypto_hash/asconxof128/ref/*.c -Itests tests/genkat_hash.c -o genkat && ./genkat
+gcc -march=native -O3 -Icrypto_hash/asconxof128/ref crypto_hash/asconxof128/ref/*.c -DCRYPTO_HASH -Itests tests/getcycles.c -o getcycles && ./getcycles
 ```
 
 ## Algorithms
 
-This repository contains implementations of the following 10 Ascon algorithms:
+This repository contains implementations of the following NIST SP 800-232 draft standards:
 
-- `crypto_aead/ascon128v13`:   **Ascon-128**      (authenticated encryption)
-- `crypto_aead/ascon128av13`:  **Ascon-128a**     (authenticated encryption)
-- `crypto_aead/ascon80pqv13`:  **Ascon-80pq**     (authenticated encryption)
-- `crypto_hash/asconhashv13`:  **Ascon-Hash**     (hash function)
-- `crypto_hash/asconhashav13`: **Ascon-Hasha**    (hash function)
-- `crypto_hash/asconxofv13`:   **Ascon-Xof**      (hash function with extendable output, XOF)
-- `crypto_hash/asconxofav13`:  **Ascon-Xofa**     (hash function with extendable output, XOF)
+- `crypto_aead/asconaead128`:  **Ascon-AEAD128**     (authenticated encryption, formerly **Ascon-128a**)
+- `crypto_hash/asconhash256`:  **Ascon-Hash256**     (hash function, formerly **Ascon-Hash**)
+- `crypto_hash/asconxof128`:   **Ascon-XOF128**      (extendable output function, formerly **Ascon-Xof**)
+
+and combined algorithm implementations supporting both AEAD and XOF:
+
+- `crypto_aead_hash/asconaeadxof128`: **Ascon-AEAD128** combined with **Ascon-XOF128**
+
+We also provide the following Ascon MAC and PRF algorithms (not standardized yet):
+
 - `crypto_auth/asconmacv13`:   **Ascon-Mac**      (message authentication code)
-- `crypto_auth/asconprfv13`:   **Ascon-Prf**      (message authentication code with extendable output, PRF)
-- `crypto_auth/asconprfsv13`:  **Ascon-PrfShort** (message authentication code for very short messages)
+- `crypto_auth/asconprfv13`:   **Ascon-Prf**      (pseudo-random function)
+- `crypto_auth/asconprfsv13`:  **Ascon-PrfShort** (pseudo-random function for very short messages)
 
-We also provide two combined algorithm implementations supporting both AEAD and
-hashing:
 
-- `crypto_aead_hash/asconv13`: Ascon-128 combined with Ascon-Hash
-- `crypto_aead_hash/asconav13`: Ascon-128a combined with Ascon-Hasha
+## Other Ascon algorithms
 
-The following algorithms demonstrate the performance improvement of Ascon on
-32-bit platforms without bit interleaving overhead. Bit interleaving could be
-performed externally on the host side or using a dedicated instruction (e.g.
-using the ARM Custom Datapath Extension). Note that a similar performance
-improvement could be achieved using funnel shift instructions (available on some
-32-bit RISC-V extensions).
+Note that for the draft NIST standard, the following changes have been made compared to the Ascon submission:
 
-- `crypto_aead/ascon128bi32v13`: Ascon-128 (+17% on ARM1176JZF-S)
-- `crypto_aead/ascon128abi32v13`: Ascon-128a (+23% on ARM1176JZF-S)
-- `crypto_hash/asconhashbi32v13`: Ascon-Hash (+5% on ARM1176JZF-S)
-- `crypto_hash/asconhashabi32v13`: Ascon-Hasha (+8% on ARM1176JZF-S)
-- `crypto_aead_hash/asconbi32v13`: Ascon-128 combined with Ascon-Hash
-- `crypto_aead_hash/asconabi32v13`: Ascon-128a combined with Ascon-Hasha
+- The endianness has been switched from big endian to little endian
+- The initial values have been updated to accommodate potential extensions
+
+Other Ascon variants and versions can be found in different branches of this repository:
+
+- git branch [v1.2](https://github.com/ascon/ascon-c/tree/v1.2): Many other Ascon algorithms as submitted to the NIST and CAESAR competitions
+- git branch [v1.3](https://github.com/ascon/ascon-c/tree/v1.3): Many other Ascon algorithms using little endian notation and updated initial values
 
 
 ## Implementations
@@ -100,7 +107,7 @@ the following C with inline or partial ASM implementations:
 - `avr`: 8-bit size- and speed-optimized AVR
 - `avr_lowsize`: 8-bit size-optimized AVR
 
-the following ASM implementations:
+the following ASM implementations (only `asm_rv32i` has been updated to NIST SP 800-232 so far):
 
 - `asm_esp32`: 32-bit optimized ESP32 using funnel-shift instructions
 - `asm_rv32i`: 32-bit optimized RV32I using the base instruction set
@@ -126,25 +133,25 @@ preliminary results can found at: https://github.com/ascon/simpleserial-ascon
 
 # Code size on different CPU architectures (`-march`) in bytes
 
-|                 | ascon128        | ascon128a       | ascon80pq       | asconxof        | asconxofa       | ascon           | ascona          |
-|:----------------|----------------:|----------------:|----------------:|----------------:|----------------:|----------------:|----------------:|
-| x86-64-v4       | 1300            | 1339            | 1374            | 729             | 738             | 1638            | 1712            |
-| armv7-a         | 1444            | 1492            | 1468            | 792             | 792             | 1732            | 1868            |
-| armv7-m         | 1044            | 1090            | 1056            | 632             | 632             | 1238            | 1338            |
-| armv6-m         | 1094            | 1162            | 1106            | 756             | 664             | 1318            | 1386            |
-| rv32i           | 1528            | 1612            | 1868            | 1300            | 1004            | 2252            | 2384            |
-| esp32           | 1030            | 1098            | 1058            | 619             | 619             | 1364            | 1436            |
-| avr             | 3162            | 3512            | 3974            | 1662            | 1662            | 3608            | 3988            |
+|                 | asconaead128    | asconxof128     | asconaeadxof128 | asconprfv13     | asconprfsv13    |
+|:----------------|----------------:|----------------:|----------------:|----------------:|----------------:|
+| x86-64-v4       | 1339            | 729             | 1708            | 1242            | 1087            |
+| armv7-a         | 1492            | 792             | 1880            | 1548            | 1424            |
+| armv7-m         | 1090            | 632             | 1346            | 800             | 732             |
+| armv6-m         | 1162            | 664             | 1386            | 1100            | 780             |
+| rv32i           | 1612            | 1000            | 2380            | 1928            | 1772            |
+| esp32           | 1098            | 619             | 1436            | 1239            | 1020            |
+| avr             | 3512            | 1662            | 4000            | 1984            | 1858            |
 
 This table can be re-generated by running the following scripts (requires `gcc`, `clang` and `picolibc` variants to be installed):
 
 ```
-scripts/size-all.sh ascon128 ascon128a ascon80pq asconxof asconxofa ascon ascona
+scripts/size-all.sh asconaead128 asconxof128 asconaeadxof128 asconprfv13 asconprfsv13
 ```
 
-# Performance results on different CPUs in cycles per byte
+# Estimated performance results on different CPUs in cycles per byte
 
-## Ascon-128a
+## **Ascon-AEAD128** (NIST SP 800-232)
 
 | Message Length in Bytes  |    1 |    8 |   16 |   32 |   64 | 1536 | long |
 |:-------------------------|-----:|-----:|-----:|-----:|-----:|-----:|-----:|
@@ -161,40 +168,7 @@ scripts/size-all.sh ascon128 ascon128a ascon80pq asconxof asconxofa ascon ascona
 | ARM1176JZF-S (ARMv6)     | 1908 |  235 |  156 |   99 | 70.4 | 43.0 | 42.9 |
 
 
-## Ascon-128 and Ascon-80pq
-
-| Message Length in Bytes  |    1 |    8 |   16 |   32 |   64 | 1536 | long |
-|:-------------------------|-----:|-----:|-----:|-----:|-----:|-----:|-----:|
-| AMD EPYC 7742\*          |      |      |      |      |  8.1 |  6.6 |  6.5 |
-| AMD Ryzen 9 5950X\*      |      |      |      |      | 11.0 |  8.2 |  8.1 |
-| Apple M1 (ARMv8)\*       |      |      |      |      | 12.5 |  9.5 |  9.3 |
-| Cortex-A72 (ARMv8)\*     |      |      |      |      | 13.8 | 10.7 | 10.5 |
-| Intel Xeon E5-2609 v4\*  |      |      |      |      | 14.9 | 10.8 | 10.6 |
-| Intel Core i5-6300U      |  367 |   58 |   35 |   23 | 17.6 | 11.9 | 11.4 |
-| Intel Core i5-4200U      |  521 |   81 |   49 |   32 | 23.9 | 16.2 | 15.8 |
-| Cortex-A9 (ARMv7)\*      |      |      |      |      | 51.7 | 34.1 | 33.3 |
-| Cortex-A7 (NEON)         | 2182 |  249 |  148 |   97 | 71.7 | 47.5 | 46.5 |
-| Cortex-A7 (ARMv7)\*      |      |      |      |      | 69.6 | 52.0 | 51.6 |
-| ARM1176JZF-S (ARMv6)     | 1921 |  277 |  167 |  112 | 83.7 | 57.2 | 56.8 |
-
-
-## Ascon-Hasha and Ascon-Xofa
-
-| Message Length in Bytes  |    1 |    8 |   16 |   32 |    64 | 1536 | long |
-|:-------------------------|-----:|-----:|-----:|-----:|------:|-----:|-----:|
-| AMD EPYC 7742\*          |      |      |      |      |       |      |      |
-| AMD Ryzen 7 1700\*       |      |      |      |      |  22.0 | 12.1 | 11.7 |
-| Apple M1 (ARMv8)\*       |      |      |      |      |       |      |      |
-| Cortex-A72 (ARMv8)\*     |      |      |      |      |  22.2 | 14.5 | 14.2 |
-| Intel Xeon E5-2609 v4\*  |      |      |      |      |  23.3 | 14.4 | 14.0 |
-| Intel Core i5-6300U      |  550 |   83 |   49 |   33 |  23.7 | 15.6 | 15.5 |
-| Intel Core i5-4200U      |  749 |  112 |   67 |   44 |  31.8 | 20.8 | 20.7 |
-| Cortex-A9 (ARMv7)\*      |      |      |      |      |  87.5 | 45.6 | 44.0 |
-| Cortex-A7 (ARMv7)\*      |      |      |      |      | 102.3 | 63.5 | 61.8 |
-| ARM1176JZF-S (ARMv6)     | 2390 |  356 |  211 |  138 | 100.7 | 65.7 | 65.3 |
-
-
-## Ascon-Hash and Ascon-Xof
+## **Ascon-Hash256** and **Ascon-XOF128** (NIST SP 800-232)
 
 | Message Length in Bytes  |    1 |    8 |   16 |   32 |    64 | 1536 | long |
 |:-------------------------|-----:|-----:|-----:|-----:|------:|-----:|-----:|
@@ -210,7 +184,7 @@ scripts/size-all.sh ascon128 ascon128a ascon80pq asconxof asconxofa ascon ascona
 | ARM1176JZF-S (ARMv6)     | 3051 |  462 |  277 |  184 | 137.3 | 92.6 | 92.2 |
 
 
-## Ascon-Mac and Ascon-Prf
+## **Ascon-Mac** and **Ascon-Prf**
 
 | Message Length in Bytes  |    1 |    8 |   16 |   32 |   64 | 1536 | long |
 |:-------------------------|-----:|-----:|-----:|-----:|-----:|-----:|-----:|
@@ -219,7 +193,7 @@ scripts/size-all.sh ascon128 ascon128a ascon80pq asconxof asconxofa ascon ascona
 | ARM1176JZF-S (ARMv6)     | 1769 |  223 |  117 |   85 | 57.5 | 31.9 | 31.6 |
 
 
-## Ascon-PrfShort
+## **Ascon-PrfShort**
 
 | Message Length in Bytes  |    1 |    8 |   16 |   32 |   64 | 1536 | long |
 |:-------------------------|-----:|-----:|-----:|-----:|-----:|-----:|-----:|
@@ -227,12 +201,14 @@ scripts/size-all.sh ascon128 ascon128a ascon80pq asconxof asconxofa ascon ascona
 | Intel Core i5-4200U      |  257 |   33 |   17 |    - |    - |    - |    - |
 | ARM1176JZF-S (ARMv6)     | 1057 |  132 |   69 |    - |    - |    - |    - |
 
-\* Results taken from eBACS: http://bench.cr.yp.to/
+\* Results taken from eBACS for Ascon v1.2: http://bench.cr.yp.to/
+
+Performance results for other Ascon variants and versions can be found in git branch [v1.2](https://github.com/ascon/ascon-c/tree/v1.2) and [v1.3](https://github.com/ascon/ascon-c/tree/v1.3).
 
 
 # Build and test
 
-Build and test all Ascon C targets using release flags (-O2 -fomit-frame-pointer -march=native -mtune=native):
+Build and test all Ascon C targets using release flags (`-O2 -fomit-frame-pointer -march=native -mtune=native`):
 
 ```
 mkdir build && cd build
@@ -245,7 +221,8 @@ ctest
 Build and test all Ascon C targets on Windows:
 
 ```
-mkdir build && cd build
+mkdir build
+cd build
 cmake ..
 cmake --build . --config Release
 ctest -C Release
@@ -269,7 +246,7 @@ cmake --build .
 ctest
 ```
 
-Manually set the compiler and/or release flags (e.g. to disable -march=native -mtune=native).
+Manually set the compiler and/or release flags (e.g. to disable `-march=native -mtune=native`).
 
 ```
 mkdir build && cd build
@@ -282,7 +259,7 @@ Build and run only specific algorithms, implementations and tests:
 
 ```
 mkdir build && cd build
-cmake .. -DALG_LIST="ascon128;asconhash" -DIMPL_LIST="opt64;bi32" -DTEST_LIST="genkat"
+cmake .. -DALG_LIST="asconaead128;asconhash256" -DIMPL_LIST="opt64;bi32" -DTEST_LIST="genkat"
 cmake --build .
 ctest
 ```
@@ -293,7 +270,7 @@ one-by-one, unset using e.g. `cmake . -UIMPL_LIST` and shown using `cmake . -L`:
 ```
 mkdir build && cd build
 cmake ..
-cmake . -DALG_LIST="ascon128;asconhash"
+cmake . -DALG_LIST="asconaead128;asconhash256"
 cmake . -DIMPL_LIST="opt64;bi32"
 cmake . -DTEST_LIST="genkat"
 cmake . -L
@@ -318,7 +295,7 @@ mkdir build && cd build
 cmake .. -DCMAKE_C_COMPILER="arm-linux-gnueabi-gcc" \
          -DREL_FLAGS="-O2;-fomit-frame-pointer;-march=armv7;-mtune=cortex-m4" \
          -DEMULATOR="qemu-arm;-L;/usr/arm-linux-gnueabi" \
-         -DALG_LIST="ascon128;ascon128a" -DIMPL_LIST="armv7m;bi32_armv7m"
+         -DALG_LIST="asconaead128;asconhash256" -DIMPL_LIST="armv7m;bi32_armv7m"
 cmake --build .
 ctest
 ```
@@ -330,7 +307,7 @@ mkdir build && cd build
 cmake .. -DCMAKE_C_COMPILER="arm-none-eabi-gcc" -DCMAKE_C_COMPILER_FORCED=ON \
          -DREL_FLAGS="-O2;-mcpu=cortex-m0;--specs=picolibc.specs;--oslib=semihost;-T../tests/microbit.ld" \
          -DEMULATOR="qemu-system-arm;-semihosting;-nographic;-machine;microbit;-kernel" \
-         -DALG_LIST="ascon128;ascon128a" -DIMPL_LIST="armv6m;armv6m_lowsize"
+         -DALG_LIST="asconaead128;asconhash256" -DIMPL_LIST="armv6m;armv6m_lowsize"
 cmake --build .
 ctest
 ```
@@ -342,7 +319,7 @@ mkdir build && cd build
 cmake .. -DCMAKE_C_COMPILER="riscv64-unknown-elf-gcc" -DCMAKE_C_COMPILER_FORCED=ON \
          -DREL_FLAGS="-O2;-march=rv32i;-mabi=ilp32;--specs=picolibc.specs;--oslib=semihost;-T../tests/rv32.ld" \
          -DEMULATOR="qemu-system-riscv32;-semihosting;-nographic;-machine;virt;-cpu;rv32;-bios;none;-kernel" \
-         -DALG_LIST="ascon128;ascon128a" -DIMPL_LIST="asm_rv32i"
+         -DALG_LIST="asconaead128;asconhash256" -DIMPL_LIST="asm_rv32i"
 cmake --build .
 ctest
 ```
@@ -354,26 +331,26 @@ Build the getcycles test:
 
 ```
 mkdir build && cd build
-cmake .. -DALG_LIST="ascon128;asconhash" -DIMPL_LIST="opt32;opt32_lowsize" -DTEST_LIST="getcycles"
+cmake .. -DALG_LIST="asconaead128;asconhash256" -DIMPL_LIST="opt32;opt32_lowsize" -DTEST_LIST="getcycles"
 cmake --build .
 ```
 
 Get the CPU cycle performance:
 
 ```
-./getcycles_crypto_aead_ascon128v13_opt32
-./getcycles_crypto_aead_ascon128v13_opt32_lowsize
-./getcycles_crypto_hash_asconhashv13_opt32
-./getcycles_crypto_hash_asconhashv13_opt32_lowsize
+./getcycles_crypto_aead_asconaead128_opt32
+./getcycles_crypto_aead_asconaead128_opt32_lowsize
+./getcycles_crypto_hash_asconhash256_opt32
+./getcycles_crypto_hash_asconhash256_opt32_lowsize
 ```
 
 Get the implementation size:
 
 ```
-size -t libcrypto_aead_ascon128v13_opt32.a
-size -t libcrypto_aead_ascon128v13_opt32_lowsize.a
-size -t libcrypto_hash_asconhashv13_opt32.a
-size -t libcrypto_hash_asconhashv13_opt32_lowsize.a
+size -t libcrypto_aead_asconaead128_opt32.a
+size -t libcrypto_aead_asconaead128_opt32_lowsize.a
+size -t libcrypto_hash_asconhash256_opt32.a
+size -t libcrypto_hash_asconhash256_opt32_lowsize.a
 ```
 
 
@@ -384,15 +361,22 @@ size -t libcrypto_hash_asconhashv13_opt32_lowsize.a
 Build example for AEAD algorithms:
 
 ```
-gcc -march=native -O3 -Icrypto_aead/ascon128v13/opt64 crypto_aead/ascon128v13/opt64/*.c -Itests tests/genkat_aead.c -o genkat
-gcc -march=native -O3 -Icrypto_aead/ascon128v13/opt64 crypto_aead/ascon128v13/opt64/*.c -DCRYPTO_AEAD -Itests tests/getcycles.c -o getcycles
+gcc -march=native -O3 -Icrypto_aead/asconaead128/opt64 crypto_aead/asconaead128/opt64/*.c -Itests tests/genkat_aead.c -o genkat
+gcc -march=native -O3 -Icrypto_aead/asconaead128/opt64 crypto_aead/asconaead128/opt64/*.c -DCRYPTO_AEAD -Itests tests/getcycles.c -o getcycles
 ```
 
-Build example for HASH algorithms:
+Build example for HASH/XOF algorithms:
 
 ```
-gcc -march=native -O3 -Icrypto_hash/asconhashv13/opt64 crypto_hash/asconhashv13/opt64/*.c -Itests tests/genkat_hash.c -o genkat
-gcc -march=native -O3 -Icrypto_hash/asconhashv13/opt64 crypto_hash/asconhashv13/opt64/*.c -DCRYPTO_HASH -Itests tests/getcycles.c -o getcycles
+gcc -march=native -O3 -Icrypto_hash/asconhash256/opt64 crypto_hash/asconhash256/opt64/*.c -Itests tests/genkat_hash.c -o genkat
+gcc -march=native -O3 -Icrypto_hash/asconhash256/opt64 crypto_hash/asconhash256/opt64/*.c -DCRYPTO_HASH -Itests tests/getcycles.c -o getcycles
+```
+
+Build example for MAC/PRF algorithms:
+
+```
+gcc -march=native -O3 -Icrypto_auth/asconprfv13/opt64 crypto_auth/asconprfv13/opt64/*.c -Itests tests/genkat_auth.c -o genkat
+gcc -march=native -O3 -Icrypto_auth/asconprfv13/opt64 crypto_auth/asconprfv13/opt64/*.c -DCRYPTO_AUTH -Itests tests/getcycles.c -o getcycles
 ```
 
 Generate KATs and get CPU cycles:
@@ -402,10 +386,12 @@ Generate KATs and get CPU cycles:
 ./getcycles
 ```
 
+## Build and print intermediate values:
+
 To print input/output values and intermediate Ascon states, add `-DASCON_PRINT_STATE` to the build:
 
 ```
-gcc -DASCON_PRINT_STATE -Icrypto_aead/ascon128v13/opt64 crypto_aead/ascon128v13/opt64/*.c -Itests tests/genkat_aead.c -o genkat && ./genkat
+gcc -DASCON_PRINT_STATE -Icrypto_aead/asconaead128/opt64 crypto_aead/asconaead128/opt64/*.c -Itests tests/genkat_aead.c -o genkat && ./genkat | less
 ```
 
 
@@ -414,15 +400,15 @@ gcc -DASCON_PRINT_STATE -Icrypto_aead/ascon128v13/opt64 crypto_aead/ascon128v13/
 Build example for AEAD algorithms:
 
 ```
-arm-linux-gnueabi-gcc -march=armv7 -O2 -Icrypto_aead/ascon128v13/armv7m crypto_aead/ascon128v13/armv7m/*.c -Itests tests/genkat_aead.c -o genkat
-arm-linux-gnueabi-gcc -march=armv7 -O2 -Icrypto_aead/ascon128v13/armv7m crypto_aead/ascon128v13/armv7m/*.c -DCRYPTO_AEAD -Itests tests/getcycles.c -o getcycles
+arm-linux-gnueabi-gcc -march=armv7 -O2 -Icrypto_aead/asconaead128/armv7m crypto_aead/asconaead128/armv7m/*.c -Itests tests/genkat_aead.c -o genkat
+arm-linux-gnueabi-gcc -march=armv7 -O2 -Icrypto_aead/asconaead128/armv7m crypto_aead/asconaead128/armv7m/*.c -DCRYPTO_AEAD -Itests tests/getcycles.c -o getcycles
 ```
 
-Build example for HASH algorithms:
+Build example for HASH/XOF algorithms:
 
 ```
-arm-linux-gnueabi-gcc -march=armv7 -O2 -Icrypto_aead/ascon128v13/armv7m crypto_aead/ascon128v13/armv7m/*.c -Itests tests/genkat_hash.c -o genkat
-arm-linux-gnueabi-gcc -march=armv7 -O2 -Icrypto_aead/ascon128v13/armv7m crypto_aead/ascon128v13/armv7m/*.c -DCRYPTO_HASH -Itests tests/getcycles.c -o getcycles
+arm-linux-gnueabi-gcc -march=armv7 -O2 -Icrypto_aead/asconaead128/armv7m crypto_aead/asconaead128/armv7m/*.c -Itests tests/genkat_hash.c -o genkat
+arm-linux-gnueabi-gcc -march=armv7 -O2 -Icrypto_aead/asconaead128/armv7m crypto_aead/asconaead128/armv7m/*.c -DCRYPTO_HASH -Itests tests/getcycles.c -o getcycles
 ```
 
 Generate KATs and get CPU cycles:
@@ -446,16 +432,16 @@ Example to build, run and test an AEAD/HASH algorithm using `gcc`, `picolibc` an
 
 ```
 arm-none-eabi-gcc -O2 -mcpu=cortex-m0 --specs=picolibc.specs --oslib=semihost -Ttests/microbit.ld \
-    -Icrypto_aead/ascon128v13/armv6m crypto_aead/ascon128v13/armv6m/*.[cS] -Itests tests/genkat_aead.c -o genkat
+    -Icrypto_aead/asconaead128/armv6m crypto_aead/asconaead128/armv6m/*.[cS] -Itests tests/genkat_aead.c -o genkat
 qemu-system-arm -semihosting -nographic -machine microbit -kernel genkat
-diff LWC_AEAD_KAT_128_128.txt crypto_aead/ascon128v13/LWC_AEAD_KAT_128_128.txt
+diff LWC_AEAD_KAT_128_128.txt crypto_aead/asconaead128/LWC_AEAD_KAT_128_128.txt
 ```
 
 ```
 arm-none-eabi-gcc -O2 -mcpu=cortex-m0 --specs=picolibc.specs --oslib=semihost -Ttests/microbit.ld \
-    -Icrypto_hash/asconhashv13/opt32 crypto_hash/asconhashv13/opt32/*.[cS] -Itests tests/genkat_hash.c -o genkat
+    -Icrypto_hash/asconhash256/opt32 crypto_hash/asconhash256/opt32/*.[cS] -Itests tests/genkat_hash.c -o genkat
 qemu-system-arm -semihosting -nographic -machine microbit -kernel genkat
-diff LWC_HASH_KAT_256.txt crypto_hash/asconhashv13/LWC_HASH_KAT_256.txt
+diff LWC_HASH_KAT_256.txt crypto_hash/asconhash256/LWC_HASH_KAT_256.txt
 ```
 
 
@@ -471,16 +457,16 @@ Example to build, run and test an AEAD/HASH algorithm using `gcc`, `picolibc` an
 
 ```
 riscv64-unknown-elf-gcc -O2 -march=rv32i -mabi=ilp32 --specs=picolibc.specs --oslib=semihost -Ttests/rv32.ld \
-    -Icrypto_aead/ascon128v13/asm_rv32i crypto_aead/ascon128v13/asm_rv32i/*.[cS] -Itests tests/genkat_aead.c -o genkat
+    -Icrypto_aead/asconaead128/asm_rv32i crypto_aead/asconaead128/asm_rv32i/*.[cS] -Itests tests/genkat_aead.c -o genkat
 qemu-system-riscv32 -semihosting -nographic -machine virt -cpu rv32 -bios none -kernel genkat
-diff LWC_AEAD_KAT_128_128.txt crypto_aead/ascon128v13/LWC_AEAD_KAT_128_128.txt
+diff LWC_AEAD_KAT_128_128.txt crypto_aead/asconaead128/LWC_AEAD_KAT_128_128.txt
 ```
 
 ```
 riscv64-unknown-elf-gcc -O2 -march=rv32i -mabi=ilp32 --specs=picolibc.specs --oslib=semihost -Ttests/rv32.ld \
-    -Icrypto_hash/asconhashv13/opt32 crypto_hash/asconhashv13/opt32/*.[cS] -Itests tests/genkat_hash.c -o genkat
+    -Icrypto_hash/asconhash256/opt32 crypto_hash/asconhash256/opt32/*.[cS] -Itests tests/genkat_hash.c -o genkat
 qemu-system-riscv32 -semihosting -nographic -machine virt -cpu rv32 -bios none -kernel genkat
-diff LWC_HASH_KAT_256.txt crypto_hash/asconhashv13/LWC_HASH_KAT_256.txt
+diff LWC_HASH_KAT_256.txt crypto_hash/asconhash256/LWC_HASH_KAT_256.txt
 ```
 
 
@@ -498,13 +484,13 @@ git clone https://github.com/JohannCahier/avr_uart.git
 Single test vector using `demo` and performance measurement using `getcycles`:
 
 ```
-avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/ascon128v13/opt8 crypto_aead/ascon128v13/opt8/*.[cS] \
+avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/asconaead128/opt8 crypto_aead/asconaead128/opt8/*.[cS] \
     -DAVR_UART -Iavr_uart avr_uart/avr_uart.c -Wno-incompatible-pointer-types -Wno-cpp \
     -DCRYPTO_AEAD -Itests tests/demo.c -o demo
 simavr -m atmega128 ./demo
 ```
 ```
-avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/ascon128v13/opt8 crypto_aead/ascon128v13/opt8/*.[cS] \
+avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/asconaead128/opt8 crypto_aead/asconaead128/opt8/*.[cS] \
     -DAVR_UART -Iavr_uart avr_uart/avr_uart.c -Wno-incompatible-pointer-types -Wno-cpp \
     -DCRYPTO_AEAD -Itests tests/getcycles.c -o getcycles
 simavr -t -m atmega128 ./getcycles
@@ -513,23 +499,23 @@ simavr -t -m atmega128 ./getcycles
 Generate all test vectors for AEAD/HASH and write result to a file. Press Ctrl-C to quit `simavr` after about a minute:
 
 ```
-avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/ascon128v13/opt8 crypto_aead/ascon128v13/opt8/*.[cS] \
+avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_aead/asconaead128/opt8 crypto_aead/asconaead128/opt8/*.[cS] \
     -DAVR_UART -Iavr_uart avr_uart/avr_uart.c -Wno-incompatible-pointer-types -Wno-cpp \
     -Itests tests/genkat_aead.c -o genkat_aead
 echo "Press Ctrl-C to quit simavr after about a minute"
 simavr -t -m atmega128 ./genkat_aead 2> LWC_AEAD_KAT_128_128.txt
 sed -i -e 's/\x1b\[[0-9;]*m//g' -e 's/\.\.$//' LWC_AEAD_KAT_128_128.txt
-diff LWC_AEAD_KAT_128_128.txt crypto_aead/ascon128v13/LWC_AEAD_KAT_128_128.txt
+diff LWC_AEAD_KAT_128_128.txt crypto_aead/asconaead128/LWC_AEAD_KAT_128_128.txt
 ```
 
 ```
-avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_hash/asconhashv13/opt8 crypto_hash/asconhashv13/opt8/*.[cS] \
+avr-gcc -mmcu=atmega128 -std=c99 -Os -Icrypto_hash/asconhash256/opt8 crypto_hash/asconhash256/opt8/*.[cS] \
     -DAVR_UART -Iavr_uart avr_uart/avr_uart.c -Wno-incompatible-pointer-types -Wno-cpp \
     -Itests tests/genkat_hash.c -o genkat_hash
 echo "Press Ctrl-C to quit simavr after about a minute"
 simavr -t -m atmega128 ./genkat_hash 2> LWC_HASH_KAT_256.txt
 sed -i -e 's/\x1b\[[0-9;]*m//g' -e 's/\.\.$//' LWC_HASH_KAT_256.txt
-diff LWC_HASH_KAT_256.txt crypto_hash/asconhashv13/LWC_HASH_KAT_256.txt
+diff LWC_HASH_KAT_256.txt crypto_hash/asconhash256/LWC_HASH_KAT_256.txt
 ```
 
 
@@ -557,13 +543,13 @@ diff LWC_HASH_KAT_256.txt crypto_hash/asconhashv13/LWC_HASH_KAT_256.txt
 
 * Run a getcycles program using the frequency factor and watch the results:
   ```
-  while true; do ./getcycles_crypto_aead_ascon128v13_opt64 $factor; done
+  while true; do ./getcycles_crypto_aead_asconaead128_opt64 $factor; done
   ```
 
 * Run the `benchmark-getcycles.sh` script with the frequency factor and a
   specific algorithm to benchmark all corresponding getcycles implementations:
   ```
-  scripts/benchmark-getcycles.sh $factor ascon128
+  scripts/benchmark-getcycles.sh $factor asconaead
   ```
 
 
@@ -594,11 +580,9 @@ To test only Ascon, just run the following commands:
 
 ```
 ./do-part init
-./do-part crypto_aead ascon128v13
-./do-part crypto_aead ascon128av13
-./do-part crypto_aead ascon80pqv13
-./do-part crypto_hash asconhashv13
-./do-part crypto_hash asconxofv13
+./do-part crypto_aead asconaead128
+./do-part crypto_hash asconhash256
+./do-part crypto_hash asconxof128
 ```
 
 Show the cycles/Byte for a 1536 Byte long message:
@@ -613,18 +597,18 @@ cat bench/*/data | grep '_cycles 1536 ' | awk '{printf "%.1f\t%s\t%s\n", $9/$8, 
 The script `build-test.sh` quickly test builds all implementations of an algorithm
 for a given compiler with compile flags:
 ```
-scripts/build-test.sh ascon128 arm-none-eabi-gcc -march=armv6-m -O2
-scripts/build-test.sh ascon128 arm-linux-gnueabi-gcc -march=armv7-m -O2
-scripts/build-test.sh ascon128 clang --target=riscv32-unknown-elf -march=rv32i -mabi=ilp32 -I/usr/lib/picolibc/arm-none-eabi/include
+scripts/build-test.sh asconaead128 arm-none-eabi-gcc -march=armv6-m -O2
+scripts/build-test.sh asconaead128 arm-linux-gnueabi-gcc -march=armv7-m -O2
+scripts/build-test.sh asconaead128 clang --target=riscv32-unknown-elf -march=rv32i -mabi=ilp32 -I/usr/lib/picolibc/arm-none-eabi/include
 ```
 
 
 The `size-build.sh` script builds and sorts the size of all implementations
 of an algorithm for a given compiler with compile flags:
 ```
-scripts/size-build.sh ascon128 arm-none-eabi-gcc -march=armv6-m
-scripts/size-build.sh ascon128 arm-linux-gnueabi-gcc -march=armv7-m
-scripts/size-build.sh ascon128 clang --target=riscv32-unknown-elf -march=rv32i -mabi=ilp32 -I/usr/lib/picolibc/arm-none-eabi/include
+scripts/size-build.sh asconaead128 arm-none-eabi-gcc -march=armv6-m
+scripts/size-build.sh asconaead128 arm-linux-gnueabi-gcc -march=armv7-m
+scripts/size-build.sh asconaead128 clang --target=riscv32-unknown-elf -march=rv32i -mabi=ilp32 -I/usr/lib/picolibc/arm-none-eabi/include
 ```
 
 The ascon-c code allows to set compile-time parameters `ASCON_INLINE_MODE`
@@ -636,7 +620,7 @@ parameters for a given list of Ascon implementations. The script is called
 with a frequency factor, output file, the algorithm, and a list of
 implementations to test:
 ```
-scripts/benchmark-config.sh $factor results-config.md ascon128 ref opt64 opt64_lowsize
+scripts/benchmark-config.sh $factor results-config.md asconaead128 ref opt64 opt64_lowsize
 ```
 The `results-config.md` file then contains a markup table with size and cycles
 for each implementation and parameter set to evaluate several time-area
