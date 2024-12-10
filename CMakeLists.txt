@@ -6,8 +6,8 @@ enable_testing()
 set(DEFAULT_VERSIONS 128 256 v13)
 
 # default to all Ascon algorithms:
-set(DEFAULT_ALGS asconaead128 asconhash128 asconxof128 asconaeadxof128
-  asconmacv13 asconprfv13 asconprfsv13)
+set(DEFAULT_ALGS asconaead128 asconhash256 asconxof128 asconcxof128
+  asconaeadxof128 asconmacv13 asconprfv13 asconprfsv13)
 
 # default to all C implementations:
 set(DEFAULT_IMPLS ref opt64 opt64_lowsize opt32 opt32_lowsize bi32 bi32_lowsize bi32_lowreg esp32 opt8 opt8_lowsize bi8)
@@ -53,12 +53,12 @@ message(STATUS "cmake host system processor: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
 
 set(KAT_PATH KAT)
 set(TEST_PATH tests)
-foreach(CRYPTO aead hash auth)
+foreach(CRYPTO aead hash cxof auth)
   foreach(VER ${VERSION_LIST} "")
     foreach(ALG ${ALG_LIST})
       foreach(IMPL ${IMPL_LIST})
         set(IMPL_PATH crypto_${CRYPTO}/${ALG}${VER}/${IMPL})
-        if((NOT ${CRYPTO} STREQUAL auth) AND
+        if((NOT ${CRYPTO} STREQUAL auth) AND (NOT ${CRYPTO} STREQUAL cxof) AND
             NOT EXISTS ${CMAKE_SOURCE_DIR}/${IMPL_PATH})
           set(IMPL_PATH crypto_aead_hash/${ALG}${VER}/${IMPL})
         endif()
@@ -89,9 +89,7 @@ foreach(CRYPTO aead hash auth)
             set(DEFINE_CRYPTO ${DEFINE_CRYPTO}_SHARED)
           endif()
           if(${ALG} MATCHES asconprfs)
-            set(DEFINE_MAXMSGLEN "MAX_DATA_LENGTH=16")
-          else()
-            set(DEFINE_MAXMSGLEN "MAX_DATA_LENGTH=1024")
+            set(DEFINE_MAXMSGLEN "MAX_MESSAGE_LENGTH=16")
           endif()
           set(EXE_NAME ${TEST_NAME}_${IMPL_NAME})
           add_executable(${EXE_NAME} ${TEST_FILES})

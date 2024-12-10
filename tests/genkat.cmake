@@ -6,6 +6,9 @@ elseif(${ALG} STREQUAL asconhash256 OR
     ${ALG} STREQUAL asconxof128)
   set(KAT_PATH crypto_hash/${ALG})
   set(KAT_FILE LWC_HASH_KAT_256.txt)
+elseif(${ALG} STREQUAL asconcxof128)
+  set(KAT_PATH crypto_cxof/${ALG})
+  set(KAT_FILE LWC_CXOF_KAT_256.txt)
 elseif((${ALG} STREQUAL asconaeadxof128) AND
     ${CRYPTO} STREQUAL aead)
   set(KAT_PATH crypto_aead_hash/${ALG})

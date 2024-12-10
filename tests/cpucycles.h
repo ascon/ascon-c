@@ -18,7 +18,7 @@
 #endif
 #define cpucycles_init()
 #define cpucycles(cycles) cycles = __rdtsc()
-//#define cpucycles(cycles) cycles = __rdtscp(&tmp)
+// #define cpucycles(cycles) cycles = __rdtscp(&tmp)
 #endif
 
 #if defined(__ARM_ARCH_6__) || __ARM_ARCH == 6 || _M_ARM == 6
