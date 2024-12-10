@@ -29,3 +29,4 @@
 #ifndef NUM_SHARES_KEY
 #define NUM_SHARES_KEY 2
 #endif
+#define ASCON_VARIANT 1

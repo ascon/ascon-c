@@ -2,3 +2,4 @@
 #define CRYPTO_BYTES 32
 #define ASCON_HASH_BYTES 32 /* HASH */
 #define ASCON_HASH_ROUNDS 12
+#define ASCON_VARIANT 2

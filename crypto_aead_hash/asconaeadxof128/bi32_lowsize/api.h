@@ -9,6 +9,7 @@
 #define ASCON_AEAD_RATE 16
 
 // Hash defines
-#define CRYPTO_BYTES 32
+#define CRYPTO_BYTES 64
 #define ASCON_HASH_BYTES 0 /* XOF */
 #define ASCON_HASH_ROUNDS 12
+#define ASCON_VARIANT 3
