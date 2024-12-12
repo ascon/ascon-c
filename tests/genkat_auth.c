@@ -60,6 +60,16 @@
 #define MAX_MESSAGE_LENGTH 1024
 #endif
 
+#if defined(ASCON_VARIANT) && ASCON_VARIANT == 5
+#define VAR "MAC"
+#elif defined(ASCON_VARIANT) && ASCON_VARIANT == 6
+#define VAR "PRF"
+#elif defined(ASCON_VARIANT) && ASCON_VARIANT == 7
+#define VAR "PRFS"
+#else
+#define VAR "AUTH"
+#endif
+
 void init_buffer(unsigned char offset, unsigned char* buffer,
                  unsigned long long numbytes);
 
@@ -91,7 +101,7 @@ int generate_test_vectors() {
   init_buffer(0x00, key, sizeof(key));
 
 #if !defined(AVR_UART)
-  sprintf(fileName, "LWC_AUTH_KAT_%d_%d.txt", (CRYPTO_KEYBYTES * 8),
+  sprintf(fileName, "LWC_%s_KAT_%d_%d.txt", VAR, (CRYPTO_KEYBYTES * 8),
           (CRYPTO_BYTES * 8));
   if ((fp = fopen(fileName, "w")) == NULL) {
     fprintf(stderr, "Couldn't open <%s> for write\n", fileName);

@@ -91,7 +91,7 @@ int generate_test_vectors() {
   int func_ret, ret_val = KAT_SUCCESS;
 
 #if !defined(AVR_UART)
-  sprintf(fileName, "LWC_CXOF_KAT_%d.txt", (CRYPTO_BYTES * 8));
+  sprintf(fileName, "LWC_CXOF_KAT_128_%d.txt", (CRYPTO_BYTES * 8));
   if ((fp = fopen(fileName, "w")) == NULL) {
     fprintf(stderr, "Couldn't open <%s> for write\n", fileName);
     return KAT_FILE_OPEN_ERROR;

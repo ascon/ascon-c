@@ -58,6 +58,12 @@
 #define MAX_MESSAGE_LENGTH 1024
 #endif
 
+#if defined(ASCON_VARIANT) && ASCON_VARIANT == 3
+#define VAR "XOF"
+#else
+#define VAR "HASH"
+#endif
+
 void init_buffer(unsigned char offset, unsigned char* buffer,
                  unsigned long long numbytes);
 
@@ -86,7 +92,7 @@ int generate_test_vectors() {
   int func_ret, ret_val = KAT_SUCCESS;
 
 #if !defined(AVR_UART)
-  sprintf(fileName, "LWC_HASH_KAT_%d.txt", (CRYPTO_BYTES * 8));
+  sprintf(fileName, "LWC_%s_KAT_128_%d.txt", VAR, (CRYPTO_BYTES * 8));
   if ((fp = fopen(fileName, "w")) == NULL) {
     fprintf(stderr, "Couldn't open <%s> for write\n", fileName);
     return KAT_FILE_OPEN_ERROR;
