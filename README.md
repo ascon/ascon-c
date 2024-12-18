@@ -9,11 +9,16 @@ Ascon is a family of lightweight cryptographic algorithms and consists of:
 
 For more information on Ascon visit: https://ascon.iaik.tugraz.at/
 
-All implementations in this repository use the "ECRYPT Benchmarking of Cryptographic Systems (eBACS)" interface:
+Most implementations in this repository use the "ECRYPT Benchmarking of Cryptographic Systems (eBACS)" interface:
 
 - https://bench.cr.yp.to/call-aead.html for AEAD (Ascon-AEAD128)
 - https://bench.cr.yp.to/call-hash.html for HASH and XOF (Ascon-Hash256, Ascon-XOF128)
 - https://nacl.cr.yp.to/auth.html for MAC and PRF (Ascon-Mac, Ascon-Prf, Ascon-PrfShort)
+- Except CXOF, which uses the interface defined in `tests/crypto_cxof.h` (Ascon-CXOF128)
+
+New KAT files (known answer tests) for all NIST SP 800-232 algorithms can be found in `crypto_*/*/LWC*.txt`.
+
+Old KAT files can still be found in the same path at [v1.3.0](https://github.com/ascon/ascon-c/tree/v1.3.0) for NIST SP 800-232 and at [v1.2.8](https://github.com/ascon/ascon-c/tree/v1.2.8) for Ascon v1.2.
 
 
 ## TL;DR
