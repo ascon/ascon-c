@@ -59,15 +59,15 @@ foreach(CRYPTO aead hash cxof auth)
       foreach(IMPL ${IMPL_LIST})
         set(IMPL_PATH crypto_${CRYPTO}/${ALG}${VER}/${IMPL})
         if((NOT ${CRYPTO} STREQUAL auth) AND (NOT ${CRYPTO} STREQUAL cxof) AND
-            NOT EXISTS ${CMAKE_SOURCE_DIR}/${IMPL_PATH})
+            NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${IMPL_PATH})
           set(IMPL_PATH crypto_aead_hash/${ALG}${VER}/${IMPL})
         endif()
-        if(NOT EXISTS ${CMAKE_SOURCE_DIR}/${IMPL_PATH})
+        if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${IMPL_PATH})
           continue()
         endif()
         message("Adding implementation ${IMPL_PATH}")
         set(IMPL_NAME crypto_${CRYPTO}_${ALG}${VER}_${IMPL})
-        file(GLOB IMPL_FILES RELATIVE ${CMAKE_SOURCE_DIR} "${IMPL_PATH}/*.[chS]")
+        file(GLOB IMPL_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${IMPL_PATH}/*.[chS]")
         if(${IMPL} MATCHES protected.*)
           set(IMPL_FILES ${IMPL_FILES} ${TEST_PATH}/randombytes.h)
         endif()
@@ -103,9 +103,9 @@ foreach(CRYPTO aead hash cxof auth)
           if(${TEST_NAME} STREQUAL genkat)
             add_test(NAME ${EXE_NAME} COMMAND ${CMAKE_COMMAND}
               -DEXE_NAME=${EXE_NAME} -DALG=${ALG}${VER} -DCRYPTO=${CRYPTO}
-              -DSRC_DIR=${CMAKE_SOURCE_DIR} -DBIN_DIR=${CMAKE_BINARY_DIR}
+              -DSRC_DIR=${CMAKE_CURRENT_SOURCE_DIR} -DBIN_DIR=${CMAKE_CURRENT_BINARY_DIR}
               -DEMULATOR=${EMULATOR_STRING} -DCONFIG=$<CONFIGURATION>
-              -P ${CMAKE_SOURCE_DIR}/tests/genkat.cmake)
+              -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/genkat.cmake)
           else()
             add_test(${EXE_NAME} ${EXE_NAME})
           endif()
