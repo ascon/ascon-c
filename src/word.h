@@ -61,7 +61,7 @@ forceinline void STOREBYTES(uint8_t* bytes, uint64_t w, int n) {
 }
 
 /*
- *overwriting a memory region with zeros. The volatile pointer prevents the
+ * overwriting a memory region with zeros. The volatile pointer prevents the
  * compiler from optimizing the loop away, ensuring that sensitive data is
  * actually cleared.
  */
