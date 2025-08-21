@@ -208,6 +208,9 @@ int ascon_aead_encrypt(uint8_t* t, uint8_t* c, const uint8_t* m, uint64_t mlen,
   ascon_encrypt(&s, c, m, mlen);
   ascon_final(&s, &key);
   ascon_gettag(&s, t);
+  /*clearing sensitive material*/
+  ascon_clean(&s, sizeof s);
+  ascon_clean(&key, sizeof key);
   return 0;
 }
 
@@ -221,7 +224,12 @@ int ascon_aead_decrypt(uint8_t* m, const uint8_t* t, const uint8_t* c,
   ascon_adata(&s, ad, adlen);
   ascon_decrypt(&s, m, c, clen);
   ascon_final(&s, &key);
-  return ascon_verify(&s, t);
+  int result = ascon_verify(&s, t);
+  /*clearing sensitive material*/
+  ascon_clean(&s, sizeof s);
+  ascon_clean(&key, sizeof key);
+  return result;
+  
 }
 
 int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
