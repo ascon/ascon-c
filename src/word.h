@@ -60,4 +60,15 @@ forceinline void STOREBYTES(uint8_t* bytes, uint64_t w, int n) {
   memcpy(bytes, &x, n);
 }
 
+/*
+ * overwriting a memory region with zeros. The volatile pointer prevents the
+ * compiler from optimizing the loop away, ensuring that sensitive data is
+ * actually cleared.
+ */
+forceinline void ascon_clean(void* data, size_t len) {
+  volatile uint8_t* p = (volatile uint8_t*)data;
+  while (len--) *p++ = 0;
+}
+
+
 #endif /* WORD_H_ */
