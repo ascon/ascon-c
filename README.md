@@ -1,13 +1,13 @@
 # Reference, highly optimized, masked C and ASM implementations of Ascon (NIST SP 800-232)
 
-Ascon will be standardized as **NIST SP 800-232**: https://csrc.nist.gov/pubs/sp/800/232/ipd 
+Ascon is standardized as **NIST SP 800-232**: https://csrc.nist.gov/pubs/sp/800/232/final
 
 Ascon is a family of lightweight cryptographic algorithms and consists of:
 - Authenticated encryption schemes with associated data (AEAD)
 - Hash functions (HASH) and extendible output functions (XOF)
 - Message authentication codes (MAC) and pseudo-random functions (PRF)
 
-For more information on Ascon visit: https://ascon.iaik.tugraz.at/
+For more information on Ascon visit: https://ascon.isec.tugraz.at/
 
 Most implementations in this repository use the "ECRYPT Benchmarking of Cryptographic Systems (eBACS)" interface:
 
@@ -48,7 +48,7 @@ gcc -march=native -O3 -Icrypto_hash/asconxof128/ref crypto_hash/asconxof128/ref/
 
 ## Algorithms
 
-This repository contains implementations of the following NIST SP 800-232 draft standards:
+This repository contains implementations of the following NIST SP 800-232 standards:
 
 - `crypto_aead/asconaead128`:  **Ascon-AEAD128**     (authenticated encryption, formerly **Ascon-128a**)
 - `crypto_hash/asconhash256`:  **Ascon-Hash256**     (hash function, formerly **Ascon-Hash**)
@@ -67,7 +67,7 @@ We also provide the following Ascon MAC and PRF algorithms (not standardized yet
 
 ## Other Ascon algorithms
 
-Note that for the draft NIST standard, the following changes have been made compared to the Ascon submission:
+Note that for the NIST standard, the following changes have been made compared to the Ascon submission:
 
 - The endianness has been switched from big endian to little endian
 - The initial values have been updated to accommodate potential extensions
