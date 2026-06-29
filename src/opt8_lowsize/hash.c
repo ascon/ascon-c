@@ -5,13 +5,13 @@
 #include "printstate.h"
 
 #if ASCON_HASH_BYTES == 32 && ASCON_HASH_ROUNDS == 12
-#define IV(i) ASCON_HASH_IV##i
+#define IV(i) U64TOWORD(ASCON_HASH_IV##i)
 #elif ASCON_HASH_BYTES == 32 && ASCON_HASH_ROUNDS == 8
-#define IV(i) ASCON_HASHA_IV##i
+#define IV(i) U64TOWORD(ASCON_HASHA_IV##i)
 #elif ASCON_HASH_BYTES == 0 && ASCON_HASH_ROUNDS == 12
-#define IV(i) ASCON_XOF_IV##i
+#define IV(i) U64TOWORD(ASCON_XOF_IV##i)
 #elif ASCON_HASH_BYTES == 0 && ASCON_HASH_ROUNDS == 8
-#define IV(i) ASCON_XOFA_IV##i
+#define IV(i) U64TOWORD(ASCON_XOFA_IV##i)
 #endif
 
 forceinline void ascon_inithash(ascon_state_t* s) {
