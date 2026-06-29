@@ -25,8 +25,8 @@ forceinline void ascon_loadkey(ascon_key_t* key, const uint8_t* k) {
 forceinline void ascon_initaead(ascon_state_t* s, const ascon_key_t* key,
                                 const uint8_t* npub) {
 #if CRYPTO_KEYBYTES == 16
-  if (ASCON_AEAD_RATE == 8) s->x[0] = ASCON_128_IV;
-  if (ASCON_AEAD_RATE == 16) s->x[0] = ASCON_128A_IV;
+  if (ASCON_AEAD_RATE == 8) s->x[0] = U64TOWORD(ASCON_128_IV);
+  if (ASCON_AEAD_RATE == 16) s->x[0] = U64TOWORD(ASCON_128A_IV);
   memcpy(s->b[1], key->b[0], 16);
 #else /* CRYPTO_KEYBYTES == 20 */
   s->x[0] = key->x[0] | ASCON_80PQ_IV;
