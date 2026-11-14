@@ -20,9 +20,9 @@ void ascon_update(ascon_state_t* s, uint8_t* out, const uint8_t* in,
   const int nr = ASCON_AEAD_ROUNDS;
   const int rate = ASCON_AEAD_RATE;
 #endif
+  (void)rate;
 #if ASCON_AEAD_RATE == 8
   const int i = 0;
-  (void)rate;
 #else
   int i = 0;
 #endif
@@ -50,9 +50,13 @@ void ascon_update(ascon_state_t* s, uint8_t* out, const uint8_t* in,
     }
     /* compute permutation for full blocks */
 #if ASCON_AEAD_RATE == 16
-    if (++i == rate / 8) i = 0;
+    if (++i == rate / 8) {
+      i = 0;
+      P(s, nr);
+    }
+#else
+    P(s, nr);
 #endif
-    if (i == 0) P(s, nr);
     in += 8;
     out += 8;
     len -= 8;
