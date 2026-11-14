@@ -34,7 +34,7 @@ void ascon_encrypt(ascon_state_t* s, uint8_t* c, const uint8_t* m,
                    uint64_t mlen);
 void ascon_decrypt(ascon_state_t* s, uint8_t* m, const uint8_t* c,
                    uint64_t clen);
-void ascon_final(ascon_state_t* s, const ascon_key_t* k);
+void ascon_final(ascon_state_t* s, const ascon_key_t* key);
 
 #endif
 
