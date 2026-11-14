@@ -39,14 +39,12 @@ forceinline uint64_t DSEP() { return 0x80ULL << 56; }
 forceinline uint64_t PRFS_MLEN(uint64_t len) { return len << 51; }
 
 forceinline uint64_t CLEAR(uint64_t w, int n) {
-  /* undefined for n == 0 */
-  uint64_t mask = ~0ull << (8 * n);
+  uint64_t mask = (n <= 0) ? ~0ULL : ((n >= 8) ? 0ULL : (~0ULL << (8 * n)));
   return w & mask;
 }
 
 forceinline uint64_t MASK(int n) {
-  /* undefined for n == 0 */
-  return ~0ull << (64 - 8 * n);
+  return (n <= 0) ? 0ULL : ((n >= 8) ? ~0ULL : (~0ULL << (64 - 8 * n)));
 }
 
 forceinline uint64_t LOADBYTES(const uint8_t* bytes, int n) {
@@ -61,13 +59,16 @@ forceinline void STOREBYTES(uint8_t* bytes, uint64_t w, int n) {
 }
 
 /*
- * overwriting a memory region with zeros. The volatile pointer prevents the
- * compiler from optimizing the loop away, ensuring that sensitive data is
- * actually cleared.
+ * overwriting a memory region with zeros. The volatile pointer and compiler
+ * barrier prevent the optimizer from eliminating dead stores, ensuring that
+ * sensitive data is securely scrubbed even under Link-Time Optimization (LTO).
  */
 forceinline void ascon_clean(void* data, size_t len) {
   volatile uint8_t* p = (volatile uint8_t*)data;
   while (len--) *p++ = 0;
+#if defined(__GNUC__) || defined(__clang__)
+  __asm__ __volatile__("" : : "r"(data) : "memory");
+#endif
 }
 
 

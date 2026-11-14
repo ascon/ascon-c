@@ -61,8 +61,7 @@ forceinline uint64_t DSEP() { return 0x80ull << 56; }
 forceinline uint64_t PRFS_MLEN(uint64_t len) { return len << 51; }
 
 forceinline uint64_t CLEAR(uint64_t w, int n) {
-  /* undefined for n == 0 */
-  uint64_t mask = ~0ull << (8 * n);
+  uint64_t mask = (n <= 0) ? ~0ULL : ((n >= 8) ? 0ULL : (~0ULL << (8 * n)));
   return w & mask;
 }
 
@@ -70,7 +69,7 @@ forceinline uint64_t CLEAR(uint64_t w, int n) {
 
 forceinline uint64_t PAD(int i) { return (uint32_t)0x01 << (4 * i); }
 
-forceinline uint64_t DSEP() { return 0x80ull << 56; }
+forceinline uint64_t DSEP() { return 0x80ULL << 56; }
 
 forceinline uint64_t PRFS_MLEN(uint64_t len) {
   return ((len & 0x01) << 57) | /* 0000x */
@@ -81,16 +80,14 @@ forceinline uint64_t PRFS_MLEN(uint64_t len) {
 }
 
 forceinline uint64_t CLEAR(uint64_t w, int n) {
-  /* undefined for n == 0 */
-  uint32_t mask = 0xffffffffull << (4 * n);
+  uint32_t mask = (n <= 0) ? 0xffffffffU : ((n >= 8) ? 0U : (0xffffffffU << (4 * n)));
   return w & ((uint64_t)mask << 32 | mask);
 }
 
 #endif
 
 forceinline uint64_t MASK(int n) {
-  /* undefined for n == 0 */
-  return ~0ull << (64 - 8 * n);
+  return (n <= 0) ? 0ULL : ((n >= 8) ? ~0ULL : (~0ULL << (64 - 8 * n)));
 }
 
 forceinline uint64_t LOADBYTES(const uint8_t* bytes, int n) {

@@ -68,14 +68,12 @@ forceinline uint64_t DSEP() { return 0x80; }
 forceinline uint64_t PRFS_MLEN(uint64_t len) { return len << 51; }
 
 forceinline uint64_t CLEAR(uint64_t w, int n) {
-  /* undefined for n == 0 */
-  uint64_t mask = ~0ull << (8 * n);
+  uint64_t mask = (n <= 0) ? ~0ULL : ((n >= 8) ? 0ULL : (~0ULL << (8 * n)));
   return w & mask;
 }
 
 forceinline uint64_t MASK(int n) {
-  /* undefined for n == 0 */
-  return ~0ull << (64 - 8 * n);
+  return (n <= 0) ? 0ULL : ((n >= 8) ? ~0ULL : (~0ULL << (64 - 8 * n)));
 }
 
 forceinline uint64_t LOADBYTES(const uint8_t* bytes, int n) {
