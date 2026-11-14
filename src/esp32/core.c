@@ -22,14 +22,14 @@ void ascon_duplex(ascon_state_t* s, unsigned char* out, const unsigned char* in,
 #endif
 
   while (len >= ASCON_AEAD_RATE) {
-    tmp[0].l = ((uint32_t*)in)[0];
-    tmp[0].h = ((uint32_t*)in)[1];
+    tmp[0].l = ((const uint32_t*)in)[0];
+    tmp[0].h = ((const uint32_t*)in)[1];
     tmp[0].x = U64LE(tmp[0].x);
     s->w[0].h ^= tmp[0].h;
     s->w[0].l ^= tmp[0].l;
 #if ASCON_AEAD_RATE == 16
-    tmp[1].l = ((uint32_t*)in)[2];
-    tmp[1].h = ((uint32_t*)in)[3];
+    tmp[1].l = ((const uint32_t*)in)[2];
+    tmp[1].h = ((const uint32_t*)in)[3];
     tmp[1].x = U64LE(tmp[1].x);
     s->w[1].h ^= tmp[1].h;
     s->w[1].l ^= tmp[1].l;
@@ -112,23 +112,23 @@ void ascon_core(ascon_state_t* s, unsigned char* out, const unsigned char* in,
 #if CRYPTO_KEYBYTES == 20
   uint32x2_t K2;
 #if (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
-  K0.l = U32LE(((uint32_t*)k)[0]);
+  K0.l = U32LE(((const uint32_t*)k)[0]);
 #else
-  K0.h = U32LE(((uint32_t*)k)[0]);
+  K0.h = U32LE(((const uint32_t*)k)[0]);
 #endif
-  tmp[0].l = ((uint32_t*)k)[1];
-  tmp[0].h = ((uint32_t*)k)[2];
-  tmp[1].l = ((uint32_t*)k)[3];
-  tmp[1].h = ((uint32_t*)k)[4];
+  tmp[0].l = ((const uint32_t*)k)[1];
+  tmp[0].h = ((const uint32_t*)k)[2];
+  tmp[1].l = ((const uint32_t*)k)[3];
+  tmp[1].h = ((const uint32_t*)k)[4];
   tmp[0].x = U64LE(tmp[0].x);
   tmp[1].x = U64LE(tmp[1].x);
   K1 = tmp[0];
   K2 = tmp[1];
 #else
-  tmp[0].l = ((uint32_t*)k)[0];
-  tmp[0].h = ((uint32_t*)k)[1];
-  tmp[1].l = ((uint32_t*)k)[2];
-  tmp[1].h = ((uint32_t*)k)[3];
+  tmp[0].l = ((const uint32_t*)k)[0];
+  tmp[0].h = ((const uint32_t*)k)[1];
+  tmp[1].l = ((const uint32_t*)k)[2];
+  tmp[1].h = ((const uint32_t*)k)[3];
   tmp[0].x = U64LE(tmp[0].x);
   tmp[1].x = U64LE(tmp[1].x);
   K0 = tmp[0];
@@ -136,10 +136,10 @@ void ascon_core(ascon_state_t* s, unsigned char* out, const unsigned char* in,
 #endif
 
   // load nonce
-  tmp[0].l = ((uint32_t*)npub)[0];
-  tmp[0].h = ((uint32_t*)npub)[1];
-  tmp[1].l = ((uint32_t*)npub)[2];
-  tmp[1].h = ((uint32_t*)npub)[3];
+  tmp[0].l = ((const uint32_t*)npub)[0];
+  tmp[0].h = ((const uint32_t*)npub)[1];
+  tmp[1].l = ((const uint32_t*)npub)[2];
+  tmp[1].h = ((const uint32_t*)npub)[3];
   tmp[0].x = U64LE(tmp[0].x);
   tmp[1].x = U64LE(tmp[1].x);
   N0 = tmp[0];
@@ -198,7 +198,7 @@ void ascon_core(ascon_state_t* s, unsigned char* out, const unsigned char* in,
     ascon_duplex(s, (void*)0, ad, adlen, ASCON_AD);
     P(s, PB_START_ROUND);
   }
-  s->x[4] ^= 0x8000000000000000;
+  s->x[4] ^= 0x8000000000000000ULL;
   printstate("domain separation", s);
 
   // process plaintext/ciphertext
