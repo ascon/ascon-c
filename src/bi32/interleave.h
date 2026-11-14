@@ -41,14 +41,14 @@ forceinline uint32_t interleave16(uint32_t x) {
 
 /* credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002 */
 forceinline uint64_t deinterleave32(uint64_t in) {
-  in = U64LE(in);
-  uint32_t hi = in >> 32;
-  uint32_t lo = in;
+  const uint64_t x = U64LE(in);
+  uint32_t hi = x >> 32;
+  uint32_t lo = x;
   uint32_t t0, t1, e, o;
   t0 = deinterleave16(lo);
   t1 = deinterleave16(hi);
-  e = (t1 << 16) | (t0 & 0x0000FFFF);
-  o = (t1 & 0xFFFF0000) | (t0 >> 16);
+  e = (t1 << 16) | (t0 & 0x0000FFFFU);
+  o = (t1 & 0xFFFF0000U) | (t0 >> 16);
   return (uint64_t)o << 32 | e;
 }
 
@@ -57,8 +57,8 @@ forceinline uint64_t interleave32(uint64_t in) {
   uint32_t e = in;
   uint32_t o = in >> 32;
   uint32_t t0, t1, lo, hi;
-  t0 = (o << 16) | (e & 0x0000FFFF);
-  t1 = (o & 0xFFFF0000) | (e >> 16);
+  t0 = (o << 16) | (e & 0x0000FFFFU);
+  t1 = (o & 0xFFFF0000U) | (e >> 16);
   lo = interleave16(t0);
   hi = interleave16(t1);
   return U64LE((uint64_t)hi << 32 | lo);

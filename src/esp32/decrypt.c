@@ -29,7 +29,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   int i;
   int result = 0;
   for (i = 0; i < CRYPTO_ABYTES; ++i) result |= c[*mlen + i] ^ *(s.b[3] + i);
-  result = (((result - 1) >> 8) & 1) - 1;
+  result = (int)((((uint32_t)(result - 1) >> 8) & 1U) - 1U);
 
   printbytes("m", m, *mlen);
   print("\n");

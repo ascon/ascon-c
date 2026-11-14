@@ -11,10 +11,10 @@
 #include "round.h"
 
 const uint64_t C[12] = {
-    0xffffffffffffff0full, 0xffffffffffffff1eull, 0xffffffffffffff2dull,
-    0xffffffffffffff3cull, 0xffffffffffffff4bull, 0xffffffffffffff5aull,
-    0xffffffffffffff69ull, 0xffffffffffffff78ull, 0xffffffffffffff87ull,
-    0xffffffffffffff96ull, 0xffffffffffffffa5ull, 0xffffffffffffffb4ull,
+    0xffffffffffffff0fULL, 0xffffffffffffff1eULL, 0xffffffffffffff2dULL,
+    0xffffffffffffff3cULL, 0xffffffffffffff4bULL, 0xffffffffffffff5aULL,
+    0xffffffffffffff69ULL, 0xffffffffffffff78ULL, 0xffffffffffffff87ULL,
+    0xffffffffffffff96ULL, 0xffffffffffffffa5ULL, 0xffffffffffffffb4ULL,
 };
 
 #define P12ROUNDS(s) \
@@ -49,6 +49,7 @@ const uint64_t C[12] = {
   ROUND(80)         \
   ROUND(88)
 
+/* cppcheck-suppress constParameterPointer */
 forceinline void P12(ascon_state_t* s) {
   __asm__ __volatile__ ( \
       ".fpu neon \n\t" \
@@ -64,6 +65,7 @@ forceinline void P12(ascon_state_t* s) {
         "d31", "memory");
 }
 
+/* cppcheck-suppress constParameterPointer */
 forceinline void P8(ascon_state_t* s) {
   __asm__ __volatile__ ( \
       ".fpu neon \n\t" \
@@ -79,6 +81,7 @@ forceinline void P8(ascon_state_t* s) {
         "d31", "memory");
 }
 
+/* cppcheck-suppress constParameterPointer */
 forceinline void P6(ascon_state_t* s) {
   __asm__ __volatile__ ( \
       ".fpu neon \n\t" \

@@ -99,8 +99,8 @@ int ascon_aead(uint8_t* tag, uint8_t* out, const uint8_t* in, uint64_t inlen,
   /* finalize */
   ascon_final(&s, &key);
   uint8_t t[16];
-  ((uint64_t*)t)[0] = WORDTOU64(s.x[3]);
-  ((uint64_t*)t)[1] = WORDTOU64(s.x[4]);
+  STORE(t, WORDTOU64(s.x[3]), 8);
+  STORE(t + 8, WORDTOU64(s.x[4]), 8);
   if (mode == ASCON_ENCRYPT) {
     /* get tag */
     for (int i = 0; i < CRYPTO_ABYTES; ++i) tag[i] = t[i];
@@ -109,7 +109,7 @@ int ascon_aead(uint8_t* tag, uint8_t* out, const uint8_t* in, uint64_t inlen,
   /* verify should be constant time, check compiler output */
   int result = 0;
   for (int i = 0; i < CRYPTO_ABYTES; ++i) result |= tag[i] ^ t[i];
-  return (((result - 1) >> 8) & 1) - 1;
+  return (int)((((uint32_t)(result - 1) >> 8) & 1U) - 1U);
 }
 
 #endif

@@ -3,7 +3,6 @@
 #include "lendian.h"
 #include "printstate.h"
 
-#define START_ROUND(x) (12 - (x))
 #define LAST_ROUND 0x4b
 
 #define SBOX(x0, x1, x2, x3, x4, r0, t0, t1, t2) \
@@ -35,16 +34,16 @@
     o = (((uint64_t)h << 32) | l) >> amt; \
   } while (0)
 
-#define LINEAR(dl, dh, sl, sh, sl0, sh0, r0, sl1, sh1, r1, t0) \
-  do {                                                         \
-    SRC(dl, sh0, sl0, r0);                                     \
-    SRC(dh, sl0, sh0, r0);                                     \
-    dl = dl ^ sl;                                              \
-    dh = dh ^ sh;                                              \
-    SRC(t0, sh1, sl1, r1);                                     \
-    SRC(sh, sl1, sh1, r1);                                     \
-    dl = dl ^ t0;                                              \
-    dh = dh ^ sh;                                              \
+#define LINEAR(d_lo, d_hi, s_lo, s_hi, s_lo0, s_hi0, r0, s_lo1, s_hi1, r1, t0) \
+  do {                                                                         \
+    SRC(d_lo, s_hi0, s_lo0, r0);                                               \
+    SRC(d_hi, s_lo0, s_hi0, r0);                                               \
+    d_lo = d_lo ^ s_lo;                                                        \
+    d_hi = d_hi ^ s_hi;                                                        \
+    SRC(t0, s_hi1, s_lo1, r1);                                                 \
+    SRC(s_hi, s_lo1, s_hi1, r1);                                               \
+    d_lo = d_lo ^ t0;                                                          \
+    d_hi = d_hi ^ s_hi;                                                        \
   } while (0)
 
 #if (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)

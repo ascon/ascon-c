@@ -3,6 +3,7 @@
 #include "crypto_aead.h"
 #include "permutations.h"
 #include "printstate.h"
+#include "word.h"
 
 #if !ASCON_INLINE_MODE
 #undef forceinline
@@ -171,6 +172,9 @@ int ascon_aead_encrypt(uint8_t* t, uint8_t* c, const uint8_t* m, uint64_t mlen,
   ascon_encrypt(&s, c, m, mlen);
   ascon_final(&s, &key);
   ascon_gettag(&s, t);
+  /* clearing sensitive material */
+  ascon_clean(&s, sizeof s);
+  ascon_clean(&key, sizeof key);
   return 0;
 }
 
@@ -184,7 +188,11 @@ int ascon_aead_decrypt(uint8_t* m, const uint8_t* t, const uint8_t* c,
   ascon_adata(&s, ad, adlen);
   ascon_decrypt(&s, m, c, clen);
   ascon_final(&s, &key);
-  return ascon_verify(&s, t);
+  int result = ascon_verify(&s, t);
+  /* clearing sensitive material */
+  ascon_clean(&s, sizeof s);
+  ascon_clean(&key, sizeof key);
+  return result;
 }
 
 int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,
@@ -218,7 +226,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   if (clen < CRYPTO_ABYTES) return -1;
   /* set plaintext size */
   *mlen = clen - CRYPTO_ABYTES;
-  uint8_t* t = (uint8_t*)c + *mlen;
+  const uint8_t* t = (const uint8_t*)c + *mlen;
   print("decrypt\n");
   printbytes("k", k, CRYPTO_KEYBYTES);
   printbytes("n", npub, CRYPTO_NPUBBYTES);
