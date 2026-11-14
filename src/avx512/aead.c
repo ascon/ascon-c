@@ -252,7 +252,7 @@ int crypto_aead_decrypt(unsigned char* m, unsigned long long* mlen,
   if (clen < CRYPTO_ABYTES) return -1;
   /* set plaintext size */
   *mlen = clen - CRYPTO_ABYTES;
-  uint8_t* t = (uint8_t*)c + *mlen;
+  const uint8_t* t = (const uint8_t*)c + *mlen;
   print("decrypt\n");
   printbytes("k", k, CRYPTO_KEYBYTES);
   printbytes("n", npub, CRYPTO_NPUBBYTES);
