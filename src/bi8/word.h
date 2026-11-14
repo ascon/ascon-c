@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <string.h>
 
+#if defined(_MSC_VER)
+#include <intrin.h>
+#endif
+
 #include "forceinline.h"
 #include "interleave.h"
 #include "lendian.h"
@@ -52,12 +56,12 @@ forceinline int NOTZERO(uint64_t a, uint64_t b) {
   result |= result >> 32;
   result |= result >> 16;
   result |= result >> 8;
-  return ((((int)(result & 0xff) - 1) >> 8) & 1) - 1;
+  return (int)((((uint32_t)((result & 0xff) - 1) >> 8) & 1U) - 1U);
 }
 
 forceinline uint64_t PAD(int i) { return (uint8_t)0x01 << i; }
 
-forceinline uint64_t DSEP() { return 0x80ull << 56; }
+forceinline uint64_t DSEP() { return 0x80ULL << 56; }
 
 forceinline uint64_t PRFS_MLEN(uint64_t len) {
   return ((len & 0x01) << 30) | /* 0000x */
@@ -68,8 +72,7 @@ forceinline uint64_t PRFS_MLEN(uint64_t len) {
 }
 
 forceinline uint64_t CLEAR(uint64_t w, int n) {
-  /* undefined for n == 0 */
-  uint8_t m = 0xff << n;
+  uint8_t m = (n <= 0) ? 0xffU : ((n >= 8) ? 0x00U : (uint8_t)(0xffU << n));
   word_t mask = {
       .b[0] = m,
       .b[1] = m,
@@ -96,6 +99,21 @@ forceinline uint64_t LOADBYTES(const uint8_t* bytes, int n) {
 forceinline void STOREBYTES(uint8_t* bytes, uint64_t w, int n) {
   uint64_t x = WORDTOU64(w);
   memcpy(bytes, &x, n);
+}
+
+/*
+ * overwriting a memory region with zeros. The volatile pointer and compiler
+ * barrier prevent the optimizer from eliminating dead stores, ensuring that
+ * sensitive data is securely scrubbed even under Link-Time Optimization (LTO).
+ */
+forceinline void ascon_clean(void* data, size_t len) {
+  volatile uint8_t* p = (volatile uint8_t*)data;
+  while (len--) *p++ = 0;
+#if defined(__GNUC__) || defined(__clang__)
+  __asm__ __volatile__("" : : "r"(data) : "memory");
+#elif defined(_MSC_VER)
+  _ReadWriteBarrier();
+#endif
 }
 
 #endif /* WORD_H_ */

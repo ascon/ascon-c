@@ -25,12 +25,12 @@ uint64_t FROMBI(uint64_t in);
 
 /* credit to Henry S. Warren, Hacker's Delight, Addison-Wesley, 2002 */
 forceinline uint64_t interleave8(uint64_t x) {
-  x = (x & 0xaa55aa55aa55aa55ull) | ((x & 0x00aa00aa00aa00aaull) << 7) |
-      ((x >> 7) & 0x00aa00aa00aa00aaull);
-  x = (x & 0xcccc3333cccc3333ull) | ((x & 0x0000cccc0000ccccull) << 14) |
-      ((x >> 14) & 0x0000cccc0000ccccull);
-  x = (x & 0xf0f0f0f00f0f0f0full) | ((x & 0x00000000f0f0f0f0ull) << 28) |
-      ((x >> 28) & 0x00000000f0f0f0f0ull);
+  x = (x & 0xaa55aa55aa55aa55ULL) | ((x & 0x00aa00aa00aa00aaULL) << 7) |
+      ((x >> 7) & 0x00aa00aa00aa00aaULL);
+  x = (x & 0xcccc3333cccc3333ULL) | ((x & 0x0000cccc0000ccccULL) << 14) |
+      ((x >> 14) & 0x0000cccc0000ccccULL);
+  x = (x & 0xf0f0f0f00f0f0f0fULL) | ((x & 0x00000000f0f0f0f0ULL) << 28) |
+      ((x >> 28) & 0x00000000f0f0f0f0ULL);
   return x;
 }
 

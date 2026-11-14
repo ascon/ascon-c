@@ -40,8 +40,8 @@ int crypto_hash(unsigned char* out, const unsigned char* in,
   printstate("initialization", &s);
 
   while (len >= ASCON_HASH_RATE) {
-    tmp.l = ((uint32_t*)in)[0];
-    tmp.h = ((uint32_t*)in)[1];
+    tmp.l = ((const uint32_t*)in)[0];
+    tmp.h = ((const uint32_t*)in)[1];
     tmp.x = U64LE(tmp.x);
     s.w[0].h ^= tmp.h;
     s.w[0].l ^= tmp.l;

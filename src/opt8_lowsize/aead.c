@@ -3,6 +3,7 @@
 #include "crypto_aead.h"
 #include "permutations.h"
 #include "printstate.h"
+#include "word.h"
 
 #if !ASCON_INLINE_MODE
 #undef forceinline
@@ -92,6 +93,9 @@ int ascon_aead_encrypt(uint8_t* t, uint8_t* c, const uint8_t* m, uint64_t mlen,
   ascon_update(&s, c, m, mlen, ASCON_ENCRYPT);
   ascon_final(&s, &key);
   ascon_gettag(&s, t);
+  /* clearing sensitive material */
+  ascon_clean(&s, sizeof s);
+  ascon_clean(&key, sizeof key);
   return 0;
 }
 
@@ -111,7 +115,11 @@ int ascon_aead_decrypt(uint8_t* m, const uint8_t* t, const uint8_t* c,
   printstate("domain separation", &s);
   ascon_update(&s, m, c, clen, ASCON_DECRYPT);
   ascon_final(&s, &key);
-  return ascon_verify(&s, t);
+  int result = ascon_verify(&s, t);
+  /* clearing sensitive material */
+  ascon_clean(&s, sizeof s);
+  ascon_clean(&key, sizeof key);
+  return result;
 }
 
 int crypto_aead_encrypt(unsigned char* c, unsigned long long* clen,

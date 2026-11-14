@@ -3,6 +3,7 @@
 #include "crypto_aead.h"
 #include "permutations.h"
 #include "printstate.h"
+#include "word.h"
 
 #if !ASCON_INLINE_MODE
 #undef forceinline

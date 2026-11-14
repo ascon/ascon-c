@@ -87,7 +87,7 @@ int crypto_auth_verify(const unsigned char* h, const unsigned char* in,
   uint8_t tag[CRYPTO_BYTES];
   crypto_prf(tag, CRYPTO_BYTES, in, len, k);
   for (i = 0; i < CRYPTO_BYTES; ++i) diff |= h[i] ^ tag[i];
-  return (1 & ((diff - 1) >> 8)) - 1;
+  return (int)((((uint32_t)(diff - 1) >> 8) & 1U) - 1U);
 }
 
 #endif

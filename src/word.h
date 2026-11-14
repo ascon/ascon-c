@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <string.h>
 
+#if defined(_MSC_VER)
+#include <intrin.h>
+#endif
+
 #include "forceinline.h"
 #include "lendian.h"
 
@@ -29,7 +33,7 @@ forceinline int NOTZERO(uint64_t a, uint64_t b) {
   result |= result >> 32;
   result |= result >> 16;
   result |= result >> 8;
-  return ((((int)(result & 0xff) - 1) >> 8) & 1) - 1;
+  return (int)((((uint32_t)((result & 0xff) - 1) >> 8) & 1U) - 1U);
 }
 
 forceinline uint64_t PAD(int i) { return 0x01ULL << (8 * i); }
@@ -68,6 +72,8 @@ forceinline void ascon_clean(void* data, size_t len) {
   while (len--) *p++ = 0;
 #if defined(__GNUC__) || defined(__clang__)
   __asm__ __volatile__("" : : "r"(data) : "memory");
+#elif defined(_MSC_VER)
+  _ReadWriteBarrier();
 #endif
 }
 

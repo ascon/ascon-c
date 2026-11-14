@@ -14,7 +14,7 @@ forceinline void ROUND(ascon_state_t* s, uint8_t C) {
   const __m512i pxor1 = _mm512_set_epi64(x, x, x, 3, x, 1, x, 4);
   const __m512i pxor2 = _mm512_set_epi64(x, x, x, x, 2, x, 0, 4);
   const __m512i rc = _mm512_set_epi64(x, x, x, 0, 0, C, 0, 0);
-  const __m512i neg = _mm512_set_epi64(x, x, x, 0, 0, ~0ull, 0, 0);
+  const __m512i neg = _mm512_set_epi64(x, x, x, 0, 0, ~0ULL, 0, 0);
   const __m512i pchi1 = _mm512_set_epi64(x, x, x, 0, 4, 3, 2, 1);
   const __m512i pchi2 = _mm512_set_epi64(x, x, x, 1, 0, 4, 3, 2);
   const __m512i rot1 = _mm512_set_epi64(x, x, x, 7, 10, 1, 61, 19);
